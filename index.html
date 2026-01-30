@@ -659,5 +659,20 @@
             }
         }
     </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swPath = window.location.pathname.includes('index.html') 
+                    ? 'sw.js' 
+                    : './sw.js';
+                
+                navigator.serviceWorker.register(swPath)
+                    .then(reg => console.log('✅ Service Worker registered', reg))
+                    .catch(err => console.error('❌ Service Worker registration failed', err));
+            });
+        }
+    </script>
 </body>
 </html>

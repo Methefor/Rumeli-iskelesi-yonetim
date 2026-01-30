@@ -1,15 +1,11 @@
 // Service Worker for Rumeli İskelesi
 const CACHE_NAME = 'rumeli-iskelesi-v1.0.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/dashboard.html',
-  '/manifest.json',
-  '/js/sheets-api.js',
-  'https://cdn.tailwindcss.com',
-  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-  'https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
+  './',
+  'index.html',
+  'dashboard.html',
+  'manifest.json',
+  'js/sheets-api.js'
 ];
 
 // Install event
