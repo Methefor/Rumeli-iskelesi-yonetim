@@ -82,13 +82,15 @@
                     </div>
                 </div>
                 
-                <div class="flex items-center space-x-4">
-                    <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <button @click="showInfo = !showInfo" class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center bg-blue-50 px-3 py-2 rounded-xl border border-blue-100">
+                        <i data-feather="help-circle" class="w-4 h-4 mr-1.5"></i>
+                        <span class="hidden xs:inline">Nasıl Kullanılır?</span>
+                        <span class="xs:hidden">Yardım</span>
+                    </button>
+                    <a href="dashboard.html" class="text-gray-600 hover:text-gray-900 bg-gray-100 p-2 rounded-xl">
                         <i data-feather="bar-chart-2" class="w-5 h-5"></i>
                     </a>
-                    <button @click="showInfo = !showInfo" class="text-gray-600 hover:text-gray-900">
-                        <i data-feather="info" class="w-5 h-5"></i>
-                    </button>
                 </div>
             </div>
         </div>
@@ -365,26 +367,79 @@
     <!-- Info Modal -->
     <div 
         x-show="showInfo"
-        x-transition
-        @click.away="showInfo = false"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]"
+        @click.self="showInfo = false"
     >
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">📱 Kullanım Kılavuzu</h3>
-            <div class="space-y-3 text-gray-700">
-                <p><strong>1.</strong> Her akşam Z raporlarını toplayın</p>
-                <p><strong>2.</strong> Formu doldurun (sadece rakamlar)</p>
-                <p><strong>3.</strong> "Verileri Kaydet" butonuna basın</p>
-                <p><strong>4.</strong> Dashboard'dan analizi görüntüleyin</p>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-8 border border-slate-100">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-2 rounded-xl text-white">
+                        <i data-feather="book-open" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-slate-800">Kullanım Kılavuzu</h3>
+                </div>
+                <button @click="showInfo = false" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-feather="x" class="w-6 h-6"></i>
+                </button>
             </div>
-            <div class="mt-6 p-4 bg-blue-50 rounded-xl">
-                <p class="text-sm text-blue-900"><strong>💡 İpucu:</strong> Bu uygulamayı ana ekranınıza ekleyerek hızlı erişim sağlayabilirsiniz!</p>
+
+            <div class="space-y-6">
+                <!-- Step 1 -->
+                <div class="flex space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold">1</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">📱 Ana Ekrana Ekle</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">Uygulamaya Chrome veya Safari üzerinden girdiğinizde "Ana Ekrana Ekle" seçeneğini kullanın. Böylece uygulama gibi hızlıca açılır.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">2</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">💰 Z Raporu Girişi</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">Gün sonunda <strong>Z Raporu</strong> üzerindeki ciroları ilgili alanlara (Z1, Z2, Balık Ekmek, Dondurma) girin.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold">3</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">🍽️ Ürün Adetleri</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">Çay, kahve, gıda gibi ürünlerin satış adetlerini doğru bir şekilde sisteme işleyin.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold">4</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-1">💾 Kaydet ve Bitir</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">Tüm verileri girdikten sonra <strong>"Verileri Kaydet"</strong> butonuna basın. Yeşil onay kutusunu görünce uygulama kapanabilir.</p>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start space-x-3">
+                    <span class="text-xl">💡</span>
+                    <div class="text-xs text-amber-800 leading-relaxed">
+                        <strong>İpucu:</strong> İnternetiniz olmasa bile verileri girebilirsiniz. Uygulama veriyi saklar ve internet geldiğinde otomatik olarak Google Sheets'e gönderir.
+                    </div>
+                </div>
             </div>
+
             <button 
                 @click="showInfo = false"
-                class="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700"
+                class="mt-8 w-full bg-slate-800 text-white font-bold py-4 rounded-2xl hover:bg-slate-900 transition-all shadow-lg"
             >
-                Anladım
+                Anladım, Başlayalım!
             </button>
         </div>
     </div>
