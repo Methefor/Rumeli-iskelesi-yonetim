@@ -55,6 +55,9 @@ async function saveToSheets(formData) {
     formData.sogukIcecek || 0, // Soğuk İçecekler
     formData.tatli || 0, // Tatlı
     formData.meyveSuyu || 0, // Meyve Suyu
+    formData.dondurmaAdet || 0, // Dondurma Satış (Adet)
+    formData.kahvalti || 0, // Kahvaltı
+    formData.depo || 0, // Depo
     formData.notlar || '', // Notlar
   ];
 
