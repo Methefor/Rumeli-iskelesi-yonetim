@@ -20,6 +20,9 @@
     <!-- Feather Icons -->
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
     <!-- Custom CSS -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -50,7 +53,7 @@
         
         /* Smooth transitions */
         * {
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         /* Loading animation */
@@ -59,16 +62,43 @@
         }
         
         @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: .5;
-            }
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        /* Anime.js Background Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.4);
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body class="bg-gray-50 antialiased" x-data="dataEntry()">
+<body class="bg-slate-50 antialiased overflow-x-hidden" x-data="dataEntry()" x-init="init()">
+    
+    <!-- Animated Background -->
+    <canvas id="bg-canvas"></canvas>
     
     <!-- Navigation -->
     <nav class="bg-white shadow-sm border-b border-gray-200">
@@ -83,12 +113,11 @@
                 </div>
                 
                 <div class="flex items-center space-x-3 sm:space-x-4">
-                    <button @click="showInfo = !showInfo" class="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center bg-blue-50 px-3 py-2 rounded-xl border border-blue-100">
-                        <i data-feather="help-circle" class="w-4 h-4 mr-1.5"></i>
-                        <span class="hidden xs:inline">Nasıl Kullanılır?</span>
-                        <span class="xs:hidden">Yardım</span>
+                    <button @click="showInfo = !showInfo" class="flex items-center space-x-2 bg-white px-4 py-2 rounded-2xl shadow-sm border border-red-100 hover:border-red-200 group transition-all">
+                        <span class="flex items-center justify-center w-6 h-6 bg-red-500 text-white rounded-full font-bold text-sm group-hover:scale-110 transition-transform">?</span>
+                        <span class="text-slate-700 font-bold text-sm">Nasıl Kullanılır?</span>
                     </button>
-                    <a href="dashboard.html" class="text-gray-600 hover:text-gray-900 bg-gray-100 p-2 rounded-xl">
+                    <a href="dashboard.html" class="text-slate-600 hover:text-blue-600 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-100 transition-all">
                         <i data-feather="bar-chart-2" class="w-5 h-5"></i>
                     </a>
                 </div>
@@ -135,10 +164,12 @@
         <form @submit.prevent="submitData" class="space-y-6">
             
             <!-- Kasa Ciroları -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-2xl">💰</span>
-                    <h3 class="text-xl font-bold text-gray-900">Z Raporu - Kasa Ciroları</h3>
+            <div class="glass-card rounded-3xl p-8 transition-all hover:shadow-xl">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="bg-blue-100 p-2.5 rounded-2xl text-blue-600">
+                        <i data-feather="dollar-sign" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Z Raporu - Kasa Ciroları</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -217,10 +248,12 @@
             </div>
 
             <!-- Kategori Satışları -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-2xl">🍽️</span>
-                    <h3 class="text-xl font-bold text-gray-900">Kategori Satışları (Adet)</h3>
+            <div class="glass-card rounded-3xl p-8 transition-all hover:shadow-xl">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="bg-orange-100 p-2.5 rounded-2xl text-orange-600">
+                        <i data-feather="shopping-bag" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800">Kategori Satışları (Adet)</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -465,6 +498,64 @@
                     show: false,
                     type: 'success',
                     text: ''
+                },
+                
+                init() {
+                    // Auto show help modal for new users (based on session)
+                    if (!sessionStorage.getItem('helpViewed')) {
+                        setTimeout(() => {
+                            this.showInfo = true;
+                            sessionStorage.setItem('helpViewed', 'true');
+                        }, 500);
+                    }
+                    this.initBackgroundAnimation();
+                },
+
+                initBackgroundAnimation() {
+                    const canvas = document.getElementById('bg-canvas');
+                    const ctx = canvas.getContext('2d');
+                    let particles = [];
+
+                    function resize() {
+                        canvas.width = window.innerWidth;
+                        canvas.height = window.innerHeight;
+                    }
+
+                    window.addEventListener('resize', resize);
+                    resize();
+
+                    for(let i = 0; i < 15; i++) {
+                        particles.push({
+                            x: Math.random() * canvas.width,
+                            y: Math.random() * canvas.height,
+                            size: Math.random() * 300 + 100,
+                            color: i % 2 === 0 ? 'rgba(59, 130, 246, 0.03)' : 'rgba(249, 115, 22, 0.02)',
+                            speedX: Math.random() * 0.5 - 0.25,
+                            speedY: Math.random() * 0.5 - 0.25
+                        });
+                    }
+
+                    function animate() {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        particles.forEach(p => {
+                            p.x += p.speedX;
+                            p.y += p.speedY;
+
+                            if(p.x < -p.size) p.x = canvas.width + p.size;
+                            if(p.x > canvas.width + p.size) p.x = -p.size;
+                            if(p.y < -p.size) p.y = canvas.height + p.size;
+                            if(p.y > canvas.height + p.size) p.y = -p.size;
+
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                            ctx.fillStyle = p.color;
+                            ctx.fill();
+                        });
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+
+                    // Anime.js floating micro-animations can be added here if needed
                 },
                 formData: {
                     rumeliZ1: null,
