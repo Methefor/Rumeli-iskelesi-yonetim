@@ -30,17 +30,28 @@ self.addEventListener('activate', (event) => {
 
 // Fetch Event
 self.addEventListener('fetch', (event) => {
-    // Google Sheets API calls - Network Only / Network First
-    if (event.request.url.includes('script.google.com')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // Static Assets - Cache First, then Network
+    // Network First, fallback to cache
     event.respondWith(
-        caches.match(event.request)
+        fetch(event.request)
             .then((response) => {
-                return response || fetch(event.request);
+                // Check if we received a valid response
+                if (!response || response.status !== 200 || response.type !== 'basic') {
+                    return response;
+                }
+
+                // Clone the response
+                var responseToCache = response.clone();
+
+                caches.open(CACHE_NAME)
+                    .then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+
+                return response;
+            })
+            .catch(() => {
+                // If network fails, try cache
+                return caches.match(event.request);
             })
     );
 });

@@ -378,16 +378,40 @@
                 },
 
                 processData(rawData) {
+                    console.log("İşlenecek Ham Veri:", rawData);
+
+                    // Normalize Data
+                    // Supabase returns keys like 'date', 'rumeli_z1' etc.
+                    // LocalStorage might have slightly different structure if mixed.
+                    // Check if date exists
+
                     this.updateMonthName();
                     this.selectedItems = [];
 
                     // Filter by selected month
                     let filtered = rawData.filter(item => {
                         const itemDate = item.selectedDate || item.date;
-                        if (!itemDate) return false;
+                        if (!itemDate) {
+                            console.warn("Tarih bilgisi olmayan kayıt:", item);
+                            return false;
+                        }
+
+                        // Handle Date Format potential mismatch (YYYY-MM-DD vs other)
+                        // Code expects YYYY-MM-DD string match for startswith
+
                         if (this.selectedMonth === 'all') return true;
-                        return itemDate.startsWith(this.selectedMonth);
+
+                        const match = itemDate.startsWith(this.selectedMonth);
+                        if (!match && rawData.length < 5) console.log(`Filtrelendi: ${itemDate} (Seçili Ay: ${this.selectedMonth})`);
+                        return match;
                     });
+
+                    console.log("Filtrelenmiş Veri Sayısı:", filtered.length);
+                    // Alert if 0 but raw > 0
+                    if (rawData.length > 0 && filtered.length === 0) {
+                        // Only alert if we selected a specific month and it's empty but we have data
+                        console.warn("Veri var ama seçili ayda kayıt yok.");
+                    }
 
                     this.monthRecords = filtered.length;
 
