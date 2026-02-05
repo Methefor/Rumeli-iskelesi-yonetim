@@ -639,9 +639,11 @@
                     try {
                         if (typeof window.insertSalesRecord === 'function') {
                             const { data, error } = await window.insertSalesRecord(this.formData);
-
-                            if (error) throw error;
-
+                            if (error) {
+                                console.error("Supabase Insert Error Detail:", JSON.stringify(error, null, 2));
+                                throw error;
+                            }
+                            console.log("Supabase Insert Success:", data);
                             this.showMessage('success', '✅ Veriler Supabase veritabanına kaydedildi!');
                             setTimeout(() => {
                                 window.location.href = 'dashboard.html';
@@ -650,7 +652,8 @@
                             throw new Error('Supabase client not loaded');
                         }
                     } catch (error) {
-                        console.error('Save error:', error);
+                        console.error('Save error details:', error);
+                        alert(`Kayıt hatası: ${error.message || JSON.stringify(error)}`); // Visible alert for user
                         this.saveToLocalStorage(); // Fallback
                         this.showMessage('error', '⚠️ Bağlantı hatası! Veriler geçici olarak cihaza kaydedildi.');
                     } finally {
