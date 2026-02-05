@@ -236,12 +236,23 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
-                <div class="chart-container"><canvas x-ref="trendCanvas" id="trendChart"></canvas></div>
+                <div class="chart-container" style="position: relative; height: 300px;">
+                    <canvas x-ref="trendCanvas" id="trendChart" x-show="allData.length > 0"></canvas>
+                    <div x-show="!allData || allData.length === 0"
+                        class="flex items-center justify-center h-full text-gray-500 font-medium absolute inset-0">
+                        📊 İlk verinin girilmesi bekleniyor...
+                    </div>
+                </div>
             </div>
             <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">🥧 <span>Kasa Dağılımı</span></h3>
-                <div class="chart-container"><canvas x-ref="kasaCanvas" id="kasaChart"></canvas></div>
+                <div class="chart-container" style="position: relative; height: 300px;">
+                    <canvas x-ref="kasaCanvas" id="kasaChart" x-show="allData.length > 0"></canvas>
+                    <div x-show="!allData || allData.length === 0"
+                        class="flex items-center justify-center h-full text-gray-500 font-medium absolute inset-0">
+                        📊 İlk verinin girilmesi bekleniyor...
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -508,9 +519,13 @@
                 },
 
                 renderCharts(kasaData) {
+                    if (!this.allData || this.allData.length === 0) return;
+
                     this.$nextTick(() => {
-                        // Fix: Check references before accessing
-                        if (!this.$refs.trendCanvas || !this.$refs.kasaCanvas) return;
+                        const trendEl = this.$refs.trendCanvas;
+                        const kasaEl = this.$refs.kasaCanvas;
+
+                        if (!trendEl || !kasaEl) return;
 
                         // Destroy existing charts
                         if (this.charts.trend) this.charts.trend.destroy();
@@ -521,47 +536,51 @@
 
                         // Trend Chart
                         const last7 = [...this.allData].reverse().slice(-7);
-                        this.charts.trend = new Chart(this.$refs.trendCanvas, {
-                            type: 'line',
-                            data: {
-                                labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
-                                datasets: [{
-                                    label: 'Ciro',
-                                    data: last7.map(d => d.total),
-                                    borderColor: '#3b82f6',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: { legend: { labels: { color: textColor } } },
-                                scales: {
-                                    y: { ticks: { color: textColor } },
-                                    x: { ticks: { color: textColor } }
+                        if (last7.length > 0) {
+                            this.charts.trend = new Chart(trendEl, {
+                                type: 'line',
+                                data: {
+                                    labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
+                                    datasets: [{
+                                        label: 'Ciro',
+                                        data: last7.map(d => d.total),
+                                        borderColor: '#3b82f6',
+                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                        fill: true,
+                                        tension: 0.4
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { labels: { color: textColor } } },
+                                    scales: {
+                                        y: { ticks: { color: textColor } },
+                                        x: { ticks: { color: textColor } }
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
 
                         // Kasa Chart
-                        this.charts.kasa = new Chart(this.$refs.kasaCanvas, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
-                                datasets: [{
-                                    data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
-                                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
-                                    borderWidth: isDark ? 0 : 2
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-                            }
-                        });
+                        if (Object.values(kasaData).some(val => val > 0)) {
+                            this.charts.kasa = new Chart(kasaEl, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
+                                    datasets: [{
+                                        data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
+                                        backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
+                                        borderWidth: isDark ? 0 : 2
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
+                                }
+                            });
+                        }
                     });
                 },
 
