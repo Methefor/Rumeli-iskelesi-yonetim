@@ -525,11 +525,21 @@
                         const trendEl = this.$refs.trendCanvas;
                         const kasaEl = this.$refs.kasaCanvas;
 
-                        if (!trendEl || !kasaEl) return;
+                        // Double check references
+                        if (!trendEl || !kasaEl) {
+                            console.warn('Canvas elements not found, skipping chart render.');
+                            return;
+                        }
 
-                        // Destroy existing charts
-                        if (this.charts.trend) this.charts.trend.destroy();
-                        if (this.charts.kasa) this.charts.kasa.destroy();
+                        // Destroy existing charts safely
+                        if (this.charts.trend) {
+                            try { this.charts.trend.destroy(); } catch (e) { }
+                            this.charts.trend = null;
+                        }
+                        if (this.charts.kasa) {
+                            try { this.charts.kasa.destroy(); } catch (e) { }
+                            this.charts.kasa = null;
+                        }
 
                         const isDark = document.documentElement.classList.contains('dark');
                         const textColor = isDark ? '#94a3b8' : '#64748b';
@@ -537,49 +547,57 @@
                         // Trend Chart
                         const last7 = [...this.allData].reverse().slice(-7);
                         if (last7.length > 0) {
-                            this.charts.trend = new Chart(trendEl, {
-                                type: 'line',
-                                data: {
-                                    labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
-                                    datasets: [{
-                                        label: 'Ciro',
-                                        data: last7.map(d => d.total),
-                                        borderColor: '#3b82f6',
-                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                        fill: true,
-                                        tension: 0.4
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: { legend: { labels: { color: textColor } } },
-                                    scales: {
-                                        y: { ticks: { color: textColor } },
-                                        x: { ticks: { color: textColor } }
+                            try {
+                                this.charts.trend = new Chart(trendEl, {
+                                    type: 'line',
+                                    data: {
+                                        labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
+                                        datasets: [{
+                                            label: 'Ciro',
+                                            data: last7.map(d => d.total),
+                                            borderColor: '#3b82f6',
+                                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                            fill: true,
+                                            tension: 0.4
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { labels: { color: textColor } } },
+                                        scales: {
+                                            y: { ticks: { color: textColor } },
+                                            x: { ticks: { color: textColor } }
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            } catch (err) {
+                                console.error("Trend Chart Render Error:", err);
+                            }
                         }
 
                         // Kasa Chart
                         if (Object.values(kasaData).some(val => val > 0)) {
-                            this.charts.kasa = new Chart(kasaEl, {
-                                type: 'doughnut',
-                                data: {
-                                    labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
-                                    datasets: [{
-                                        data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
-                                        backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
-                                        borderWidth: isDark ? 0 : 2
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-                                }
-                            });
+                            try {
+                                this.charts.kasa = new Chart(kasaEl, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
+                                        datasets: [{
+                                            data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
+                                            backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
+                                            borderWidth: isDark ? 0 : 2
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
+                                    }
+                                });
+                            } catch (err) {
+                                console.error("Kasa Chart Render Error:", err);
+                            }
                         }
                     });
                 },
