@@ -382,9 +382,10 @@
 
                     filtered.forEach((item, idx) => {
                         // Parse numbers safely
-                        const z1 = parseFloat(item.rumeliZ1) || parseFloat(item.rumeliz1) || 0;
-                        const z2 = parseFloat(item.rumeliZ2) || parseFloat(item.rumeliz2) || 0;
-                        const be = parseFloat(item.balikEkmek) || parseFloat(item.balikekmek) || 0;
+                        // Parse numbers safely - keys must match Supabase snake_case columns
+                        const z1 = parseFloat(item.rumeli_z1) || 0;
+                        const z2 = parseFloat(item.rumeli_z2) || 0;
+                        const be = parseFloat(item.balik_ekmek) || 0;
                         const don = parseFloat(item.dondurma) || 0;
 
                         const rum = z1 + z2;
@@ -398,7 +399,7 @@
                         kasaData.z1 += z1; kasaData.z2 += z2; kasaData.balik += be; kasaData.dondurma += don;
 
                         // Cashier Analysis
-                        const cashier = item.cashierName || item.cashier_name || 'Bilinmiyor';
+                        const cashier = item.cashier_name || 'Bilinmiyor';
                         if (!cashierStats[cashier]) cashierStats[cashier] = 0;
                         cashierStats[cashier] += tot;
 
@@ -406,11 +407,11 @@
                         categoryStats['Gıda'] += parseInt(item.gida) || 0;
                         categoryStats['Kahvaltı'] += parseInt(item.kahvalti) || 0;
                         categoryStats['Kahve'] += parseInt(item.kahve) || 0;
-                        categoryStats['Meyve Suyu'] += parseInt(item.meyveSuyu) || parseInt(item.meyvesuyu) || 0;
-                        categoryStats['Sıcak İçecek'] += parseInt(item.sicakIcecek) || parseInt(item.sicakicecek) || 0;
-                        categoryStats['Soğuk İçecek'] += parseInt(item.sogukIcecek) || parseInt(item.sogukicecek) || 0;
+                        categoryStats['Meyve Suyu'] += parseInt(item.meyvesuyu) || 0;
+                        categoryStats['Sıcak İçecek'] += parseInt(item.sicak_icecek) || 0;
+                        categoryStats['Soğuk İçecek'] += parseInt(item.soguk_icecek) || 0;
                         categoryStats['Tatlı'] += parseInt(item.tatli) || 0;
-                        categoryStats['Dondurma (Adet)'] += parseInt(item.dondurmaAdet) || parseInt(item.dondurmaadet) || 0;
+                        categoryStats['Dondurma (Adet)'] += parseInt(item.dondurma_adet) || 0;
 
                         // Date-based Analysis
                         const dateStr = item.selectedDate || item.date;
