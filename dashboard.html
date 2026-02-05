@@ -340,6 +340,13 @@
                     let supabaseData = [];
                     let localData = [];
 
+                    // Wait for Supabase client to load (max 2 seconds)
+                    let attempts = 0;
+                    while (typeof window.fetchSalesRecords === 'undefined' && attempts < 20) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+
                     try {
                         // 1. Fetch from Supabase
                         if (typeof window.fetchSalesRecords === 'function') {
@@ -350,6 +357,8 @@
                                 supabaseData = data || [];
                                 console.log("Supabase'den Gelen:", supabaseData.length);
                             }
+                        } else {
+                            console.error("Supabase client failed to load after check.");
                         }
                     } catch (e) {
                         console.error("Supabase Fetch Exception:", e);
@@ -364,16 +373,7 @@
                     }
 
                     // 3. Merge Strategies
-                    // Using a Map to deduplicate based on timestamp if possible, or naive merge.
-                    // LocalStorage data assumes to NOT have an ID usually, or ID might conflict.
-                    // Supabase data has 'id'. LocalStorage usually has 'timestamp'.
-
-                    // Simple Merge: Add LocalStorage items that are NOT in Supabase (by naive check or just concat if we treat LS as 'unsynced')
-                    // For now, let's just concatenate but mark them. In a real app we'd sync.
-
-                    // If supabase is empty, show local. If both have data, show both? 
-                    // Let's combine them for visibility using the timestamp as a rough sort key later.
-
+                    // Combine data.
                     combinedData = [...supabaseData, ...localData];
 
                     console.log("Toplam Birleştirilmiş Veri:", combinedData.length);
