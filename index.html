@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="tr" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rumeli İskelesi Yönetim Sistemi - Günlük Veri Girişi">
+    <meta name="theme-color" content="#2563eb">
+
+    <title>Rumeli İskelesi - Veri Girişi</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <script>window.tailwind = { config: { theme: { extend: {} } } }; console.warn = (function (oldWarn) { return function () { if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('cdn.tailwindcss.com')) return; oldWarn.apply(console, arguments); }; })(console.warn);</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        * {
+            transition: all 0.2s ease;
+        }
+
+        .loading {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .success-message {
+            animation: slideInDown 0.3s ease-out;
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Dark Mode Transitions */
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .dark .bg-white {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border-color: #334155;
+        }
+
+        .dark .text-gray-900 {
+            color: #f8fafc;
+        }
+
+        .dark .text-gray-700 {
+            color: #e2e8f0;
+        }
+
+        .dark .text-gray-600 {
+            color: #94a3b8;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #0f172a;
+        }
+
+        .dark input,
+        .dark select,
+        .dark textarea {
+            background-color: #334155;
+            border-color: #475569;
+            color: white;
+        }
+
+        .dark input::placeholder,
+        .dark textarea::placeholder {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 antialiased" x-data="dataEntry()">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <span class="text-3xl">🏖️</span>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">Rumeli İskelesi</h1>
+                        <p class="text-sm text-gray-500">Yönetim Sistemi</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)"
+                        class="p-2 rounded-lg text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                        <span x-show="!darkMode">🌙</span>
+                        <span x-show="darkMode">☀️</span>
+                    </button>
+                    <button @click="showSettings = !showSettings"
+                        class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                        <i data-feather="settings" class="w-5 h-5"></i>
+                    </button>
+                    <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
+                        <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                    </a>
+                    <button @click="showInfo = !showInfo" class="text-gray-600 hover:text-gray-900">
+                        <i data-feather="info" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-8">
+
+        <!-- Date Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 mb-8 text-white">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex-1 w-full sm:w-auto">
+                    <p class="text-blue-100 text-sm mb-2">Tarih Seçin</p>
+                    <input type="date" x-model="selectedDate" @change="updateDateInfo"
+                        class="w-full sm:w-auto px-4 py-3 bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-xl text-white placeholder-blue-100 text-lg font-bold focus:ring-2 focus:ring-white focus:border-transparent">
+                    <p class="text-blue-100 text-lg mt-2" x-text="currentDay"></p>
+                </div>
+                <div class="text-left sm:text-right w-full sm:w-auto">
+                    <p class="text-blue-100 text-sm mb-2">Günlük Hedef</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <select x-model="targetType" @change="updateTarget"
+                            class="px-3 py-2 bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-lg text-white text-sm font-semibold focus:ring-2 focus:ring-white focus:border-transparent">
+                            <option value="weekday" class="text-gray-900">📅 Hafta İçi</option>
+                            <option value="weekend" class="text-gray-900">🎉 Hafta Sonu</option>
+                            <option value="special" class="text-gray-900">⭐ Özel Gün</option>
+                        </select>
+                    </div>
+                    <p class="text-3xl font-bold" x-text="formatCurrency(dailyTarget)"></p>
+                    <p class="text-blue-100 text-xs mt-1" x-text="targetLabel"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cashier Selection -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex items-center space-x-2 mb-4">
+                <span class="text-2xl">👤</span>
+                <h3 class="text-xl font-bold text-gray-900">Kasiyer Seçimi</h3>
+            </div>
+            <select x-model="formData.cashierName"
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                required>
+                <option value="" disabled selected>Kasiyer Seçiniz...</option>
+                <option value="Kasiyer 1">Kasiyer 1</option>
+                <option value="Kasiyer 2">Kasiyer 2</option>
+                <option value="Kasiyer 3">Kasiyer 3</option>
+                <option value="Kasiyer 4">Kasiyer 4</option>
+                <option value="Yönetici">Yönetici</option>
+            </select>
+        </div>
+
+        <!-- Quick Summary -->
+        <div x-show="todayTotal > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" x-transition>
+            <div class="bg-white rounded-xl shadow p-6">
+                <p class="text-gray-500 text-sm mb-2">Toplam Ciro</p>
+                <p class="text-2xl font-bold text-gray-900" x-text="formatCurrency(todayTotal)"></p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-6">
+                <p class="text-gray-500 text-sm mb-2">Hedef Farkı</p>
+                <p class="text-2xl font-bold" :class="todayTotal >= dailyTarget ? 'text-green-600' : 'text-red-600'"
+                    x-text="formatCurrency(todayTotal - dailyTarget)"></p>
+            </div>
+            <div class="bg-white rounded-xl shadow p-6">
+                <p class="text-gray-500 text-sm mb-2">Gerçekleşme</p>
+                <p class="text-2xl font-bold"
+                    :class="(todayTotal/dailyTarget)*100 >= 100 ? 'text-green-600' : 'text-orange-600'"
+                    x-text="'%' + ((todayTotal/dailyTarget)*100).toFixed(0)"></p>
+            </div>
+        </div>
+
+        <!-- Data Entry Form -->
+        <form @submit.prevent="submitData" class="space-y-6">
+
+            <!-- Kasa Ciroları -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-2 mb-6">
+                    <span class="text-2xl">💰</span>
+                    <h3 class="text-xl font-bold text-gray-900">Z Raporu - Kasa Ciroları</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🏪 Rumeli İskelesi Z1
+                        </label>
+                        <div class="relative">
+                            <input type="number" x-model.number="formData.rumeliZ1" @input="calculateTotal"
+                                placeholder="18000,50"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                                required min="0" step="0.01">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🏪 Rumeli İskelesi Z2
+                        </label>
+                        <div class="relative">
+                            <input type="number" x-model.number="formData.rumeliZ2" @input="calculateTotal"
+                                placeholder="15000,75"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                                required min="0" step="0.01">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🐟 Balık Ekmek Z
+                        </label>
+                        <div class="relative">
+                            <input type="number" x-model.number="formData.balikEkmek" @input="calculateTotal"
+                                placeholder="10000,00"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                                required min="0" step="0.01">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🍦 Dondurma Z
+                        </label>
+                        <div class="relative">
+                            <input type="number" x-model.number="formData.dondurma" @input="calculateTotal"
+                                placeholder="4500,25"
+                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                                required min="0" step="0.01">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Display -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-semibold text-gray-700">Toplam Ciro:</span>
+                        <span class="text-3xl font-bold text-blue-600" x-text="formatCurrency(todayTotal)"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kategori Satışları -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-2 mb-6">
+                    <span class="text-2xl">🍽️</span>
+                    <h3 class="text-xl font-bold text-gray-900">Kategori Satışları (Adet)</h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🍕 Gıda
+                        </label>
+                        <input type="number" x-model.number="formData.gida" placeholder="18"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🥐 Kahvaltı
+                        </label>
+                        <input type="number" x-model.number="formData.kahvalti" placeholder="12"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            ☕ Kahve
+                        </label>
+                        <input type="number" x-model.number="formData.kahve" placeholder="15"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🧃 Meyve Suyu
+                        </label>
+                        <input type="number" x-model.number="formData.meyveSuyu" placeholder="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🍵 Sıcak İçecekler
+                        </label>
+                        <input type="number" x-model.number="formData.sicakIcecek" placeholder="285"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🥤 Soğuk İçecekler
+                        </label>
+                        <input type="number" x-model.number="formData.sogukIcecek" placeholder="22"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🍰 Tatlı
+                        </label>
+                        <input type="number" x-model.number="formData.tatli" placeholder="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            🍦 Dondurma (Adet)
+                        </label>
+                        <input type="number" x-model.number="formData.dondurmaAdet" placeholder="56"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            📦 Depo
+                        </label>
+                        <input type="number" x-model.number="formData.depo" placeholder="0"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                            required min="0" step="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notlar -->
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="text-2xl">📝</span>
+                    <h3 class="text-xl font-bold text-gray-900">Notlar (İsteğe Bağlı)</h3>
+                </div>
+
+                <textarea x-model="formData.notlar" placeholder="Günle ilgili not varsa buraya yazabilirsiniz..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows="3"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button type="submit" :disabled="isSubmitting"
+                    class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+                    <span x-show="!isSubmitting">💾 Verileri Kaydet</span>
+                    <span x-show="isSubmitting" class="loading">⏳ Kaydediliyor...</span>
+                </button>
+
+                <button type="button" @click="viewDashboard"
+                    class="sm:w-48 bg-white text-gray-700 font-semibold py-4 px-6 rounded-xl shadow border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-2">
+                    <i data-feather="bar-chart-2" class="w-5 h-5"></i>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Success/Error Messages -->
+        <div x-show="message.show" x-transition
+            :class="message.type === 'success' ? 'bg-green-50 border-green-500 text-green-900' : 'bg-red-50 border-red-500 text-red-900'"
+            class="mt-6 p-4 rounded-xl border-l-4 success-message">
+            <p class="font-semibold" x-text="message.text"></p>
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div x-show="showSettings" x-transition @click.away="showSettings = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">⚙️ Hedef Ayarları</h3>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        📅 Hafta İçi Hedefi (₺)
+                    </label>
+                    <input type="number" x-model.number="targets.weekday" @change="saveTargets"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                        min="0" step="1000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        🎉 Hafta Sonu Hedefi (₺)
+                    </label>
+                    <input type="number" x-model.number="targets.weekend" @change="saveTargets"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                        min="0" step="1000">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        ⭐ Özel Gün Hedefi (₺)
+                    </label>
+                    <input type="number" x-model.number="targets.special" @change="saveTargets"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
+                        min="0" step="1000">
+                </div>
+
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <p class="text-sm text-blue-900"><strong>💡 Not:</strong> Hedefler otomatik kaydedilir. Veri
+                        girişinde dropdown'dan gün tipini seçebilirsiniz.</p>
+                </div>
+            </div>
+
+            <button @click="showSettings = false"
+                class="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700">
+                Tamam
+            </button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div x-show="showInfo" x-transition @click.away="showInfo = false"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">📱 Kullanım Kılavuzu</h3>
+            <div class="space-y-3 text-gray-700">
+                <p><strong>1.</strong> Tarih seçin (varsayılan: bugün)</p>
+                <p><strong>2.</strong> Gün tipini seçin (Hafta İçi/Sonu/Özel)</p>
+                <p><strong>3.</strong> Z raporlarını toplayın</p>
+                <p><strong>4.</strong> Formu doldurun (kuruş hassasiyetinde)</p>
+                <p><strong>5.</strong> "Verileri Kaydet" butonuna basın</p>
+            </div>
+            <div class="mt-6 p-4 bg-blue-50 rounded-xl space-y-1">
+                <p class="text-sm text-blue-900"><strong>📅 Hafta İçi:</strong> <span
+                        x-text="formatCurrency(targets.weekday)"></span></p>
+                <p class="text-sm text-blue-900"><strong>🎉 Hafta Sonu:</strong> <span
+                        x-text="formatCurrency(targets.weekend)"></span></p>
+                <p class="text-sm text-blue-900"><strong>⭐ Özel Gün:</strong> <span
+                        x-text="formatCurrency(targets.special)"></span></p>
+            </div>
+            <button @click="showInfo = false"
+                class="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700">
+                Anladım
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { insertSalesRecord } from './js/supabase-client.js';
+        window.insertSalesRecord = insertSalesRecord;
+    </script>
+
+
+    <script>
+        feather.replace();
+
+        function dataEntry() {
+            return {
+                selectedDate: new Date().toISOString().split('T')[0],
+                currentDate: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
+                currentDay: new Date().toLocaleDateString('tr-TR', { weekday: 'long' }),
+                targetType: 'weekday',
+                targets: {
+                    weekday: parseInt(localStorage.getItem('target_weekday')) || 150000,
+                    weekend: parseInt(localStorage.getItem('target_weekend')) || 200000,
+                    special: parseInt(localStorage.getItem('target_special')) || 250000
+                },
+                dailyTarget: 150000,
+                targetLabel: '',
+                todayTotal: 0,
+                isSubmitting: false,
+                showInfo: false,
+                showSettings: false,
+                message: {
+                    show: false,
+                    type: 'success',
+                    text: ''
+                },
+                formData: {
+                    cashierName: '',
+                    rumeliZ1: null,
+                    rumeliZ2: null,
+                    balikEkmek: null,
+                    dondurma: null,
+                    gida: null,
+                    kahvalti: null,
+                    kahve: null,
+                    meyveSuyu: null,
+                    sicakIcecek: null,
+                    sogukIcecek: null,
+                    tatli: null,
+                    dondurmaAdet: null,
+                    depo: null,
+                    notlar: ''
+                },
+
+                init() {
+                    this.detectDayType();
+                    this.updateTarget();
+                },
+
+                detectDayType() {
+                    const date = new Date(this.selectedDate + 'T00:00:00');
+                    const dayOfWeek = date.getDay();
+
+                    // 0 = Pazar, 6 = Cumartesi
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        this.targetType = 'weekend';
+                    } else {
+                        this.targetType = 'weekday';
+                    }
+                },
+
+                updateDateInfo() {
+                    const date = new Date(this.selectedDate + 'T00:00:00');
+                    this.currentDate = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    this.currentDay = date.toLocaleDateString('tr-TR', { weekday: 'long' });
+                    this.detectDayType();
+                    this.updateTarget();
+                },
+
+                updateTarget() {
+                    this.dailyTarget = this.targets[this.targetType];
+
+                    switch (this.targetType) {
+                        case 'weekday':
+                            this.targetLabel = 'Pazartesi-Cuma';
+                            break;
+                        case 'weekend':
+                            this.targetLabel = 'Cumartesi-Pazar';
+                            break;
+                        case 'special':
+                            this.targetLabel = 'Bayram/Özel Gün';
+                            break;
+                    }
+                },
+
+                saveTargets() {
+                    localStorage.setItem('target_weekday', this.targets.weekday.toString());
+                    localStorage.setItem('target_weekend', this.targets.weekend.toString());
+                    localStorage.setItem('target_special', this.targets.special.toString());
+                    this.updateTarget();
+                    console.log('✅ Hedefler kaydedildi');
+                },
+
+                calculateTotal() {
+                    this.todayTotal = (this.formData.rumeliZ1 || 0) +
+                        (this.formData.rumeliZ2 || 0) +
+                        (this.formData.balikEkmek || 0) +
+                        (this.formData.dondurma || 0);
+                },
+
+                formatCurrency(value) {
+                    return new Intl.NumberFormat('tr-TR', {
+                        style: 'currency',
+                        currency: 'TRY',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(value || 0);
+                },
+
+                async submitData() {
+                    if (!this.formData.cashierName) {
+                        this.showMessage('error', '⚠️ Lütfen bir kasiyer seçiniz.');
+                        return;
+                    }
+
+                    this.isSubmitting = true;
+
+                    this.formData.selectedDate = this.selectedDate;
+                    this.formData.targetType = this.targetType;
+                    this.formData.dailyTarget = this.dailyTarget;
+
+                    try {
+                        if (typeof window.insertSalesRecord === 'function') {
+                            const { data, error } = await window.insertSalesRecord(this.formData);
+
+                            if (error) throw error;
+
+                            this.showMessage('success', '✅ Veriler Supabase veritabanına kaydedildi!');
+                            setTimeout(() => {
+                                window.location.href = 'dashboard.html';
+                            }, 1500);
+                        } else {
+                            throw new Error('Supabase client not loaded');
+                        }
+                    } catch (error) {
+                        console.error('Save error:', error);
+                        this.saveToLocalStorage(); // Fallback
+                        this.showMessage('error', '⚠️ Bağlantı hatası! Veriler geçici olarak cihaza kaydedildi.');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                saveToLocalStorage() {
+                    const data = {
+                        timestamp: new Date().toISOString(),
+                        date: this.selectedDate,
+                        ...this.formData,
+                        total: this.todayTotal,
+                        target: this.dailyTarget,
+                        targetType: this.targetType,
+                        synced: false
+                    };
+
+                    let allData = JSON.parse(localStorage.getItem('rumeliData') || '[]');
+                    allData.push(data);
+                    localStorage.setItem('rumeliData', JSON.stringify(allData));
+                },
+
+                showMessage(type, text) {
+                    this.message = { show: true, type, text };
+                    setTimeout(() => {
+                        this.message.show = false;
+                    }, 5000);
+                },
+
+                viewDashboard() {
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        }
+    </script>
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>

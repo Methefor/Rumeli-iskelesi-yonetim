@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="tr" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rumeli İskelesi - Dashboard</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="theme-color" content="#3b82f6">
+
+    <script>window.tailwind = { config: { theme: { extend: {} } } }; console.warn = (function (oldWarn) { return function () { if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('cdn.tailwindcss.com')) return; oldWarn.apply(console, arguments); }; })(console.warn);</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Karanlık Mod Geçiş Efekti */
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .dark body {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .dark .bg-white {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border-color: #334155;
+        }
+
+        .dark .text-gray-500 {
+            color: #94a3b8;
+        }
+
+        .dark .bg-gray-50 {
+            background-color: #334155;
+        }
+
+        .dark table thead {
+            background-color: #1e293b;
+        }
+
+        .dark input,
+        .dark select {
+            background-color: #334155;
+            border-color: #475569;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50" x-data="dashboard()" x-init="init()">
+
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">💰</span>
+                    <div>
+                        <h1 class="text-xl font-bold">Rumeli Yönetim</h1>
+                        <p class="text-sm text-gray-500">Kasa Analiz Sistemi</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)"
+                        class="p-2 rounded-lg border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <span x-show="!darkMode">🌙</span>
+                        <span x-show="darkMode">☀️</span>
+                    </button>
+                    <a href="index.html"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm decoration-0">
+                        ➕ Veri Girişi
+                    </a>
+                    <button @click="loadData(); triggerCelebration()"
+                        class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 shadow-sm transition-all active:scale-95">
+                        🔄 Yenile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">
+                        <span x-text="selectedMonthName"></span> <span x-text="selectedYear"></span>
+                    </h2>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <span>Kayıt: <strong class="dark:text-blue-400" x-text="monthRecords"></strong> gün</span>
+                        <span x-show="selectedItems.length > 0" class="text-red-500 font-semibold">
+                            • <span x-text="selectedItems.length"></span> seçili
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                    <select x-model="selectedMonth" @change="loadData()"
+                        class="px-4 py-2 border rounded-lg font-semibold">
+                        <option value="all">📅 Tüm Aylar</option>
+                        <option value="2026-01">Ocak 2026</option>
+                        <option value="2026-02">Şubat 2026</option>
+                    </select>
+
+                    <button @click="deleteSelected()" x-show="selectedItems.length > 0"
+                        class="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
+                        🗑️ Seçilenleri Sil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div
+                class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
+                <p class="text-sm opacity-90 mb-1 font-medium text-blue-100">Toplam Ciro</p>
+                <p class="text-3xl font-black" x-text="formatCurrency(stats.total)"></p>
+            </div>
+
+            <div
+                class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
+                <p class="text-sm opacity-90 mb-1 font-medium text-purple-100">Rumeli (Z1+Z2)</p>
+                <p class="text-3xl font-black" x-text="formatCurrency(stats.rumeli)"></p>
+            </div>
+
+            <div
+                class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
+                <p class="text-sm opacity-90 mb-1 font-medium text-orange-100">Balık Ekmek</p>
+                <p class="text-3xl font-black" x-text="formatCurrency(stats.balik)"></p>
+            </div>
+
+            <div
+                class="bg-gradient-to-br from-pink-600 to-pink-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
+                <p class="text-sm opacity-90 mb-1 font-medium text-pink-100">Dondurma</p>
+                <p class="text-3xl font-black" x-text="formatCurrency(stats.dondurma)"></p>
+            </div>
+        </div>
+
+        <!-- Advanced Analytics Cards -->
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 px-1">📊 Detaylı Analiz</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+
+            <!-- Cashier Champion -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-yellow-400">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🏆 Kasa Şampiyonu</p>
+                        <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
+                            x-text="analytics.bestCashier.name"></p>
+                        <p class="text-sm text-yellow-600 font-semibold"
+                            x-text="formatCurrency(analytics.bestCashier.amount)"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Category -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-blue-500">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🔥 Popüler Kategori</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1" x-text="analytics.topCategory.name">
+                    </p>
+                    <p class="text-xs text-blue-500 font-semibold">
+                        <span x-text="analytics.topCategory.count"></span> adet (%<span
+                            x-text="analytics.topCategory.share"></span>)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Weekly Summary -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-green-500">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">📅 Bu Hafta (Pzt-Paz)</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
+                        x-text="formatCurrency(analytics.weekly.total)"></p>
+                    <p class="text-xs text-gray-500">Ort: <span x-text="formatCurrency(analytics.weekly.avg)"></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Weekday vs Weekend -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-purple-500">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🗓️ H.İçi vs H.Sonu</p>
+                    <div class="flex justify-between mt-1 items-end">
+                        <div>
+                            <span class="text-xs text-gray-500">H.İçi</span>
+                            <div class="font-bold text-sm" x-text="formatCurrency(analytics.dayType.weekdayAvg)"></div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-gray-500">H.Sonu</span>
+                            <div class="font-bold text-sm text-purple-600"
+                                x-text="formatCurrency(analytics.dayType.weekendAvg)"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Forecast -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-indigo-500">
+                <div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🔮 Ay Sonu Tahmini</p>
+                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
+                        x-text="formatCurrency(analytics.forecast)"></p>
+                    <p class="text-xs text-indigo-400">Mevcut hıza göre</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
+                <div class="chart-container"><canvas x-ref="trendCanvas" id="trendChart"></canvas></div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">🥧 <span>Kasa Dağılımı</span></h3>
+                <div class="chart-container"><canvas x-ref="kasaCanvas" id="kasaChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
+            <h3 class="text-lg font-bold mb-4">📋 Kayıt Detayları</h3>
+            <div class="overflow-x-auto rounded-xl border dark:border-gray-700">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 border-b dark:border-gray-700 text-gray-600 dark:text-gray-300">
+                        <tr>
+                            <th class="p-4"><input type="checkbox" @change="toggleAll($event)" class="rounded"></th>
+                            <th class="p-4">Tarih</th>
+                            <th class="p-4 text-right">Toplam</th>
+                            <th class="p-4 text-right">Rumeli</th>
+                            <th class="p-4 text-right">Balık</th>
+                            <th class="p-4 text-right">Dondurma</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y dark:divide-gray-700">
+                        <template x-for="(row, index) in allData" :key="index">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <td class="p-4"><input type="checkbox" :checked="selectedItems.includes(index)"
+                                        @change="toggleSelect(index)" class="rounded"></td>
+                                <td class="p-4 text-sm font-medium" x-text="row.date"></td>
+                                <td class="p-4 text-right font-bold text-blue-600 dark:text-blue-400"
+                                    x-text="formatCurrency(row.total)"></td>
+                                <td class="p-4 text-right" x-text="formatCurrency(row.rumeli)"></td>
+                                <td class="p-4 text-right" x-text="formatCurrency(row.balik)"></td>
+                                <td class="p-4 text-right" x-text="formatCurrency(row.dondurma)"></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { fetchSalesRecords } from './js/supabase-client.js';
+        window.fetchSalesRecords = fetchSalesRecords;
+    </script>
+    <script>
+        function dashboard() {
+            return {
+                selectedMonth: new Date().toISOString().slice(0, 7),
+                selectedMonthName: '',
+                selectedYear: '',
+                monthRecords: 0,
+                selectedItems: [],
+                stats: { total: 0, rumeli: 0, balik: 0, dondurma: 0 },
+                analytics: {
+                    bestCashier: { name: '-', amount: 0 },
+                    topCategory: { name: '-', count: 0, share: 0 },
+                    weekly: { total: 0, avg: 0 },
+                    dayType: { weekdayTotal: 0, weekdayAvg: 0, weekendTotal: 0, weekendAvg: 0 },
+                    forecast: 0
+                },
+                allData: [],
+                charts: {},
+
+                async init() {
+                    this.updateMonthName();
+                    await this.loadData();
+                },
+
+                triggerCelebration() {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#3b82f6', '#8b5cf6', '#f59e0b']
+                    });
+                },
+
+                async loadData() {
+                    let data = [];
+                    try {
+                        // Use Supabase client if available, else fallback
+                        if (typeof window.fetchSalesRecords === 'function') {
+                            const { data: supabaseData, error } = await window.fetchSalesRecords();
+                            if (error) throw error;
+                            data = supabaseData || [];
+                        } else {
+                            data = JSON.parse(localStorage.getItem('rumeliData') || '[]');
+                        }
+                    } catch (e) {
+                        console.error('Data load error:', e);
+                        data = JSON.parse(localStorage.getItem('rumeliData') || '[]');
+                    }
+                    this.processData(data);
+                },
+
+                processData(rawData) {
+                    this.updateMonthName();
+                    this.selectedItems = [];
+
+                    // Filter by selected month
+                    let filtered = rawData.filter(item => {
+                        const itemDate = item.selectedDate || item.date;
+                        if (!itemDate) return false;
+                        if (this.selectedMonth === 'all') return true;
+                        return itemDate.startsWith(this.selectedMonth);
+                    });
+
+                    this.monthRecords = filtered.length;
+
+                    // Initialize accumulators
+                    let total = 0, rumeli = 0, balik = 0, dondurma = 0;
+                    let kasaData = { z1: 0, z2: 0, balik: 0, dondurma: 0 };
+                    let displayData = [];
+
+                    // Analytics accumulators
+                    let cashierStats = {};
+                    let categoryStats = {
+                        'Gıda': 0, 'Kahvaltı': 0, 'Kahve': 0, 'Meyve Suyu': 0,
+                        'Sıcak İçecek': 0, 'Soğuk İçecek': 0, 'Tatlı': 0, 'Dondurma (Adet)': 0
+                    };
+                    let weeklyTotal = 0, weeklyDays = 0;
+                    let weekdayTotal = 0, weekdayDays = 0;
+                    let weekendTotal = 0, weekendDays = 0;
+
+                    // Date helpers for Weekly Analysis
+                    const today = new Date();
+                    const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay() + 1)); // Monday
+                    currentWeekStart.setHours(0, 0, 0, 0);
+                    const currentWeekEnd = new Date(currentWeekStart);
+                    currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+
+                    filtered.forEach((item, idx) => {
+                        // Parse numbers safely
+                        const z1 = parseFloat(item.rumeliZ1) || parseFloat(item.rumeliz1) || 0;
+                        const z2 = parseFloat(item.rumeliZ2) || parseFloat(item.rumeliz2) || 0;
+                        const be = parseFloat(item.balikEkmek) || parseFloat(item.balikekmek) || 0;
+                        const don = parseFloat(item.dondurma) || 0;
+
+                        const rum = z1 + z2;
+                        const tot = rum + be + don;
+
+                        // Basic Stats
+                        total += tot;
+                        rumeli += rum;
+                        balik += be;
+                        dondurma += don;
+                        kasaData.z1 += z1; kasaData.z2 += z2; kasaData.balik += be; kasaData.dondurma += don;
+
+                        // Cashier Analysis
+                        const cashier = item.cashierName || item.cashier_name || 'Bilinmiyor';
+                        if (!cashierStats[cashier]) cashierStats[cashier] = 0;
+                        cashierStats[cashier] += tot;
+
+                        // Category Analysis
+                        categoryStats['Gıda'] += parseInt(item.gida) || 0;
+                        categoryStats['Kahvaltı'] += parseInt(item.kahvalti) || 0;
+                        categoryStats['Kahve'] += parseInt(item.kahve) || 0;
+                        categoryStats['Meyve Suyu'] += parseInt(item.meyveSuyu) || parseInt(item.meyvesuyu) || 0;
+                        categoryStats['Sıcak İçecek'] += parseInt(item.sicakIcecek) || parseInt(item.sicakicecek) || 0;
+                        categoryStats['Soğuk İçecek'] += parseInt(item.sogukIcecek) || parseInt(item.sogukicecek) || 0;
+                        categoryStats['Tatlı'] += parseInt(item.tatli) || 0;
+                        categoryStats['Dondurma (Adet)'] += parseInt(item.dondurmaAdet) || parseInt(item.dondurmaadet) || 0;
+
+                        // Date-based Analysis
+                        const dateStr = item.selectedDate || item.date;
+                        const dateObj = new Date(dateStr);
+                        const day = dateObj.getDay(); // 0 is Sunday
+
+                        // Weekly (Current Week)
+                        if (dateObj >= currentWeekStart && dateObj <= currentWeekEnd) {
+                            weeklyTotal += tot;
+                            weeklyDays++;
+                        }
+
+                        // Weekday vs Weekend
+                        if (day === 0 || day === 6) {
+                            weekendTotal += tot;
+                            weekendDays++;
+                        } else {
+                            weekdayTotal += tot;
+                            weekdayDays++;
+                        }
+
+                        displayData.push({
+                            originalIndex: rawData.indexOf(item),
+                            date: dateStr,
+                            total: tot,
+                            rumeli: rum,
+                            balik: be,
+                            dondurma: don,
+                            cashier: cashier,
+                            dailyTarget: item.dailyTarget || item.daily_target
+                        });
+                    });
+
+                    this.stats = { total, rumeli, balik, dondurma };
+
+                    // Calculates Analytics Objects
+                    // 1. Best Cashier
+                    let bestCashierName = '-';
+                    let bestCashierAmount = 0;
+                    for (const [name, amount] of Object.entries(cashierStats)) {
+                        if (amount > bestCashierAmount) {
+                            bestCashierAmount = amount;
+                            bestCashierName = name;
+                        }
+                    }
+                    this.analytics.bestCashier = { name: bestCashierName, amount: bestCashierAmount };
+
+                    // 2. Top Category
+                    let topCatName = '-';
+                    let topCatCount = 0;
+                    let totalItems = 0;
+                    for (const [name, count] of Object.entries(categoryStats)) {
+                        totalItems += count;
+                        if (count > topCatCount) {
+                            topCatCount = count;
+                            topCatName = name;
+                        }
+                    }
+                    this.analytics.topCategory = {
+                        name: topCatName,
+                        count: topCatCount,
+                        share: totalItems > 0 ? ((topCatCount / totalItems) * 100).toFixed(1) : 0
+                    };
+
+                    // 3. Weekly Stats
+                    this.analytics.weekly = {
+                        total: weeklyTotal,
+                        avg: weeklyDays > 0 ? weeklyTotal / weeklyDays : 0
+                    };
+
+                    // 4. Day Type Stats
+                    this.analytics.dayType = {
+                        weekdayTotal: weekdayTotal,
+                        weekdayAvg: weekdayDays > 0 ? weekdayTotal / weekdayDays : 0,
+                        weekendTotal: weekendTotal,
+                        weekendAvg: weekendDays > 0 ? weekendTotal / weekendDays : 0
+                    };
+
+                    // 5. Forecast
+                    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+                    const currentDay = new Date().getDate();
+                    if (this.selectedMonth === new Date().toISOString().slice(0, 7)) {
+                        // Only forecast if viewing current month
+                        const dailyAvg = currentDay > 0 ? total / currentDay : 0;
+                        this.analytics.forecast = dailyAvg * daysInMonth;
+                    } else {
+                        this.analytics.forecast = total;
+                    }
+
+                    this.allData = displayData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    // Celebration Check
+                    if (this.allData.length > 0) {
+                        const latest = this.allData[0];
+                        const target = latest.dailyTarget || 150000;
+                        if (latest.total >= target && new Date(latest.date).toDateString() === new Date().toDateString()) {
+                            this.triggerCelebration();
+                        }
+                    }
+
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            this.renderCharts(kasaData);
+                        }, 100);
+                    });
+                },
+
+                renderCharts(kasaData) {
+                    this.$nextTick(() => {
+                        // Fix: Check references before accessing
+                        if (!this.$refs.trendCanvas || !this.$refs.kasaCanvas) return;
+
+                        // Destroy existing charts
+                        if (this.charts.trend) this.charts.trend.destroy();
+                        if (this.charts.kasa) this.charts.kasa.destroy();
+
+                        const isDark = document.documentElement.classList.contains('dark');
+                        const textColor = isDark ? '#94a3b8' : '#64748b';
+
+                        // Trend Chart
+                        const last7 = [...this.allData].reverse().slice(-7);
+                        this.charts.trend = new Chart(this.$refs.trendCanvas, {
+                            type: 'line',
+                            data: {
+                                labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
+                                datasets: [{
+                                    label: 'Ciro',
+                                    data: last7.map(d => d.total),
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    fill: true,
+                                    tension: 0.4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { labels: { color: textColor } } },
+                                scales: {
+                                    y: { ticks: { color: textColor } },
+                                    x: { ticks: { color: textColor } }
+                                }
+                            }
+                        });
+
+                        // Kasa Chart
+                        this.charts.kasa = new Chart(this.$refs.kasaCanvas, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
+                                datasets: [{
+                                    data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
+                                    backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
+                                    borderWidth: isDark ? 0 : 2
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
+                            }
+                        });
+                    });
+                },
+
+                updateMonthName() {
+                    if (this.selectedMonth === 'all') {
+                        this.selectedMonthName = 'Tüm Zamanlar';
+                        this.selectedYear = '';
+                    } else {
+                        const [year, month] = this.selectedMonth.split('-');
+                        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+                        this.selectedMonthName = monthNames[parseInt(month) - 1];
+                        this.selectedYear = year;
+                    }
+                },
+                toggleSelect(index) {
+                    const i = this.selectedItems.indexOf(index);
+                    if (i > -1) this.selectedItems.splice(i, 1);
+                    else this.selectedItems.push(index);
+                },
+                toggleAll(e) {
+                    this.selectedItems = e.target.checked ? this.allData.map((_, i) => i) : [];
+                },
+                deleteSelected() {
+                    // Optional: Implement delete from Supabase if needed, for now locally or warn user
+                    alert('Toplu silme özelliği veritabanı güvenliği için devre dışı bırakıldı.');
+                },
+                formatCurrency(val) {
+                    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val || 0);
+                }
+            }
+        }
+    </script>
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
