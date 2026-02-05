@@ -15,22 +15,22 @@ export async function insertSalesRecord(data) {
   // Map frontend camelCase to database snake_case columns where necessary
   // or rely on frontend using same names if table columns match.
   // Based on request, table cols are: date, cashier_name, rumeliZ1, rumeliZ2, balikEkmek, dondurma, etc.
-  
+
   const record = {
     date: data.selectedDate,
     cashier_name: data.cashierName,
-    rumeliZ1: data.rumeliZ1,
-    rumeliZ2: data.rumeliZ2,
-    balikEkmek: data.balikEkmek,
+    rumeli_z1: data.rumeliZ1,
+    rumeli_z2: data.rumeliZ2,
+    balik_ekmek: data.balikEkmek,
     dondurma: data.dondurma,
     gida: data.gida,
     kahve: data.kahve,
-    sicakIcecek: data.sicakIcecek,
-    sogukIcecek: data.sogukIcecek,
+    sicak_icecek: data.sicakIcecek,
+    soguk_icecek: data.sogukIcecek,
     tatli: data.tatli,
-    meyveSuyu: data.meyveSuyu,
+    meyvesuyu: data.meyveSuyu, // Note: Schema might use meyveSuyu or meyvesuyu, usually lowercase in PG
     kahvalti: data.kahvalti,
-    dondurmaAdet: data.dondurmaAdet,
+    dondurma_adet: data.dondurmaAdet,
     depo: data.depo,
     notlar: data.notlar,
     daily_target: data.dailyTarget,
@@ -45,17 +45,17 @@ export async function insertSalesRecord(data) {
  * @returns {Promise<{data: any, error: any}>}
  */
 export async function fetchSalesRecords() {
-    // Determine the first day of the current month
-    const today = new Date();
-    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-    // Format as YYYY-MM-DD
-    const firstDayStr = firstDay.toISOString().split('T')[0];
+  // Determine the first day of the current month
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+  // Format as YYYY-MM-DD
+  const firstDayStr = firstDay.toISOString().split('T')[0];
 
-    // Select * and order by date descending
-    // Optionally filter by month here if needed, but dashboard does client-side filtering too.
-    // Let's fetch all for now to support the "All Months" view, or limit to last 3 months if data grows.
-    return await supabase
-        .from('sales_records')
-        .select('*')
-        .order('date', { ascending: false })
+  // Select * and order by date descending
+  // Optionally filter by month here if needed, but dashboard does client-side filtering too.
+  // Let's fetch all for now to support the "All Months" view, or limit to last 3 months if data grows.
+  return await supabase
+    .from('sales_records')
+    .select('*')
+    .order('date', { ascending: false })
 }
