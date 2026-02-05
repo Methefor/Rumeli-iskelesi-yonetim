@@ -234,7 +234,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border dark:border-gray-700">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
                 <div class="chart-container" style="position: relative; height: 300px;">
                     <canvas x-ref="trendCanvas" id="trendChart" x-show="allData.length > 0"></canvas>
@@ -244,7 +244,7 @@
                     </div>
                 </div>
             </div>
-            <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border dark:border-gray-700">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">🥧 <span>Kasa Dağılımı</span></h3>
                 <div class="chart-container" style="position: relative; height: 300px;">
                     <canvas x-ref="kasaCanvas" id="kasaChart" x-show="allData.length > 0"></canvas>
@@ -516,6 +516,7 @@
                         }
 
                         displayData.push({
+                            id: item.id,
                             originalIndex: rawData.indexOf(item),
                             date: dateStr,
                             total: tot,
@@ -602,7 +603,12 @@
                 },
 
                 renderCharts(kasaData) {
-                    if (!this.allData || this.allData.length === 0) return;
+                    console.log("RenderCharts Called with:", kasaData);
+                    console.log("AllData for charts:", this.allData);
+                    if (!this.allData || this.allData.length === 0) {
+                        console.warn("No data for charts");
+                        return;
+                    }
 
                     this.$nextTick(() => {
                         const trendEl = this.$refs.trendCanvas;
