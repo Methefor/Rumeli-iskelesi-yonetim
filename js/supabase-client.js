@@ -59,3 +59,15 @@ export async function fetchSalesRecords() {
     .select('*')
     .order('date', { ascending: false })
 }
+
+/**
+ * Deletes a sales record from Supabase
+ * @param {string|number} id - The ID of the record to delete
+ * @returns {Promise<{data: any, error: any}>}
+ */
+export async function deleteSalesRecord(id) {
+  return await supabase
+    .from('sales_records')
+    .delete()
+    .eq('id', id)
+}

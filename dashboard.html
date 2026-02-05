@@ -268,6 +268,7 @@
                             <th class="p-4 text-right">Rumeli</th>
                             <th class="p-4 text-right">Balık</th>
                             <th class="p-4 text-right">Dondurma</th>
+                            <th class="p-4"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y dark:divide-gray-700">
@@ -281,6 +282,13 @@
                                 <td class="p-4 text-right" x-text="formatCurrency(row.rumeli)"></td>
                                 <td class="p-4 text-right" x-text="formatCurrency(row.balik)"></td>
                                 <td class="p-4 text-right" x-text="formatCurrency(row.dondurma)"></td>
+                                <td class="p-4 text-right">
+                                    <button @click="deleteRecord(row.id, row.cashier_name)"
+                                        class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors"
+                                        title="Kaydı Sil">
+                                        🗑️
+                                    </button>
+                                </td>
                             </tr>
                         </template>
                     </tbody>
@@ -290,8 +298,9 @@
     </main>
 
     <script type="module">
-        import { fetchSalesRecords } from './js/supabase-client.js';
+        import { fetchSalesRecords, deleteSalesRecord } from './js/supabase-client.js';
         window.fetchSalesRecords = fetchSalesRecords;
+        window.deleteSalesRecord = deleteSalesRecord;
     </script>
     <script>
         function dashboard() {
@@ -334,14 +343,38 @@
                             const { data: supabaseData, error } = await window.fetchSalesRecords();
                             if (error) throw error;
                             data = supabaseData || [];
+                            console.log("Gelen Veri:", data); // Debugging
                         } else {
                             data = JSON.parse(localStorage.getItem('rumeliData') || '[]');
                         }
                     } catch (e) {
                         console.error('Data load error:', e);
+                        alert('Veriler yüklenirken bir hata oluştu: ' + e.message);
                         data = JSON.parse(localStorage.getItem('rumeliData') || '[]');
                     }
                     this.processData(data);
+                },
+
+                async deleteRecord(id, cashierName) {
+                    if (cashierName !== "Metehan Arslan (Mesul Müdür)" && !confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
+                        return;
+                    }
+
+                    if (confirm("Kayıt kalıcı olarak silinecek. Onaylıyor musunuz?")) {
+                        try {
+                            if (typeof window.deleteSalesRecord === 'function') {
+                                const { error } = await window.deleteSalesRecord(id);
+                                if (error) throw error;
+                                alert("Kayıt başarıyla silindi.");
+                                await this.loadData();
+                            } else {
+                                alert("Silme fonksiyonu yüklenemedi.");
+                            }
+                        } catch (err) {
+                            console.error("Delete error:", err);
+                            alert("Silme işlemi başarısız: " + err.message);
+                        }
+                    }
                 },
 
                 processData(rawData) {
