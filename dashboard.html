@@ -1,739 +1,457 @@
 <!DOCTYPE html>
-<html lang="tr" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
-
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rumeli İskelesi - Dashboard</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
-
-    <meta name="theme-color" content="#3b82f6">
-
-    <script>window.tailwind = { config: { theme: { extend: {} } } }; console.warn = (function (oldWarn) { return function () { if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('cdn.tailwindcss.com')) return; oldWarn.apply(console, arguments); }; })(console.warn);</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <meta name="theme-color" content="#0a1628">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+        :root{--bg:#0a1628;--card:#111d32;--input:#162340;--brd:#1e3a5f;--txt:#e8edf5;--txt2:#7a8ba8;--txt3:#4a5d7a;--acc:#3b82f6;--glow:rgba(59,130,246,.12);--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--purple:#8b5cf6;--pink:#ec4899;--cyan:#06b6d4}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 
-        * {
-            font-family: 'Inter', sans-serif;
-        }
+        .nav{background:var(--card);border-bottom:1px solid var(--brd);padding:14px 20px;position:sticky;top:0;z-index:100}
+        .nav-in{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+        .nbrand{display:flex;align-items:center;gap:10px}
+        .nicon{width:36px;height:36px;background:linear-gradient(135deg,#1e40af,#3b82f6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .ntitle{font-weight:700;font-size:16px}.nsub{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+        .nacts{display:flex;gap:8px}
+        .nb{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--brd);background:var(--input);color:var(--txt);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+        .nb:hover{border-color:var(--acc);background:var(--glow)}.nb.blue{background:var(--acc);border-color:var(--acc);color:#fff}
 
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
-        }
+        .main{max-width:1400px;margin:0 auto;padding:24px 16px 80px}
 
-        /* Karanlık Mod Geçiş Efekti */
-        body {
-            transition: background-color 0.3s, color 0.3s;
-        }
+        /* Hero - Haftanın Elemanı */
+        .hero{border-radius:18px;padding:32px;margin-bottom:24px;text-align:center;position:relative;overflow:hidden}
+        .hero.gold{background:linear-gradient(135deg,#78350f,#b45309,#f59e0b)}
+        .hero.blue{background:linear-gradient(135deg,#1e3a8a,#2563eb,#60a5fa)}
+        .hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 70%);pointer-events:none}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.9);margin-bottom:12px}
+        .hero-name{font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;text-shadow:0 2px 10px rgba(0,0,0,.3)}
+        .hero-stat{font-size:15px;color:rgba(255,255,255,.8);margin-bottom:4px}
+        .hero-amt{font-family:'JetBrains Mono',monospace;font-size:42px;font-weight:700;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,.3)}
+        .hero-sub{font-size:13px;color:rgba(255,255,255,.6);margin-top:8px}
 
-        .dark body {
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
+        /* Kasiyerler Sıralaması */
+        .rank-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
+        .rank-card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px;display:flex;align-items:center;gap:14px;transition:transform .2s,border-color .2s}
+        .rank-card:hover{transform:translateY(-2px);border-color:var(--acc)}
+        .rank-pos{font-size:24px;font-weight:800;width:36px;text-align:center}
+        .rank-pos.p1{color:var(--orange)}.rank-pos.p2{color:#94a3b8}.rank-pos.p3{color:#b45309}
+        .rank-pos.p4,.rank-pos.p5{color:var(--txt3)}
+        .rank-avatar{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+        .rank-info{flex:1}
+        .rank-name{font-size:14px;font-weight:700}
+        .rank-entries{font-size:11px;color:var(--txt2)}
+        .rank-amt{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;text-align:right}
+        .rank-badge{font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;margin-top:2px;display:inline-block}
+        .badge-gold{background:rgba(245,158,11,.15);color:var(--orange)}
+        .badge-star{background:rgba(139,92,246,.15);color:var(--purple)}
+        .badge-fire{background:rgba(239,68,68,.15);color:var(--red)}
+        .badge-ok{background:rgba(34,197,94,.15);color:var(--green)}
 
-        .dark .bg-white {
-            background-color: #1e293b;
-            color: #f8fafc;
-            border-color: #334155;
-        }
+        /* Filter */
+        .filter-bar{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px 22px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+        .filter-bar h2{font-size:22px;font-weight:700}
+        .filter-bar .meta{font-size:13px;color:var(--txt2);margin-top:2px}
+        .fr{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+        .fsel{background:var(--input);border:1px solid var(--brd);color:var(--txt);padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;outline:none}
+        .del-btn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b;cursor:pointer;display:none}
 
-        .dark .text-gray-500 {
-            color: #94a3b8;
-        }
+        /* Stats */
+        .sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+        .sc{border-radius:14px;padding:20px;color:#fff;position:relative;overflow:hidden}
+        .sc::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08)}
+        .sc.blue{background:linear-gradient(135deg,#1e40af,#3b82f6)}.sc.purple{background:linear-gradient(135deg,#6d28d9,#8b5cf6)}
+        .sc.orange{background:linear-gradient(135deg,#c2410c,#f59e0b)}.sc.pink{background:linear-gradient(135deg,#be185d,#ec4899)}
+        .sc-l{font-size:12px;opacity:.8;margin-bottom:6px;font-weight:500}
+        .sc-v{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700}
+        .sc-s{font-size:11px;opacity:.65;margin-top:4px}
 
-        .dark .bg-gray-50 {
-            background-color: #334155;
-        }
+        /* Summary row */
+        .sr{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+        .src{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px}
+        .src-l{font-size:12px;color:var(--txt2);margin-bottom:6px}
+        .src-v{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
 
-        .dark table thead {
-            background-color: #1e293b;
-        }
+        /* Charts */
+        .cg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px}
+        .cc{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:22px}
+        .ct{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .cw{position:relative;height:280px}
 
-        .dark input,
-        .dark select {
-            background-color: #334155;
-            border-color: #475569;
-            color: white;
-        }
+        /* Table */
+        .tc{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:22px;overflow:hidden;margin-bottom:24px}
+        .tt{font-size:15px;font-weight:700;margin-bottom:14px}
+        .ts{overflow-x:auto}
+        table{width:100%;border-collapse:collapse}
+        thead{background:var(--input)}
+        th{padding:12px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+        th.r,td.r{text-align:right}
+        td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--brd);white-space:nowrap}
+        tr:hover td{background:rgba(59,130,246,.04)}
+        .dc{font-weight:600;font-family:'JetBrains Mono',monospace;font-size:12px}
+        .tc-v{font-weight:700;color:var(--acc);font-family:'JetBrains Mono',monospace}
+        input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--acc)}
+
+        .no-data{text-align:center;padding:60px 20px;color:var(--txt3)}
+        .no-data-icon{font-size:48px;margin-bottom:12px}
+        .no-data-text{font-size:16px;font-weight:600;color:var(--txt2);margin-bottom:4px}
+
+        .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);padding:14px 24px;border-radius:12px;font-weight:600;font-size:14px;z-index:200;opacity:0;transition:all .3s;pointer-events:none}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.toast.success{background:#064e3b;color:#6ee7b7;border:1px solid #065f46}.toast.error{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b}
+
+        .loading{display:flex;align-items:center;justify-content:center;padding:80px 20px;color:var(--txt2);flex-direction:column;gap:12px}
+        @keyframes spin{to{transform:rotate(360deg)}}.spin{animation:spin 1s linear infinite;font-size:28px;display:inline-block}
+
+        /* Kasiyer chip in table */
+        .person-tag{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:12px}
+        .ptag-dot{width:8px;height:8px;border-radius:50%}
+
+        @media(max-width:1024px){.sg{grid-template-columns:repeat(2,1fr)}.sr{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}}
+        @media(max-width:640px){.sg{grid-template-columns:1fr}.sr{grid-template-columns:1fr}.filter-bar{flex-direction:column;align-items:flex-start}.sc-v{font-size:22px}.hero-name{font-size:24px}.hero-amt{font-size:30px}.rank-grid{grid-template-columns:1fr}}
     </style>
 </head>
+<body>
+    <nav class="nav"><div class="nav-in">
+        <div class="nbrand"><div class="nicon">📊</div><div><div class="ntitle">Rumeli Yönetim</div><div class="nsub">Kasa Analiz Paneli</div></div></div>
+        <div class="nacts"><a href="index.html" class="nb blue">➕ Veri Girişi</a><button class="nb" onclick="loadData()">🔄</button></div>
+    </div></nav>
+    <div id="toast" class="toast"></div>
+    <main class="main" id="app"><div class="loading"><span class="spin">⏳</span><span>Veriler yükleniyor...</span></div></main>
 
-<body class="bg-gray-50" x-data="dashboard()" x-init="init()">
+<script>
+const SB_URL='https://iwikwbjsznujefvuemdb.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3aWt3Ympzem5qdWVmdnVlbWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNzkwNzEsImV4cCI6MjA4NTg1NTA3MX0.JLTiyDsrzcyEQEf_yS0cwUwtR3H1FaPl4mRFBRk142Q';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
-    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">💰</span>
-                    <div>
-                        <h1 class="text-xl font-bold">Rumeli Yönetim</h1>
-                        <p class="text-sm text-gray-500">Kasa Analiz Sistemi</p>
-                    </div>
+const PP={
+    metehan:{name:'Metehan Arslan',short:'Metehan',role:'Mesul Müdür',color:'#3b82f6',bg:'linear-gradient(135deg,#1e40af,#3b82f6)'},
+    tuba:{name:'Tuba Bozaklı',short:'Tuba',role:'Kasiyer',color:'#8b5cf6',bg:'linear-gradient(135deg,#7c3aed,#8b5cf6)'},
+    elif:{name:'Elif Yıldırım',short:'Elif',role:'Kasiyer',color:'#f59e0b',bg:'linear-gradient(135deg,#c2410c,#f59e0b)'},
+    melda:{name:'Melda Yılmaz',short:'Melda',role:'Kasiyer',color:'#ec4899',bg:'linear-gradient(135deg,#be185d,#ec4899)'},
+    ceren:{name:'Ceren Erdem',short:'Ceren',role:'Kasiyer',color:'#22c55e',bg:'linear-gradient(135deg,#059669,#22c55e)'}
+};
+
+let allRec=[],filtRec=[],selIds=new Set(),selMonth=new Date().toISOString().slice(0,7),charts={};
+
+document.addEventListener('DOMContentLoaded',()=>loadData());
+
+async function loadData(){
+    document.getElementById('app').innerHTML='<div class="loading"><span class="spin">⏳</span><span>Veriler yükleniyor...</span></div>';
+    try{
+        const{data,error}=await sb.from('daily_revenue').select('*').order('date',{ascending:false});
+        if(error)throw error;
+        allRec=data||[];
+    }catch(e){console.error(e);allRec=[]}
+    selIds.clear();
+    render();
+}
+
+function render(){
+    filtRec=selMonth==='all'?[...allRec]:allRec.filter(r=>r.date.startsWith(selMonth));
+
+    if(!allRec.length){
+        document.getElementById('app').innerHTML=`<div class="no-data"><div class="no-data-icon">📭</div><div class="no-data-text">Henüz veri yok</div><a href="index.html" class="nb blue" style="margin-top:16px;display:inline-flex">➕ Veri Girişi</a></div>`;
+        return;
+    }
+
+    const stats=calc(filtRec);
+    const months=[...new Set(allRec.map(r=>r.date.slice(0,7)))].sort().reverse();
+    const mNames=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+    let mTitle='Tüm Zamanlar',mYear='';
+    if(selMonth!=='all'){const[y,m]=selMonth.split('-');mTitle=mNames[+m-1];mYear=y}
+
+    // Haftanın elemanı hesapla
+    const heroData=calcHero(filtRec);
+
+    let html='';
+
+    // HERO - Haftanın Elemanı
+    if(heroData){
+        html+=`<div class="hero gold" id="heroCard">
+            <div class="hero-badge">🏆 ${heroData.title}</div>
+            <div class="hero-name">${heroData.name}</div>
+            <div class="hero-stat">${heroData.entries} gün veri girişi — ${heroData.role}</div>
+            <div class="hero-amt">${fc(heroData.totalRevenue)}</div>
+            <div class="hero-sub">${heroData.subtitle}</div>
+        </div>`;
+    }
+
+    // Kasiyer Sıralaması
+    const ranking=calcRanking(filtRec);
+    if(ranking.length>0){
+        html+='<div class="rank-grid">';
+        ranking.forEach((r,i)=>{
+            const p=PP[r.id]||{short:r.id,color:'#64748b',bg:'linear-gradient(135deg,#475569,#64748b)'};
+            const posClass=i<3?`p${i+1}`:'p4';
+            const medals=['🥇','🥈','🥉'];
+            const posText=i<3?medals[i]:`${i+1}.`;
+            let badge='';
+            if(i===0)badge='<div class="rank-badge badge-gold">⭐ En Başarılı</div>';
+            else if(r.avgRevenue>0&&ranking[0].avgRevenue>0&&r.avgRevenue/ranking[0].avgRevenue>.85)badge='<div class="rank-badge badge-star">💪 Güçlü Performans</div>';
+            else if(r.entries>=5)badge='<div class="rank-badge badge-ok">✅ Düzenli</div>';
+            
+            html+=`<div class="rank-card">
+                <div class="rank-pos ${posClass}">${posText}</div>
+                <div class="rank-avatar" style="background:${p.bg}">${p.short.slice(0,2).toUpperCase()}</div>
+                <div class="rank-info">
+                    <div class="rank-name">${p.short}</div>
+                    <div class="rank-entries">${r.entries} gün • Ort: ${fc(r.avgRevenue)}</div>
+                    ${badge}
                 </div>
-                <div class="flex items-center gap-3">
-                    <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)"
-                        class="p-2 rounded-lg border dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <span x-show="!darkMode">🌙</span>
-                        <span x-show="darkMode">☀️</span>
-                    </button>
-                    <a href="index.html"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 shadow-md transition-all active:scale-95 flex items-center gap-2 text-sm decoration-0">
-                        ➕ Veri Girişi
-                    </a>
-                    <button @click="loadData(); triggerCelebration()"
-                        class="bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 shadow-sm transition-all active:scale-95">
-                        🔄 Yenile
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 py-8">
-
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold mb-2">
-                        <span x-text="selectedMonthName"></span> <span x-text="selectedYear"></span>
-                    </h2>
-                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                        <span>Kayıt: <strong class="dark:text-blue-400" x-text="monthRecords"></strong> gün</span>
-                        <span x-show="selectedItems.length > 0" class="text-red-500 font-semibold">
-                            • <span x-text="selectedItems.length"></span> seçili
-                        </span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <select x-model="selectedMonth" @change="loadData()"
-                        class="px-4 py-2 border rounded-lg font-semibold">
-                        <option value="all">📅 Tüm Aylar</option>
-                        <option value="2026-01">Ocak 2026</option>
-                        <option value="2026-02">Şubat 2026</option>
-                    </select>
-
-                    <button @click="deleteSelected()" x-show="selectedItems.length > 0"
-                        class="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition-colors">
-                        🗑️ Seçilenleri Sil
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div
-                class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
-                <p class="text-sm opacity-90 mb-1 font-medium text-blue-100">Toplam Ciro</p>
-                <p class="text-3xl font-black" x-text="formatCurrency(stats.total)"></p>
-            </div>
-
-            <div
-                class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
-                <p class="text-sm opacity-90 mb-1 font-medium text-purple-100">Rumeli (Z1+Z2)</p>
-                <p class="text-3xl font-black" x-text="formatCurrency(stats.rumeli)"></p>
-            </div>
-
-            <div
-                class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
-                <p class="text-sm opacity-90 mb-1 font-medium text-orange-100">Balık Ekmek</p>
-                <p class="text-3xl font-black" x-text="formatCurrency(stats.balik)"></p>
-            </div>
-
-            <div
-                class="bg-gradient-to-br from-pink-600 to-pink-700 rounded-2xl shadow-lg p-6 text-white transform transition hover:scale-105">
-                <p class="text-sm opacity-90 mb-1 font-medium text-pink-100">Dondurma</p>
-                <p class="text-3xl font-black" x-text="formatCurrency(stats.dondurma)"></p>
-            </div>
-        </div>
-
-        <!-- Advanced Analytics Cards -->
-        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4 px-1">📊 Detaylı Analiz</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-
-            <!-- Cashier Champion -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-yellow-400">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🏆 Kasa Şampiyonu</p>
-                        <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
-                            x-text="analytics.bestCashier.name"></p>
-                        <p class="text-sm text-yellow-600 font-semibold"
-                            x-text="formatCurrency(analytics.bestCashier.amount)"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Top Category -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-blue-500">
-                <div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🔥 Popüler Kategori</p>
-                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1" x-text="analytics.topCategory.name">
-                    </p>
-                    <p class="text-xs text-blue-500 font-semibold">
-                        <span x-text="analytics.topCategory.count"></span> adet (%<span
-                            x-text="analytics.topCategory.share"></span>)
-                    </p>
-                </div>
-            </div>
-
-            <!-- Weekly Summary -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-green-500">
-                <div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">📅 Bu Hafta (Pzt-Paz)</p>
-                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
-                        x-text="formatCurrency(analytics.weekly.total)"></p>
-                    <p class="text-xs text-gray-500">Ort: <span x-text="formatCurrency(analytics.weekly.avg)"></span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Weekday vs Weekend -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-purple-500">
-                <div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🗓️ H.İçi vs H.Sonu</p>
-                    <div class="flex justify-between mt-1 items-end">
-                        <div>
-                            <span class="text-xs text-gray-500">H.İçi</span>
-                            <div class="font-bold text-sm" x-text="formatCurrency(analytics.dayType.weekdayAvg)"></div>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs text-gray-500">H.Sonu</span>
-                            <div class="font-bold text-sm text-purple-600"
-                                x-text="formatCurrency(analytics.dayType.weekendAvg)"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Monthly Forecast -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow p-4 border-l-4 border-indigo-500">
-                <div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase">🔮 Ay Sonu Tahmini</p>
-                    <p class="text-lg font-bold text-gray-900 dark:text-white mt-1"
-                        x-text="formatCurrency(analytics.forecast)"></p>
-                    <p class="text-xs text-indigo-400">Mevcut hıza göre</p>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border dark:border-gray-700">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">📈 <span>Son 7 Gün Trendi</span></h3>
-                <div class="chart-container" style="position: relative; height: 300px;">
-                    <canvas x-ref="trendCanvas" id="trendChart" x-show="allData.length > 0"></canvas>
-                    <div x-show="!allData || allData.length === 0"
-                        class="flex items-center justify-center h-full text-gray-500 font-medium absolute inset-0">
-                        📊 İlk verinin girilmesi bekleniyor...
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border dark:border-gray-700">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">🥧 <span>Kasa Dağılımı</span></h3>
-                <div class="chart-container" style="position: relative; height: 300px;">
-                    <canvas x-ref="kasaCanvas" id="kasaChart" x-show="allData.length > 0"></canvas>
-                    <div x-show="!allData || allData.length === 0"
-                        class="flex items-center justify-center h-full text-gray-500 font-medium absolute inset-0">
-                        📊 İlk verinin girilmesi bekleniyor...
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-lg p-6 border dark:border-gray-700">
-            <h3 class="text-lg font-bold mb-4">📋 Kayıt Detayları</h3>
-            <div class="overflow-x-auto rounded-xl border dark:border-gray-700">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-50 border-b dark:border-gray-700 text-gray-600 dark:text-gray-300">
-                        <tr>
-                            <th class="p-4"><input type="checkbox" @change="toggleAll($event)" class="rounded"></th>
-                            <th class="p-4">Tarih</th>
-                            <th class="p-4 text-right">Toplam</th>
-                            <th class="p-4 text-right">Rumeli</th>
-                            <th class="p-4 text-right">Balık</th>
-                            <th class="p-4 text-right">Dondurma</th>
-                            <th class="p-4"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y dark:divide-gray-700">
-                        <template x-for="(row, index) in allData" :key="index">
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                                <td class="p-4"><input type="checkbox" :checked="selectedItems.includes(index)"
-                                        @change="toggleSelect(index)" class="rounded"></td>
-                                <td class="p-4 text-sm font-medium" x-text="row.date"></td>
-                                <td class="p-4 text-right font-bold text-blue-600 dark:text-blue-400"
-                                    x-text="formatCurrency(row.total)"></td>
-                                <td class="p-4 text-right" x-text="formatCurrency(row.rumeli)"></td>
-                                <td class="p-4 text-right" x-text="formatCurrency(row.balik)"></td>
-                                <td class="p-4 text-right" x-text="formatCurrency(row.dondurma)"></td>
-                                <td class="p-4 text-right">
-                                    <button @click="deleteRecord(row.id, row.cashier_name)"
-                                        class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors"
-                                        title="Kaydı Sil">
-                                        🗑️
-                                    </button>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <script type="module">
-        import { fetchSalesRecords, deleteSalesRecord } from './js/supabase-client.js';
-        window.fetchSalesRecords = fetchSalesRecords;
-        window.deleteSalesRecord = deleteSalesRecord;
-    </script>
-    <script>
-        function dashboard() {
-            return {
-                selectedMonth: new Date().toISOString().slice(0, 7),
-                selectedMonthName: '',
-                selectedYear: '',
-                monthRecords: 0,
-                selectedItems: [],
-                stats: { total: 0, rumeli: 0, balik: 0, dondurma: 0 },
-                analytics: {
-                    bestCashier: { name: '-', amount: 0 },
-                    topCategory: { name: '-', count: 0, share: 0 },
-                    weekly: { total: 0, avg: 0 },
-                    dayType: { weekdayTotal: 0, weekdayAvg: 0, weekendTotal: 0, weekendAvg: 0 },
-                    forecast: 0
-                },
-                allData: [],
-                charts: {},
-
-                async init() {
-                    this.updateMonthName();
-                    await this.loadData();
-                },
-
-                triggerCelebration() {
-                    confetti({
-                        particleCount: 100,
-                        spread: 70,
-                        origin: { y: 0.6 },
-                        colors: ['#3b82f6', '#8b5cf6', '#f59e0b']
-                    });
-                },
-
-                async loadData() {
-                    let combinedData = [];
-                    let supabaseData = [];
-                    let localData = [];
-
-                    // Wait for Supabase client to load (max 2 seconds)
-                    let attempts = 0;
-                    while (typeof window.fetchSalesRecords === 'undefined' && attempts < 20) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        attempts++;
-                    }
-
-                    try {
-                        // 1. Fetch from Supabase
-                        if (typeof window.fetchSalesRecords === 'function') {
-                            const { data, error } = await window.fetchSalesRecords();
-                            if (error) {
-                                console.error("Supabase Error:", error);
-                            } else {
-                                supabaseData = data || [];
-                                console.log("Supabase'den Gelen:", supabaseData.length);
-                            }
-                        } else {
-                            console.error("Supabase client failed to load after check.");
-                        }
-                    } catch (e) {
-                        console.error("Supabase Fetch Exception:", e);
-                    }
-
-                    try {
-                        // 2. Fetch from LocalStorage (Fallback content)
-                        localData = JSON.parse(localStorage.getItem('rumeliData') || '[]');
-                        console.log("LocalStorage'dan Gelen:", localData.length);
-                    } catch (e) {
-                        console.error("LocalStorage Error:", e);
-                    }
-
-                    // 3. Merge Strategies
-                    // Combine data.
-                    combinedData = [...supabaseData, ...localData];
-
-                    console.log("Toplam Birleştirilmiş Veri:", combinedData.length);
-                    this.processData(combinedData);
-                },
-
-                async deleteRecord(id, cashierName) {
-                    if (cashierName !== "Metehan Arslan (Mesul Müdür)" && !confirm("Bu kaydı silmek istediğinize emin misiniz?")) {
-                        return;
-                    }
-
-                    if (confirm("Kayıt kalıcı olarak silinecek. Onaylıyor musunuz?")) {
-                        try {
-                            if (typeof window.deleteSalesRecord === 'function') {
-                                const { error } = await window.deleteSalesRecord(id);
-                                if (error) throw error;
-                                alert("Kayıt başarıyla silindi.");
-                                await this.loadData();
-                            } else {
-                                alert("Silme fonksiyonu yüklenemedi.");
-                            }
-                        } catch (err) {
-                            console.error("Delete error:", err);
-                            alert("Silme işlemi başarısız: " + err.message);
-                        }
-                    }
-                },
-
-                processData(rawData) {
-                    console.log("İşlenecek Ham Veri:", rawData);
-
-                    // Normalize Data
-                    // Supabase returns keys like 'date', 'rumeli_z1' etc.
-                    // LocalStorage might have slightly different structure if mixed.
-                    // Check if date exists
-
-                    this.updateMonthName();
-                    this.selectedItems = [];
-
-                    // Filter by selected month
-                    let filtered = rawData.filter(item => {
-                        const itemDate = item.selectedDate || item.date;
-                        if (!itemDate) {
-                            console.warn("Tarih bilgisi olmayan kayıt:", item);
-                            return false;
-                        }
-
-                        // Handle Date Format potential mismatch (YYYY-MM-DD vs other)
-                        // Code expects YYYY-MM-DD string match for startswith
-
-                        if (this.selectedMonth === 'all') return true;
-
-                        const match = itemDate.startsWith(this.selectedMonth);
-                        if (!match && rawData.length < 5) console.log(`Filtrelendi: ${itemDate} (Seçili Ay: ${this.selectedMonth})`);
-                        return match;
-                    });
-
-                    console.log("Filtrelenmiş Veri Sayısı:", filtered.length);
-                    // Alert if 0 but raw > 0
-                    if (rawData.length > 0 && filtered.length === 0) {
-                        // Only alert if we selected a specific month and it's empty but we have data
-                        console.warn("Veri var ama seçili ayda kayıt yok.");
-                    }
-
-                    this.monthRecords = filtered.length;
-
-                    // Initialize accumulators
-                    let total = 0, rumeli = 0, balik = 0, dondurma = 0;
-                    let kasaData = { z1: 0, z2: 0, balik: 0, dondurma: 0 };
-                    let displayData = [];
-
-                    // Analytics accumulators
-                    let cashierStats = {};
-                    let categoryStats = {
-                        'Gıda': 0, 'Kahvaltı': 0, 'Kahve': 0, 'Meyve Suyu': 0,
-                        'Sıcak İçecek': 0, 'Soğuk İçecek': 0, 'Tatlı': 0, 'Dondurma (Adet)': 0
-                    };
-                    let weeklyTotal = 0, weeklyDays = 0;
-                    let weekdayTotal = 0, weekdayDays = 0;
-                    let weekendTotal = 0, weekendDays = 0;
-
-                    // Date helpers for Weekly Analysis
-                    const today = new Date();
-                    const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay() + 1)); // Monday
-                    currentWeekStart.setHours(0, 0, 0, 0);
-                    const currentWeekEnd = new Date(currentWeekStart);
-                    currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
-
-                    filtered.forEach((item, idx) => {
-                        // Parse numbers safely
-                        // Parse numbers safely - keys must match Supabase snake_case columns
-                        const z1 = parseFloat(item.rumeli_z1) || 0;
-                        const z2 = parseFloat(item.rumeli_z2) || 0;
-                        const be = parseFloat(item.balik_ekmek) || 0;
-                        const don = parseFloat(item.dondurma) || 0;
-
-                        const rum = z1 + z2;
-                        const tot = rum + be + don;
-
-                        // Basic Stats
-                        total += tot;
-                        rumeli += rum;
-                        balik += be;
-                        dondurma += don;
-                        kasaData.z1 += z1; kasaData.z2 += z2; kasaData.balik += be; kasaData.dondurma += don;
-
-                        // Cashier Analysis
-                        const cashier = item.cashier_name || 'Bilinmiyor';
-                        if (!cashierStats[cashier]) cashierStats[cashier] = 0;
-                        cashierStats[cashier] += tot;
-
-                        // Category Analysis
-                        categoryStats['Gıda'] += parseInt(item.gida) || 0;
-                        categoryStats['Kahvaltı'] += parseInt(item.kahvalti) || 0;
-                        categoryStats['Kahve'] += parseInt(item.kahve) || 0;
-                        categoryStats['Meyve Suyu'] += parseInt(item.meyvesuyu) || 0;
-                        categoryStats['Sıcak İçecek'] += parseInt(item.sicak_icecek) || 0;
-                        categoryStats['Soğuk İçecek'] += parseInt(item.soguk_icecek) || 0;
-                        categoryStats['Tatlı'] += parseInt(item.tatli) || 0;
-                        categoryStats['Dondurma (Adet)'] += parseInt(item.dondurma_adet) || 0;
-
-                        // Date-based Analysis
-                        const dateStr = item.selectedDate || item.date;
-                        const dateObj = new Date(dateStr);
-                        const day = dateObj.getDay(); // 0 is Sunday
-
-                        // Weekly (Current Week)
-                        if (dateObj >= currentWeekStart && dateObj <= currentWeekEnd) {
-                            weeklyTotal += tot;
-                            weeklyDays++;
-                        }
-
-                        // Weekday vs Weekend
-                        if (day === 0 || day === 6) {
-                            weekendTotal += tot;
-                            weekendDays++;
-                        } else {
-                            weekdayTotal += tot;
-                            weekdayDays++;
-                        }
-
-                        displayData.push({
-                            id: item.id,
-                            originalIndex: rawData.indexOf(item),
-                            date: dateStr,
-                            total: tot,
-                            rumeli: rum,
-                            balik: be,
-                            dondurma: don,
-                            cashier: cashier,
-                            dailyTarget: item.dailyTarget || item.daily_target
-                        });
-                    });
-
-                    this.stats = { total, rumeli, balik, dondurma };
-
-                    // Calculates Analytics Objects
-                    // 1. Best Cashier
-                    let bestCashierName = '-';
-                    let bestCashierAmount = 0;
-                    for (const [name, amount] of Object.entries(cashierStats)) {
-                        if (amount > bestCashierAmount) {
-                            bestCashierAmount = amount;
-                            bestCashierName = name;
-                        }
-                    }
-                    this.analytics.bestCashier = { name: bestCashierName, amount: bestCashierAmount };
-
-                    // 2. Top Category
-                    let topCatName = '-';
-                    let topCatCount = 0;
-                    let totalItems = 0;
-                    for (const [name, count] of Object.entries(categoryStats)) {
-                        totalItems += count;
-                        if (count > topCatCount) {
-                            topCatCount = count;
-                            topCatName = name;
-                        }
-                    }
-                    this.analytics.topCategory = {
-                        name: topCatName,
-                        count: topCatCount,
-                        share: totalItems > 0 ? ((topCatCount / totalItems) * 100).toFixed(1) : 0
-                    };
-
-                    // 3. Weekly Stats
-                    this.analytics.weekly = {
-                        total: weeklyTotal,
-                        avg: weeklyDays > 0 ? weeklyTotal / weeklyDays : 0
-                    };
-
-                    // 4. Day Type Stats
-                    this.analytics.dayType = {
-                        weekdayTotal: weekdayTotal,
-                        weekdayAvg: weekdayDays > 0 ? weekdayTotal / weekdayDays : 0,
-                        weekendTotal: weekendTotal,
-                        weekendAvg: weekendDays > 0 ? weekendTotal / weekendDays : 0
-                    };
-
-                    // 5. Forecast
-                    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-                    const currentDay = new Date().getDate();
-                    if (this.selectedMonth === new Date().toISOString().slice(0, 7)) {
-                        // Only forecast if viewing current month
-                        const dailyAvg = currentDay > 0 ? total / currentDay : 0;
-                        this.analytics.forecast = dailyAvg * daysInMonth;
-                    } else {
-                        this.analytics.forecast = total;
-                    }
-
-                    this.allData = displayData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                    // Celebration Check
-                    if (this.allData.length > 0) {
-                        const latest = this.allData[0];
-                        const target = latest.dailyTarget || 150000;
-                        if (latest.total >= target && new Date(latest.date).toDateString() === new Date().toDateString()) {
-                            this.triggerCelebration();
-                        }
-                    }
-
-                    this.$nextTick(() => {
-                        setTimeout(() => {
-                            this.renderCharts(kasaData);
-                        }, 100);
-                    });
-                },
-
-                renderCharts(kasaData) {
-                    console.log("RenderCharts Called with:", kasaData);
-                    console.log("AllData for charts:", this.allData);
-                    if (!this.allData || this.allData.length === 0) {
-                        console.warn("No data for charts");
-                        return;
-                    }
-
-                    this.$nextTick(() => {
-                        const trendEl = this.$refs.trendCanvas;
-                        const kasaEl = this.$refs.kasaCanvas;
-
-                        // Double check references
-                        if (!trendEl || !kasaEl) {
-                            console.warn('Canvas elements not found, skipping chart render.');
-                            return;
-                        }
-
-                        // Destroy existing charts safely
-                        if (this.charts.trend) {
-                            try { this.charts.trend.destroy(); } catch (e) { }
-                            this.charts.trend = null;
-                        }
-                        if (this.charts.kasa) {
-                            try { this.charts.kasa.destroy(); } catch (e) { }
-                            this.charts.kasa = null;
-                        }
-
-                        const isDark = document.documentElement.classList.contains('dark');
-                        const textColor = isDark ? '#94a3b8' : '#64748b';
-
-                        // Trend Chart
-                        const last7 = [...this.allData].reverse().slice(-7);
-                        if (last7.length > 0) {
-                            try {
-                                this.charts.trend = new Chart(trendEl, {
-                                    type: 'line',
-                                    data: {
-                                        labels: last7.map(d => d.date.split('-').reverse().slice(0, 2).join('/')),
-                                        datasets: [{
-                                            label: 'Ciro',
-                                            data: last7.map(d => d.total),
-                                            borderColor: '#3b82f6',
-                                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                            fill: true,
-                                            tension: 0.4
-                                        }]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: { legend: { labels: { color: textColor } } },
-                                        scales: {
-                                            y: { ticks: { color: textColor } },
-                                            x: { ticks: { color: textColor } }
-                                        }
-                                    }
-                                });
-                            } catch (err) {
-                                console.error("Trend Chart Render Error:", err);
-                            }
-                        }
-
-                        // Kasa Chart
-                        if (Object.values(kasaData).some(val => val > 0)) {
-                            try {
-                                this.charts.kasa = new Chart(kasaEl, {
-                                    type: 'doughnut',
-                                    data: {
-                                        labels: ['Z1', 'Z2', 'Balık', 'Dondurma'],
-                                        datasets: [{
-                                            data: [kasaData.z1, kasaData.z2, kasaData.balik, kasaData.dondurma],
-                                            backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899'],
-                                            borderWidth: isDark ? 0 : 2
-                                        }]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-                                    }
-                                });
-                            } catch (err) {
-                                console.error("Kasa Chart Render Error:", err);
-                            }
-                        }
-                    });
-                },
-
-                updateMonthName() {
-                    if (this.selectedMonth === 'all') {
-                        this.selectedMonthName = 'Tüm Zamanlar';
-                        this.selectedYear = '';
-                    } else {
-                        const [year, month] = this.selectedMonth.split('-');
-                        const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-                        this.selectedMonthName = monthNames[parseInt(month) - 1];
-                        this.selectedYear = year;
-                    }
-                },
-                toggleSelect(index) {
-                    const i = this.selectedItems.indexOf(index);
-                    if (i > -1) this.selectedItems.splice(i, 1);
-                    else this.selectedItems.push(index);
-                },
-                toggleAll(e) {
-                    this.selectedItems = e.target.checked ? this.allData.map((_, i) => i) : [];
-                },
-                deleteSelected() {
-                    // Optional: Implement delete from Supabase if needed, for now locally or warn user
-                    alert('Toplu silme özelliği veritabanı güvenliği için devre dışı bırakıldı.');
-                },
-                formatCurrency(val) {
-                    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val || 0);
-                }
-            }
-        }
-    </script>
-    <script>
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
-    </script>
+                <div class="rank-amt">${fc(r.totalRevenue)}</div>
+            </div>`;
+        });
+        html+='</div>';
+    }
+
+    // Filter
+    html+=`<div class="filter-bar"><div>
+        <h2>${mTitle} ${mYear}</h2>
+        <div class="meta">📊 ${filtRec.length} kayıt</div>
+    </div><div class="fr">
+        <select class="fsel" onchange="chMonth(this.value)">
+            <option value="all" ${selMonth==='all'?'selected':''}>📅 Tüm Aylar</option>
+            ${months.map(m=>{const[y,mo]=m.split('-');return`<option value="${m}" ${selMonth===m?'selected':''}>${mNames[+mo-1]} ${y}</option>`}).join('')}
+        </select>
+        <button class="del-btn" id="delBtn" onclick="delSel()">🗑️ <span id="delCnt">0</span> Sil</button>
+    </div></div>`;
+
+    // Stats
+    html+=`<div class="sg">
+        <div class="sc blue"><div class="sc-l">Toplam Ciro</div><div class="sc-v">${fc(stats.total)}</div><div class="sc-s">Günlük Ort: ${fc(stats.avgDaily)}</div></div>
+        <div class="sc purple"><div class="sc-l">Rumeli (Z1+Z2)</div><div class="sc-v">${fc(stats.rumeli)}</div><div class="sc-s">${stats.total?((stats.rumeli/stats.total)*100).toFixed(0):0}% oran</div></div>
+        <div class="sc orange"><div class="sc-l">Balık Ekmek</div><div class="sc-v">${fc(stats.balik)}</div><div class="sc-s">${stats.total?((stats.balik/stats.total)*100).toFixed(0):0}% oran</div></div>
+        <div class="sc pink"><div class="sc-l">Dondurma</div><div class="sc-v">${fc(stats.dondurma)}</div><div class="sc-s">${stats.total?((stats.dondurma/stats.total)*100).toFixed(0):0}% oran</div></div>
+    </div>`;
+
+    // Summary
+    html+=`<div class="sr">
+        <div class="src"><div class="src-l">Hafta İçi Toplam</div><div class="src-v">${fc(stats.wdTotal)}</div></div>
+        <div class="src"><div class="src-l">Hafta İçi Ort.</div><div class="src-v">${fc(stats.wdAvg)}</div></div>
+        <div class="src"><div class="src-l">Hafta Sonu Toplam</div><div class="src-v">${fc(stats.weTotal)}</div></div>
+        <div class="src"><div class="src-l">Hafta Sonu Ort.</div><div class="src-v">${fc(stats.weAvg)}</div></div>
+    </div>`;
+
+    // Charts
+    html+=`<div class="cg">
+        <div class="cc"><div class="ct">📈 Günlük Ciro Trendi</div><div class="cw"><canvas id="ch1"></canvas></div></div>
+        <div class="cc"><div class="ct">🥧 Kasa Dağılımı</div><div class="cw"><canvas id="ch2"></canvas></div></div>
+        <div class="cc"><div class="ct">📊 Haftalık Performans</div><div class="cw"><canvas id="ch3"></canvas></div></div>
+        <div class="cc"><div class="ct">💵 Kategori Gelirleri</div><div class="cw"><canvas id="ch4"></canvas></div></div>
+    </div>
+    <div class="cg">
+        <div class="cc"><div class="ct">📅 Hafta İçi vs Hafta Sonu</div><div class="cw"><canvas id="ch5"></canvas></div></div>
+        <div class="cc"><div class="ct">👤 Kasiyer Bazlı Ciro</div><div class="cw"><canvas id="ch6"></canvas></div></div>
+    </div>`;
+
+    // Table
+    html+=`<div class="tc"><div class="tt">📋 Kayıt Detayları</div><div class="ts"><table>
+        <thead><tr><th style="width:40px"><input type="checkbox" onchange="togAll(this.checked)"></th><th>Tarih</th><th>Gün</th><th>Kasiyer</th><th class="r">Toplam</th><th class="r">Z1</th><th class="r">Z2</th><th class="r">Balık</th><th class="r">Dondurma</th><th class="r">Hedef</th><th class="r">%</th></tr></thead>
+        <tbody>${filtRec.map(r=>{
+            const tot=+r.total_revenue||0,tgt=+r.daily_target||150000,pct=tgt?((tot/tgt)*100).toFixed(0):0;
+            const d=new Date(r.date+'T00:00:00'),dn=['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'][d.getDay()],isWe=d.getDay()===0||d.getDay()===6;
+            const p=PP[r.created_by]||{short:r.created_by,color:'#64748b'};
+            return`<tr>
+                <td><input type="checkbox" value="${r.id}" onchange="togItem(${r.id},this.checked)" ${selIds.has(r.id)?'checked':''}></td>
+                <td class="dc">${r.date.split('-').reverse().join('/')}</td>
+                <td><span style="color:${isWe?'var(--orange)':'var(--txt2)'};font-weight:600;font-size:12px">${dn}</span></td>
+                <td><span class="person-tag"><span class="ptag-dot" style="background:${p.color}"></span>${p.short}</span></td>
+                <td class="r tc-v">${fc(tot)}</td>
+                <td class="r">${fc(r.rumeli_z1)}</td><td class="r">${fc(r.rumeli_z2)}</td>
+                <td class="r">${fc(r.balik_ekmek)}</td><td class="r">${fc(r.dondurma_z)}</td>
+                <td class="r" style="color:var(--txt3)">${fc(tgt)}</td>
+                <td class="r" style="color:${pct>=100?'var(--green)':pct>=80?'var(--orange)':'var(--red)'};font-weight:700;font-size:12px">%${pct}</td>
+            </tr>`}).join('')}</tbody></table></div></div>`;
+
+    document.getElementById('app').innerHTML=html;
+    setTimeout(()=>renderCharts(stats),80);
+
+    // Confetti for hero
+    if(heroData)setTimeout(()=>{
+        try{confetti({particleCount:120,spread:80,origin:{y:.3},colors:['#f59e0b','#fbbf24','#fde68a','#fff']});
+        setTimeout(()=>confetti({particleCount:60,spread:50,origin:{y:.4,x:.3},colors:['#3b82f6','#8b5cf6']}),400);
+        setTimeout(()=>confetti({particleCount:60,spread:50,origin:{y:.4,x:.7},colors:['#ec4899','#22c55e']}),700);
+        }catch(e){}
+    },300);
+}
+
+// HERO CALCULATION
+function calcHero(recs){
+    if(!recs.length)return null;
+    
+    // Son 7 günü al
+    const now=new Date();
+    const weekAgo=new Date(now);weekAgo.setDate(now.getDate()-7);
+    const weekStr=weekAgo.toISOString().split('T')[0];
+    
+    const weekRecs=recs.filter(r=>r.date>=weekStr);
+    if(!weekRecs.length){
+        // Hiç haftalık veri yoksa tüm zamanı kullan
+        const perPerson={};
+        recs.forEach(r=>{
+            if(!perPerson[r.created_by])perPerson[r.created_by]={total:0,entries:0};
+            perPerson[r.created_by].total+=(+r.total_revenue||0);
+            perPerson[r.created_by].entries++;
+        });
+        const sorted=Object.entries(perPerson).sort((a,b)=>b[1].total-a[1].total);
+        if(!sorted.length)return null;
+        const[id,d]=sorted[0];
+        const p=PP[id]||{name:id,short:id,role:'Kasiyer'};
+        return{name:p.name,role:p.role,entries:d.entries,totalRevenue:d.total,title:'Bu Dönemin Yıldızı ⭐',subtitle:'Toplam en yüksek ciro girişi'};
+    }
+
+    // Haftalık bazda en yüksek toplam ciro giren kasiyer
+    const perPerson={};
+    weekRecs.forEach(r=>{
+        if(!perPerson[r.created_by])perPerson[r.created_by]={total:0,entries:0};
+        perPerson[r.created_by].total+=(+r.total_revenue||0);
+        perPerson[r.created_by].entries++;
+    });
+    const sorted=Object.entries(perPerson).sort((a,b)=>b[1].total-a[1].total);
+    if(!sorted.length)return null;
+    const[id,d]=sorted[0];
+    const p=PP[id]||{name:id,short:id,role:'Kasiyer'};
+    
+    const titles=['🏆 Haftanın Yıldızı','🌟 Haftanın Elemanı','💫 Haftanın Şampiyonu','🔥 Haftanın En İyisi'];
+    const title=titles[Math.floor(Math.random()*titles.length)];
+    
+    return{name:p.name,role:p.role,entries:d.entries,totalRevenue:d.total,title,subtitle:`Son 7 günde en yüksek ciro girişi yapan kasiyer`};
+}
+
+// RANKING
+function calcRanking(recs){
+    const perPerson={};
+    recs.forEach(r=>{
+        const id=r.created_by;
+        if(!perPerson[id])perPerson[id]={id,totalRevenue:0,entries:0};
+        perPerson[id].totalRevenue+=(+r.total_revenue||0);
+        perPerson[id].entries++;
+    });
+    return Object.values(perPerson)
+        .map(p=>({...p,avgRevenue:p.entries?p.totalRevenue/p.entries:0}))
+        .sort((a,b)=>b.totalRevenue-a.totalRevenue);
+}
+
+// STATS
+function calc(recs){
+    let total=0,rumeli=0,balik=0,dondurma=0,z1=0,z2=0,wdTotal=0,weTotal=0,wdCnt=0,weCnt=0;
+    let cg={gida:0,kahvalti:0,kahve:0,meyveSuyu:0,sicakIcecek:0,sogukIcecek:0,tatli:0,dondurmaSatis:0,depo:0};
+    recs.forEach(r=>{
+        const t=+r.total_revenue||0,rz1=+r.rumeli_z1||0,rz2=+r.rumeli_z2||0,be=+r.balik_ekmek||0,dn=+r.dondurma_z||0;
+        total+=t;z1+=rz1;z2+=rz2;rumeli+=rz1+rz2;balik+=be;dondurma+=dn;
+        const d=new Date(r.date+'T00:00:00').getDay();
+        if(d===0||d===6){weTotal+=t;weCnt++}else{wdTotal+=t;wdCnt++}
+        cg.gida+=+r.gida_gelir||0;cg.kahvalti+=+r.kahvalti_gelir||0;cg.kahve+=+r.kahve_gelir||0;
+        cg.meyveSuyu+=+r.meyve_suyu_gelir||0;cg.sicakIcecek+=+r.sicak_icecek_gelir||0;
+        cg.sogukIcecek+=+r.soguk_icecek_gelir||0;cg.tatli+=+r.tatli_gelir||0;
+        cg.dondurmaSatis+=+r.dondurma_satis_gelir||0;cg.depo+=+r.depo_gelir||0;
+    });
+    const n=recs.length;
+    return{total,rumeli,balik,dondurma,z1,z2,avgDaily:n?total/n:0,wdTotal,weTotal,wdAvg:wdCnt?wdTotal/wdCnt:0,weAvg:weCnt?weTotal/weCnt:0,wdCnt,weCnt,cg};
+}
+
+// CHARTS
+function renderCharts(s){
+    Object.values(charts).forEach(c=>{try{c.destroy()}catch(e){}});charts={};
+    const tc='#94a3b8',gc='rgba(30,58,95,.5)';
+    const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{family:'DM Sans',size:11}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:v=>'₺'+(v/1000).toFixed(0)+'K'},grid:{color:gc}}}};
+
+    // 1. Trend
+    const sorted=[...filtRec].sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
+    const el1=document.getElementById('ch1');
+    if(el1&&sorted.length){
+        // Aynı tarihteki kayıtları topla
+        const byDate={};
+        sorted.forEach(r=>{
+            if(!byDate[r.date])byDate[r.date]={total:0,target:0};
+            byDate[r.date].total+=(+r.total_revenue||0);
+            byDate[r.date].target=+r.daily_target||150000;
+        });
+        const dates=Object.keys(byDate).sort();
+        charts.c1=new Chart(el1,{type:'line',data:{
+            labels:dates.map(d=>d.split('-').slice(1).reverse().join('/')),
+            datasets:[{label:'Ciro',data:dates.map(d=>byDate[d].total),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',borderWidth:2.5},
+            {label:'Hedef',data:dates.map(d=>byDate[d].target),borderColor:'rgba(239,68,68,.5)',borderDash:[6,4],pointRadius:0,borderWidth:1.5,fill:false}]
+        },options:opts});
+    }
+
+    // 2. Kasa doughnut
+    const el2=document.getElementById('ch2');
+    if(el2)charts.c2=new Chart(el2,{type:'doughnut',data:{
+        labels:['Z1','Z2','Balık','Dondurma'],datasets:[{data:[s.z1,s.z2,s.balik,s.dondurma],backgroundColor:['#3b82f6','#8b5cf6','#f59e0b','#ec4899'],borderWidth:0,hoverOffset:8}]
+    },options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:tc,font:{family:'DM Sans',size:11},padding:16}}}}});
+
+    // 3. Weekly
+    const el3=document.getElementById('ch3');
+    if(el3&&filtRec.length){
+        const weeks={};
+        [...filtRec].sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{
+            const d=new Date(r.date+'T00:00:00'),ws=new Date(d);ws.setDate(d.getDate()-d.getDay()+1);
+            const k=ws.toISOString().split('T')[0];
+            if(!weeks[k])weeks[k]=0;weeks[k]+=(+r.total_revenue||0);
+        });
+        const wk=Object.keys(weeks).sort().slice(-8);
+        charts.c3=new Chart(el3,{type:'bar',data:{
+            labels:wk.map(k=>new Date(k+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'})),
+            datasets:[{label:'Haftalık',data:wk.map(k=>weeks[k]),backgroundColor:'rgba(59,130,246,.7)',borderRadius:6,borderSkipped:false}]
+        },options:opts});
+    }
+
+    // 4. Category
+    const el4=document.getElementById('ch4');
+    if(el4){
+        const cl=['Gıda','Kahvaltı','Kahve','M.Suyu','Sıcak İç.','Soğuk İç.','Tatlı','Dondurma','Depo'];
+        const cd=[s.cg.gida,s.cg.kahvalti,s.cg.kahve,s.cg.meyveSuyu,s.cg.sicakIcecek,s.cg.sogukIcecek,s.cg.tatli,s.cg.dondurmaSatis,s.cg.depo];
+        const cc=['#3b82f6','#8b5cf6','#f59e0b','#22c55e','#ef4444','#06b6d4','#ec4899','#a855f7','#64748b'];
+        const filt=cl.map((l,i)=>({l,v:cd[i],c:cc[i]})).filter(x=>x.v>0);
+        if(filt.length)charts.c4=new Chart(el4,{type:'bar',data:{
+            labels:filt.map(f=>f.l),datasets:[{label:'Gelir',data:filt.map(f=>f.v),backgroundColor:filt.map(f=>f.c),borderRadius:6,borderSkipped:false}]
+        },options:{...opts,indexAxis:'y',plugins:{legend:{display:false}}}});
+    }
+
+    // 5. Day type
+    const el5=document.getElementById('ch5');
+    if(el5)charts.c5=new Chart(el5,{type:'bar',data:{
+        labels:['Hafta İçi','Hafta Sonu'],
+        datasets:[{label:'Toplam',data:[s.wdTotal,s.weTotal],backgroundColor:['rgba(59,130,246,.7)','rgba(245,158,11,.7)'],borderRadius:6,borderSkipped:false},
+        {label:'Günlük Ort.',data:[s.wdAvg,s.weAvg],backgroundColor:['rgba(59,130,246,.3)','rgba(245,158,11,.3)'],borderRadius:6,borderSkipped:false}]
+    },options:opts});
+
+    // 6. Person chart
+    const el6=document.getElementById('ch6');
+    if(el6){
+        const ranking=calcRanking(filtRec);
+        if(ranking.length)charts.c6=new Chart(el6,{type:'bar',data:{
+            labels:ranking.map(r=>(PP[r.id]||{short:r.id}).short),
+            datasets:[{label:'Toplam Ciro',data:ranking.map(r=>r.totalRevenue),backgroundColor:ranking.map(r=>(PP[r.id]||{color:'#64748b'}).color+'bb'),borderRadius:6,borderSkipped:false}]
+        },options:opts});
+    }
+}
+
+// INTERACTIONS
+function chMonth(v){selMonth=v;selIds.clear();render()}
+function togItem(id,c){if(c)selIds.add(id);else selIds.delete(id);updDel()}
+function togAll(c){if(c)filtRec.forEach(r=>selIds.add(r.id));else selIds.clear();document.querySelectorAll('tbody input[type="checkbox"]').forEach(cb=>cb.checked=c);updDel()}
+function updDel(){const b=document.getElementById('delBtn'),n=document.getElementById('delCnt');if(b&&n){b.style.display=selIds.size?'block':'none';n.textContent=selIds.size}}
+
+async function delSel(){
+    if(!selIds.size)return;
+    if(!confirm(selIds.size+' kayıt silinecek. Emin misiniz?'))return;
+    try{const ids=[...selIds];const{error}=await sb.from('daily_revenue').delete().in('id',ids);
+    if(error)throw error;showToast('✅ '+ids.length+' kayıt silindi','success');selIds.clear();await loadData();}
+    catch(e){showToast('❌ '+e.message,'error')}
+}
+
+function fc(v){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(v||0)}
+function showToast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';setTimeout(()=>el.classList.remove('show'),4000)}
+</script>
 </body>
-
 </html>
