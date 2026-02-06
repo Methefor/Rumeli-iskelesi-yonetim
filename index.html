@@ -1,709 +1,411 @@
 <!DOCTYPE html>
-<html lang="tr" x-data="{ darkMode: localStorage.getItem('dark') === 'true' }" :class="{ 'dark': darkMode }">
-
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Rumeli İskelesi Yönetim Sistemi - Günlük Veri Girişi">
-    <meta name="theme-color" content="#2563eb">
-
     <title>Rumeli İskelesi - Veri Girişi</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
-    <script>window.tailwind = { config: { theme: { extend: {} } } }; console.warn = (function (oldWarn) { return function () { if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('cdn.tailwindcss.com')) return; oldWarn.apply(console, arguments); }; })(console.warn);</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-
+    <meta name="theme-color" content="#0a1628">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
-        * {
-            font-family: 'Inter', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+        :root {
+            --bg:#0a1628;--card:#111d32;--input:#162340;--brd:#1e3a5f;
+            --txt:#e8edf5;--txt2:#7a8ba8;--txt3:#4a5d7a;
+            --acc:#3b82f6;--glow:rgba(59,130,246,.15);
+            --green:#22c55e;--orange:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--pink:#ec4899;
         }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;-webkit-font-smoothing:antialiased}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        .nav{background:var(--card);border-bottom:1px solid var(--brd);padding:14px 20px;position:sticky;top:0;z-index:100}
+        .nav-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+        .nav-brand{display:flex;align-items:center;gap:10px}
+        .nav-icon{width:36px;height:36px;background:linear-gradient(135deg,#1e40af,#3b82f6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+        .nav-t{font-weight:700;font-size:16px}.nav-s{font-size:11px;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px}
+        .nav-actions{display:flex;gap:8px;align-items:center}
+        .nbtn{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--brd);background:var(--input);color:var(--txt);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+        .nbtn:hover{border-color:var(--acc);background:var(--glow)}.nbtn.blue{background:var(--acc);border-color:var(--acc);color:#fff}.nbtn.blue:hover{background:#2563eb}
+        .conn{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:600}
+        .conn.on{background:#064e3b;color:#6ee7b7}.conn.off{background:#7f1d1d;color:#fca5a5}
+
+        .main{max-width:900px;margin:0 auto;padding:24px 16px 80px}
+
+        /* Kasiyer Seçimi */
+        .person-bar{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:18px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+        .person-bar label{font-size:13px;font-weight:600;color:var(--txt2);white-space:nowrap}
+        .person-grid{display:flex;gap:8px;flex-wrap:wrap;flex:1}
+        .person-chip{padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;border:2px solid var(--brd);background:var(--input);color:var(--txt2);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px}
+        .person-chip:hover{border-color:var(--acc);color:var(--txt)}
+        .person-chip.active{border-color:var(--acc);background:var(--glow);color:#fff;box-shadow:0 0 20px rgba(59,130,246,.2)}
+        .person-chip .avatar{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+        .av-m{background:linear-gradient(135deg,#1e40af,#3b82f6)}.av-t{background:linear-gradient(135deg,#7c3aed,#8b5cf6)}
+        .av-e{background:linear-gradient(135deg,#c2410c,#f59e0b)}.av-ml{background:linear-gradient(135deg,#be185d,#ec4899)}
+        .av-c{background:linear-gradient(135deg,#059669,#22c55e)}
+        .person-chip .role{font-size:10px;color:var(--txt3);font-weight:500}
+
+        /* Date Header */
+        .date-header{background:linear-gradient(135deg,#1e40af,#3b82f6);border-radius:16px;padding:24px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px}
+        .date-header input[type="date"]{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);color:#fff;padding:10px 16px;border-radius:10px;font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;outline:none;width:100%;max-width:220px}
+        .date-header input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1)}
+        .dlbl{font-size:12px;opacity:.7;margin-bottom:6px}.dday{font-size:15px;opacity:.85;margin-top:6px;font-weight:500}
+        .tgt-sec{text-align:right}
+        .tgt-sel{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.25);color:#fff;padding:8px 12px;border-radius:8px;font-size:13px;font-weight:600;outline:none;margin-bottom:8px}
+        .tgt-sel option{background:var(--card);color:var(--txt)}
+        .tgt-amt{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700}
+        .tgt-lbl{font-size:11px;opacity:.6;margin-top:4px}
+
+        /* Summary */
+        .sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .sum-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:16px}
+        .sum-l{font-size:12px;color:var(--txt2);margin-bottom:6px}
+        .sum-v{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+        .sum-v.g{color:var(--green)}.sum-v.r{color:var(--red)}.sum-v.o{color:var(--orange)}
+
+        /* Card */
+        .card{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:24px;margin-bottom:20px}
+        .card-t{font-size:17px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+        .card-t span{font-size:22px}
+
+        /* Form */
+        .fg{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+        .fg.three{grid-template-columns:repeat(3,1fr)}
+        .fg label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px;letter-spacing:.3px}
+        .iw{position:relative}
+        .iw input{width:100%;background:var(--input);border:1.5px solid var(--brd);color:var(--txt);padding:12px 14px 12px 14px;padding-right:36px;border-radius:10px;font-size:16px;font-weight:600;font-family:'JetBrains Mono',monospace;outline:none;transition:border-color .2s,box-shadow .2s}
+        .iw input:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--glow)}
+        .iw input::placeholder{color:var(--txt3);font-weight:400}
+        .iw .sfx{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--txt3);font-weight:600}
+
+        .total-bar{margin-top:20px;padding-top:20px;border-top:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+        .total-l{font-size:15px;font-weight:600;color:var(--txt2)}
+        .total-v{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--acc)}
+
+        textarea{width:100%;background:var(--input);border:1.5px solid var(--brd);color:var(--txt);padding:12px 14px;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;resize:vertical;min-height:70px;transition:border-color .2s}
+        textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--glow)}textarea::placeholder{color:var(--txt3)}
+
+        .btn-row{display:flex;gap:12px;margin-top:8px}
+        .btn{flex:1;padding:16px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+        .btn-p{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 30px rgba(59,130,246,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-s{background:var(--input);color:var(--txt);border:1px solid var(--brd);flex:0 0 auto;padding:16px 24px}
+        .btn-s:hover{border-color:var(--acc)}
+
+        .toast{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);padding:14px 24px;border-radius:12px;font-weight:600;font-size:14px;z-index:200;opacity:0;transition:all .3s;pointer-events:none}
+        .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .toast.success{background:#064e3b;color:#6ee7b7;border:1px solid #065f46}
+        .toast.error{background:#7f1d1d;color:#fca5a5;border:1px solid #991b1b}
+
+        /* Greeting */
+        .greeting{text-align:center;padding:40px 20px;color:var(--txt3)}
+        .greeting-icon{font-size:48px;margin-bottom:12px}
+        .greeting-text{font-size:16px;font-weight:600;color:var(--txt2);margin-bottom:4px}
+        .greeting-sub{font-size:13px}
+
+        /* Settings Modal */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:20px}
+        .modal-bg.on{display:flex}
+        .modal{background:var(--card);border:1px solid var(--brd);border-radius:16px;padding:28px;max-width:440px;width:100%}
+        .modal h3{font-size:20px;font-weight:700;margin-bottom:20px}
+        .modal .fg-s{margin-bottom:14px}
+        .modal .fg-s label{display:block;font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+        .modal .fg-s input{width:100%;background:var(--input);border:1.5px solid var(--brd);color:var(--txt);padding:10px 14px;border-radius:8px;font-size:15px;font-weight:600;font-family:'JetBrains Mono',monospace;outline:none}
+        .modal .fg-s input:focus{border-color:var(--acc)}
+        .modal-note{background:var(--glow);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px;font-size:13px;color:var(--txt2);margin-bottom:16px}
+
+        @media(max-width:640px){
+            .fg{grid-template-columns:1fr}.fg.three{grid-template-columns:repeat(2,1fr)}
+            .sum-grid{grid-template-columns:1fr}.date-header{flex-direction:column}
+            .tgt-sec{text-align:left}.tgt-amt{font-size:22px}
+            .btn-row{flex-direction:column}.person-grid{gap:6px}
+            .person-chip{padding:8px 12px;font-size:13px}
         }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 4px;
-        }
-
-        input[type="number"] {
-            -moz-appearance: textfield;
-            appearance: textfield;
-        }
-
-        * {
-            transition: all 0.2s ease;
-        }
-
-        .loading {
-            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: .5;
-            }
-        }
-
-        .success-message {
-            animation: slideInDown 0.3s ease-out;
-        }
-
-        @keyframes slideInDown {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Dark Mode Transitions */
-        body {
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .dark body {
-            background-color: #0f172a;
-            color: #f8fafc;
-        }
-
-        .dark .bg-white {
-            background-color: #1e293b;
-            color: #f8fafc;
-            border-color: #334155;
-        }
-
-        .dark .text-gray-900 {
-            color: #f8fafc;
-        }
-
-        .dark .text-gray-700 {
-            color: #e2e8f0;
-        }
-
-        .dark .text-gray-600 {
-            color: #94a3b8;
-        }
-
-        .dark .text-gray-500 {
-            color: #94a3b8;
-        }
-
-        .dark .bg-gray-50 {
-            background-color: #0f172a;
-        }
-
-        .dark input,
-        .dark select,
-        .dark textarea {
-            background-color: #334155;
-            border-color: #475569;
-            color: white;
-        }
-
-        .dark input::placeholder,
-        .dark textarea::placeholder {
-            color: #94a3b8;
-        }
+        input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+        input[type="number"]{-moz-appearance:textfield}
+        @keyframes spin{to{transform:rotate(360deg)}}.spinner{animation:spin 1s linear infinite;display:inline-block}
     </style>
 </head>
-
-<body class="bg-gray-50 antialiased" x-data="dataEntry()">
-
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
-                    <span class="text-3xl">🏖️</span>
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-900">Rumeli İskelesi</h1>
-                        <p class="text-sm text-gray-500">Yönetim Sistemi</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    <button @click="darkMode = !darkMode; localStorage.setItem('dark', darkMode)"
-                        class="p-2 rounded-lg text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                        <span x-show="!darkMode">🌙</span>
-                        <span x-show="darkMode">☀️</span>
-                    </button>
-                    <button @click="showSettings = !showSettings"
-                        class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                        <i data-feather="settings" class="w-5 h-5"></i>
-                    </button>
-                    <a href="dashboard.html" class="text-gray-600 hover:text-gray-900">
-                        <i data-feather="bar-chart-2" class="w-5 h-5"></i>
-                    </a>
-                    <button @click="showInfo = !showInfo" class="text-gray-600 hover:text-gray-900">
-                        <i data-feather="info" class="w-5 h-5"></i>
-                    </button>
-                </div>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <div class="nav-icon">🏖️</div>
+                <div><div class="nav-t">Rumeli İskelesi</div><div class="nav-s">Veri Girişi</div></div>
+            </div>
+            <div class="nav-actions">
+                <span id="connBadge" class="conn off">⏳</span>
+                <button class="nbtn" onclick="openSettings()">⚙️</button>
+                <a href="dashboard.html" class="nbtn blue">📊 Dashboard</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8">
+    <div id="toast" class="toast"></div>
 
-        <!-- Date Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-lg p-6 mb-8 text-white">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex-1 w-full sm:w-auto">
-                    <p class="text-blue-100 text-sm mb-2">Tarih Seçin</p>
-                    <input type="date" x-model="selectedDate" @change="updateDateInfo"
-                        class="w-full sm:w-auto px-4 py-3 bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-xl text-white placeholder-blue-100 text-lg font-bold focus:ring-2 focus:ring-white focus:border-transparent">
-                    <p class="text-blue-100 text-lg mt-2" x-text="currentDay"></p>
+    <main class="main">
+        <!-- Kasiyer Seçimi -->
+        <div class="person-bar">
+            <label>👤 Kim Giriyor?</label>
+            <div class="person-grid" id="personGrid">
+                <div class="person-chip" data-id="metehan" onclick="selectPerson(this)">
+                    <div class="avatar av-m">MA</div>
+                    <div><div>Metehan</div><div class="role">Mesul Müdür</div></div>
                 </div>
-                <div class="text-left sm:text-right w-full sm:w-auto">
-                    <p class="text-blue-100 text-sm mb-2">Günlük Hedef</p>
-                    <div class="flex items-center gap-2 mb-2">
-                        <select x-model="targetType" @change="updateTarget"
-                            class="px-3 py-2 bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-lg text-white text-sm font-semibold focus:ring-2 focus:ring-white focus:border-transparent">
-                            <option value="weekday" class="text-gray-900">📅 Hafta İçi</option>
-                            <option value="weekend" class="text-gray-900">🎉 Hafta Sonu</option>
-                            <option value="special" class="text-gray-900">⭐ Özel Gün</option>
-                        </select>
-                    </div>
-                    <p class="text-3xl font-bold" x-text="formatCurrency(dailyTarget)"></p>
-                    <p class="text-blue-100 text-xs mt-1" x-text="targetLabel"></p>
+                <div class="person-chip" data-id="tuba" onclick="selectPerson(this)">
+                    <div class="avatar av-t">TB</div>
+                    <div>Tuba</div>
+                </div>
+                <div class="person-chip" data-id="elif" onclick="selectPerson(this)">
+                    <div class="avatar av-e">EY</div>
+                    <div>Elif</div>
+                </div>
+                <div class="person-chip" data-id="melda" onclick="selectPerson(this)">
+                    <div class="avatar av-ml">MY</div>
+                    <div>Melda</div>
+                </div>
+                <div class="person-chip" data-id="ceren" onclick="selectPerson(this)">
+                    <div class="avatar av-c">CE</div>
+                    <div>Ceren</div>
                 </div>
             </div>
         </div>
 
-        <!-- Cashier Selection -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex items-center space-x-2 mb-4">
-                <span class="text-2xl">👤</span>
-                <h3 class="text-xl font-bold text-gray-900">Kasiyer Seçimi</h3>
-            </div>
-            <select x-model="formData.cashierName"
-                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                required>
-                <option value="" disabled selected>Kasiyer Seçiniz...</option>
-                <option value="Metehan Arslan">Metehan Arslan (Mesul Müdür)</option>
-                <option value="Tuba Bozaklı">Tuba Bozaklı</option>
-                <option value="Elif Yıldırım">Elif Yıldırım</option>
-                <option value="Melda Yılmaz">Melda Yılmaz</option>
-                <option value="Ceren Erdem">Ceren Erdem</option>
-            </select>
-        </div>
-
-        <!-- Quick Summary -->
-        <div x-show="todayTotal > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8" x-transition>
-            <div class="bg-white rounded-xl shadow p-6">
-                <p class="text-gray-500 text-sm mb-2">Toplam Ciro</p>
-                <p class="text-2xl font-bold text-gray-900" x-text="formatCurrency(todayTotal)"></p>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6">
-                <p class="text-gray-500 text-sm mb-2">Hedef Farkı</p>
-                <p class="text-2xl font-bold" :class="todayTotal >= dailyTarget ? 'text-green-600' : 'text-red-600'"
-                    x-text="formatCurrency(todayTotal - dailyTarget)"></p>
-            </div>
-            <div class="bg-white rounded-xl shadow p-6">
-                <p class="text-gray-500 text-sm mb-2">Gerçekleşme</p>
-                <p class="text-2xl font-bold"
-                    :class="(todayTotal/dailyTarget)*100 >= 100 ? 'text-green-600' : 'text-orange-600'"
-                    x-text="'%' + ((todayTotal/dailyTarget)*100).toFixed(0)"></p>
-            </div>
-        </div>
-
-        <!-- Data Entry Form -->
-        <form @submit.prevent="submitData" class="space-y-6">
-
-            <!-- Kasa Ciroları -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-2xl">💰</span>
-                    <h3 class="text-xl font-bold text-gray-900">Z Raporu - Kasa Ciroları</h3>
+        <!-- Form alanı (kasiyer seçilmeden gizli) -->
+        <div id="formArea" style="display:none">
+            <!-- Date Header -->
+            <div class="date-header">
+                <div>
+                    <div class="dlbl">Tarih Seçin</div>
+                    <input type="date" id="selectedDate" onchange="onDateChange()">
+                    <div class="dday" id="dayName"></div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🏪 Rumeli İskelesi Z1
-                        </label>
-                        <div class="relative">
-                            <input type="number" x-model.number="formData.rumeliZ1" @input="calculateTotal"
-                                placeholder="18000,50"
-                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                                required min="0" step="0.01">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🏪 Rumeli İskelesi Z2
-                        </label>
-                        <div class="relative">
-                            <input type="number" x-model.number="formData.rumeliZ2" @input="calculateTotal"
-                                placeholder="15000,75"
-                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                                required min="0" step="0.01">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🐟 Balık Ekmek Z
-                        </label>
-                        <div class="relative">
-                            <input type="number" x-model.number="formData.balikEkmek" @input="calculateTotal"
-                                placeholder="10000,00"
-                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                                required min="0" step="0.01">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🍦 Dondurma Z
-                        </label>
-                        <div class="relative">
-                            <input type="number" x-model.number="formData.dondurma" @input="calculateTotal"
-                                placeholder="4500,25"
-                                class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                                required min="0" step="0.01">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">₺</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total Display -->
-                <div class="mt-6 pt-6 border-t border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <span class="text-lg font-semibold text-gray-700">Toplam Ciro:</span>
-                        <span class="text-3xl font-bold text-blue-600" x-text="formatCurrency(todayTotal)"></span>
-                    </div>
+                <div class="tgt-sec">
+                    <div class="dlbl">Günlük Hedef</div>
+                    <select class="tgt-sel" id="targetType" onchange="updateTarget()">
+                        <option value="weekday">📅 Hafta İçi</option>
+                        <option value="weekend">🎉 Hafta Sonu</option>
+                        <option value="special">⭐ Özel Gün</option>
+                    </select>
+                    <div class="tgt-amt" id="targetAmount">₺150.000</div>
+                    <div class="tgt-lbl" id="targetLabel">Pazartesi - Cuma</div>
                 </div>
             </div>
 
-            <!-- Kategori Satışları -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="flex items-center space-x-2 mb-6">
-                    <span class="text-2xl">🍽️</span>
-                    <h3 class="text-xl font-bold text-gray-900">Kategori Satışları (Adet)</h3>
+            <!-- Summary -->
+            <div class="sum-grid" id="sumGrid" style="display:none">
+                <div class="sum-card"><div class="sum-l">Toplam Ciro</div><div class="sum-v" id="sTotal">₺0</div></div>
+                <div class="sum-card"><div class="sum-l">Hedef Farkı</div><div class="sum-v" id="sDiff">₺0</div></div>
+                <div class="sum-card"><div class="sum-l">Gerçekleşme</div><div class="sum-v" id="sPct">%0</div></div>
+            </div>
+
+            <!-- Z Raporları -->
+            <div class="card">
+                <div class="card-t"><span>💰</span> Z Raporu — Kasa Ciroları</div>
+                <div class="fg">
+                    <div><label>🏪 Rumeli İskelesi Z1</label><div class="iw"><input type="number" id="rumeliZ1" placeholder="0.00" step="0.01" min="0" oninput="calcTotal()"><span class="sfx">₺</span></div></div>
+                    <div><label>🏪 Rumeli İskelesi Z2</label><div class="iw"><input type="number" id="rumeliZ2" placeholder="0.00" step="0.01" min="0" oninput="calcTotal()"><span class="sfx">₺</span></div></div>
+                    <div><label>🐟 Balık Ekmek Z</label><div class="iw"><input type="number" id="balikEkmek" placeholder="0.00" step="0.01" min="0" oninput="calcTotal()"><span class="sfx">₺</span></div></div>
+                    <div><label>🍦 Dondurma Z</label><div class="iw"><input type="number" id="dondurmaZ" placeholder="0.00" step="0.01" min="0" oninput="calcTotal()"><span class="sfx">₺</span></div></div>
                 </div>
+                <div class="total-bar">
+                    <span class="total-l">Toplam Ciro</span>
+                    <span class="total-v" id="totalCiro">₺0</span>
+                </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🍕 Gıda
-                        </label>
-                        <input type="number" x-model.number="formData.gida" placeholder="18"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🥐 Kahvaltı
-                        </label>
-                        <input type="number" x-model.number="formData.kahvalti" placeholder="12"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            ☕ Kahve
-                        </label>
-                        <input type="number" x-model.number="formData.kahve" placeholder="15"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🧃 Meyve Suyu
-                        </label>
-                        <input type="number" x-model.number="formData.meyveSuyu" placeholder="4"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🍵 Sıcak İçecekler
-                        </label>
-                        <input type="number" x-model.number="formData.sicakIcecek" placeholder="285"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🥤 Soğuk İçecekler
-                        </label>
-                        <input type="number" x-model.number="formData.sogukIcecek" placeholder="22"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🍰 Tatlı
-                        </label>
-                        <input type="number" x-model.number="formData.tatli" placeholder="4"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            🍦 Dondurma (Adet)
-                        </label>
-                        <input type="number" x-model.number="formData.dondurmaAdet" placeholder="56"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            📦 Depo
-                        </label>
-                        <input type="number" x-model.number="formData.depo" placeholder="0"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                            required min="0" step="1">
-                    </div>
+            <!-- Kategori Gelirleri -->
+            <div class="card">
+                <div class="card-t"><span>💵</span> Kategori Gelirleri (₺)</div>
+                <div class="fg three">
+                    <div><label>🍕 Gıda</label><div class="iw"><input type="number" id="gidaGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🥐 Kahvaltı</label><div class="iw"><input type="number" id="kahvaltiGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>☕ Kahve</label><div class="iw"><input type="number" id="kahveGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🧃 Meyve Suyu</label><div class="iw"><input type="number" id="meyveSuyuGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🫖 Sıcak İçecek</label><div class="iw"><input type="number" id="sicakIcecekGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🥤 Soğuk İçecek</label><div class="iw"><input type="number" id="sogukIcecekGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🍰 Tatlı</label><div class="iw"><input type="number" id="tatliGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>🍦 Dondurma Satış</label><div class="iw"><input type="number" id="dondurmaSatisGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
+                    <div><label>📦 Depo</label><div class="iw"><input type="number" id="depoGelir" placeholder="0" step="0.01" min="0"><span class="sfx">₺</span></div></div>
                 </div>
             </div>
 
             <!-- Notlar -->
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="flex items-center space-x-2 mb-4">
-                    <span class="text-2xl">📝</span>
-                    <h3 class="text-xl font-bold text-gray-900">Notlar (İsteğe Bağlı)</h3>
-                </div>
-
-                <textarea x-model="formData.notlar" placeholder="Günle ilgili not varsa buraya yazabilirsiniz..."
-                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    rows="3"></textarea>
+            <div class="card">
+                <div class="card-t"><span>📝</span> Notlar</div>
+                <textarea id="notlar" placeholder="Günle ilgili önemli not..."></textarea>
             </div>
 
-            <!-- Submit Button -->
-            <div class="flex flex-col sm:flex-row gap-4">
-                <button type="submit" :disabled="isSubmitting"
-                    class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
-                    <span x-show="!isSubmitting">💾 Verileri Kaydet</span>
-                    <span x-show="isSubmitting" class="loading">⏳ Kaydediliyor...</span>
-                </button>
-
-                <button type="button" @click="viewDashboard"
-                    class="sm:w-48 bg-white text-gray-700 font-semibold py-4 px-6 rounded-xl shadow border border-gray-300 hover:bg-gray-50 flex items-center justify-center space-x-2">
-                    <i data-feather="bar-chart-2" class="w-5 h-5"></i>
-                    <span>Dashboard</span>
-                </button>
+            <!-- Buttons -->
+            <div class="btn-row">
+                <button class="btn btn-p" id="saveBtn" onclick="saveData()">💾 Verileri Kaydet</button>
+                <a href="dashboard.html" class="btn btn-s">📊</a>
             </div>
-        </form>
-
-        <!-- Success/Error Messages -->
-        <div x-show="message.show" x-transition
-            :class="message.type === 'success' ? 'bg-green-50 border-green-500 text-green-900' : 'bg-red-50 border-red-500 text-red-900'"
-            class="mt-6 p-4 rounded-xl border-l-4 success-message">
-            <p class="font-semibold" x-text="message.text"></p>
         </div>
 
+        <!-- Kasiyer seçilmediğinde -->
+        <div id="noPersonMsg" class="greeting">
+            <div class="greeting-icon">👆</div>
+            <div class="greeting-text">Lütfen yukarıdan isminizi seçin</div>
+            <div class="greeting-sub">Veri girişi yapmak için önce kendinizi tanıtın</div>
+        </div>
     </main>
 
     <!-- Settings Modal -->
-    <div x-show="showSettings" x-transition @click.away="showSettings = false"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">⚙️ Hedef Ayarları</h3>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        📅 Hafta İçi Hedefi (₺)
-                    </label>
-                    <input type="number" x-model.number="targets.weekday" @change="saveTargets"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                        min="0" step="1000">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        🎉 Hafta Sonu Hedefi (₺)
-                    </label>
-                    <input type="number" x-model.number="targets.weekend" @change="saveTargets"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                        min="0" step="1000">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        ⭐ Özel Gün Hedefi (₺)
-                    </label>
-                    <input type="number" x-model.number="targets.special" @change="saveTargets"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-semibold"
-                        min="0" step="1000">
-                </div>
-
-                <div class="p-4 bg-blue-50 rounded-xl">
-                    <p class="text-sm text-blue-900"><strong>💡 Not:</strong> Hedefler otomatik kaydedilir. Veri
-                        girişinde dropdown'dan gün tipini seçebilirsiniz.</p>
-                </div>
-            </div>
-
-            <button @click="showSettings = false"
-                class="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700">
-                Tamam
-            </button>
+    <div class="modal-bg" id="settingsModal">
+        <div class="modal">
+            <h3>⚙️ Hedef Ayarları</h3>
+            <div class="fg-s"><label>📅 Hafta İçi (₺)</label><input type="number" id="tw" step="1000" min="0"></div>
+            <div class="fg-s"><label>🎉 Hafta Sonu (₺)</label><input type="number" id="twe" step="1000" min="0"></div>
+            <div class="fg-s"><label>⭐ Özel Gün (₺)</label><input type="number" id="ts" step="1000" min="0"></div>
+            <div class="modal-note">💡 Hedefler Supabase'e kaydedilir. Tüm kullanıcılar aynı hedefleri görür.</div>
+            <button class="btn btn-p" style="width:100%" onclick="saveTargets()">Kaydet ve Kapat</button>
         </div>
     </div>
 
-    <!-- Info Modal -->
-    <div x-show="showInfo" x-transition @click.away="showInfo = false"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">📱 Kullanım Kılavuzu</h3>
-            <div class="space-y-3 text-gray-700">
-                <p><strong>1.</strong> Tarih seçin (varsayılan: bugün)</p>
-                <p><strong>2.</strong> Gün tipini seçin (Hafta İçi/Sonu/Özel)</p>
-                <p><strong>3.</strong> Z raporlarını toplayın</p>
-                <p><strong>4.</strong> Formu doldurun (kuruş hassasiyetinde)</p>
-                <p><strong>5.</strong> "Verileri Kaydet" butonuna basın</p>
-            </div>
-            <div class="mt-6 p-4 bg-blue-50 rounded-xl space-y-1">
-                <p class="text-sm text-blue-900"><strong>📅 Hafta İçi:</strong> <span
-                        x-text="formatCurrency(targets.weekday)"></span></p>
-                <p class="text-sm text-blue-900"><strong>🎉 Hafta Sonu:</strong> <span
-                        x-text="formatCurrency(targets.weekend)"></span></p>
-                <p class="text-sm text-blue-900"><strong>⭐ Özel Gün:</strong> <span
-                        x-text="formatCurrency(targets.special)"></span></p>
-            </div>
-            <button @click="showInfo = false"
-                class="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700">
-                Anladım
-            </button>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script type="module">
-        import { insertSalesRecord } from './js/supabase-client.js';
-        window.insertSalesRecord = insertSalesRecord;
-    </script>
-
-
     <script>
-        feather.replace();
+    const SUPABASE_URL='https://iwikwbjsznujefvuemdb.supabase.co';
+    const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3aWt3Ympzem5qdWVmdnVlbWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNzkwNzEsImV4cCI6MjA4NTg1NTA3MX0.JLTiyDsrzcyEQEf_yS0cwUwtR3H1FaPl4mRFBRk142Q';
+    const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-        function dataEntry() {
-            return {
-                selectedDate: new Date().toISOString().split('T')[0],
-                currentDate: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
-                currentDay: new Date().toLocaleDateString('tr-TR', { weekday: 'long' }),
-                targetType: 'weekday',
-                targets: {
-                    weekday: parseInt(localStorage.getItem('target_weekday')) || 150000,
-                    weekend: parseInt(localStorage.getItem('target_weekend')) || 200000,
-                    special: parseInt(localStorage.getItem('target_special')) || 250000
-                },
-                dailyTarget: 150000,
-                targetLabel: '',
-                todayTotal: 0,
-                isSubmitting: false,
-                showInfo: false,
-                showSettings: false,
-                message: {
-                    show: false,
-                    type: 'success',
-                    text: ''
-                },
-                formData: {
-                    cashierName: '',
-                    rumeliZ1: null,
-                    rumeliZ2: null,
-                    balikEkmek: null,
-                    dondurma: null,
-                    gida: null,
-                    kahvalti: null,
-                    kahve: null,
-                    meyveSuyu: null,
-                    sicakIcecek: null,
-                    sogukIcecek: null,
-                    tatli: null,
-                    dondurmaAdet: null,
-                    depo: null,
-                    notlar: ''
-                },
+    const PEOPLE={
+        metehan:{name:'Metehan Arslan',short:'Metehan',role:'Mesul Müdür'},
+        tuba:{name:'Tuba Bozaklı',short:'Tuba',role:'Kasiyer'},
+        elif:{name:'Elif Yıldırım',short:'Elif',role:'Kasiyer'},
+        melda:{name:'Melda Yılmaz',short:'Melda',role:'Kasiyer'},
+        ceren:{name:'Ceren Erdem',short:'Ceren',role:'Kasiyer'}
+    };
 
-                init() {
-                    this.detectDayType();
-                    this.updateTarget();
-                },
+    let targets={weekday:150000,weekend:200000,special:250000};
+    let selectedPerson=localStorage.getItem('rumeli_person')||null;
 
-                detectDayType() {
-                    const date = new Date(this.selectedDate + 'T00:00:00');
-                    const dayOfWeek = date.getDay();
+    // INIT
+    document.addEventListener('DOMContentLoaded',async()=>{
+        document.getElementById('selectedDate').value=new Date().toISOString().split('T')[0];
+        onDateChange();
 
-                    // 0 = Pazar, 6 = Cumartesi
-                    if (dayOfWeek === 0 || dayOfWeek === 6) {
-                        this.targetType = 'weekend';
-                    } else {
-                        this.targetType = 'weekday';
-                    }
-                },
-
-                updateDateInfo() {
-                    const date = new Date(this.selectedDate + 'T00:00:00');
-                    this.currentDate = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
-                    this.currentDay = date.toLocaleDateString('tr-TR', { weekday: 'long' });
-                    this.detectDayType();
-                    this.updateTarget();
-                },
-
-                updateTarget() {
-                    this.dailyTarget = this.targets[this.targetType];
-
-                    switch (this.targetType) {
-                        case 'weekday':
-                            this.targetLabel = 'Pazartesi-Cuma';
-                            break;
-                        case 'weekend':
-                            this.targetLabel = 'Cumartesi-Pazar';
-                            break;
-                        case 'special':
-                            this.targetLabel = 'Bayram/Özel Gün';
-                            break;
-                    }
-                },
-
-                saveTargets() {
-                    localStorage.setItem('target_weekday', this.targets.weekday.toString());
-                    localStorage.setItem('target_weekend', this.targets.weekend.toString());
-                    localStorage.setItem('target_special', this.targets.special.toString());
-                    this.updateTarget();
-                    console.log('✅ Hedefler kaydedildi');
-                },
-
-                calculateTotal() {
-                    this.todayTotal = (this.formData.rumeliZ1 || 0) +
-                        (this.formData.rumeliZ2 || 0) +
-                        (this.formData.balikEkmek || 0) +
-                        (this.formData.dondurma || 0);
-                },
-
-                formatCurrency(value) {
-                    return new Intl.NumberFormat('tr-TR', {
-                        style: 'currency',
-                        currency: 'TRY',
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    }).format(value || 0);
-                },
-
-                async submitData() {
-                    if (!this.formData.cashierName) {
-                        this.showMessage('error', '⚠️ Lütfen bir kasiyer seçiniz.');
-                        return;
-                    }
-
-                    this.isSubmitting = true;
-
-                    this.formData.selectedDate = this.selectedDate;
-                    this.formData.targetType = this.targetType;
-                    this.formData.dailyTarget = this.dailyTarget;
-
-                    try {
-                        if (typeof window.insertSalesRecord === 'function') {
-                            const { data, error } = await window.insertSalesRecord(this.formData);
-                            if (error) {
-                                console.error("Supabase Insert Error Detail:", JSON.stringify(error, null, 2));
-                                throw error;
-                            }
-                            console.log("Supabase Insert Success:", data);
-                            this.showMessage('success', '✅ Veriler Supabase veritabanına kaydedildi!');
-                            setTimeout(() => {
-                                window.location.href = 'dashboard.html';
-                            }, 1500);
-                        } else {
-                            throw new Error('Supabase client not loaded');
-                        }
-                    } catch (error) {
-                        console.error('Save error details:', error);
-                        alert(`Kayıt hatası: ${error.message || JSON.stringify(error)}`); // Visible alert for user
-                        this.saveToLocalStorage(); // Fallback
-                        this.showMessage('error', '⚠️ Bağlantı hatası! Veriler geçici olarak cihaza kaydedildi.');
-                    } finally {
-                        this.isSubmitting = false;
-                    }
-                },
-
-                saveToLocalStorage() {
-                    const data = {
-                        timestamp: new Date().toISOString(),
-                        date: this.selectedDate,
-                        ...this.formData,
-                        total: this.todayTotal,
-                        target: this.dailyTarget,
-                        targetType: this.targetType,
-                        synced: false
-                    };
-
-                    let allData = JSON.parse(localStorage.getItem('rumeliData') || '[]');
-                    allData.push(data);
-                    localStorage.setItem('rumeliData', JSON.stringify(allData));
-                },
-
-                showMessage(type, text) {
-                    this.message = { show: true, type, text };
-                    setTimeout(() => {
-                        this.message.show = false;
-                    }, 5000);
-                },
-
-                viewDashboard() {
-                    window.location.href = 'dashboard.html';
-                }
-            }
+        // Supabase bağlantı
+        try{
+            const{data,error}=await sb.from('targets').select('*');
+            if(!error){
+                document.getElementById('connBadge').className='conn on';
+                document.getElementById('connBadge').textContent='✅ Online';
+                if(data)data.forEach(t=>{targets[t.target_type]=parseFloat(t.amount)});
+            }else throw error;
+        }catch(e){
+            document.getElementById('connBadge').className='conn off';
+            document.getElementById('connBadge').textContent='❌ Offline';
         }
-    </script>
-    <script>
-        // PWA Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
+
+        document.getElementById('tw').value=targets.weekday;
+        document.getElementById('twe').value=targets.weekend;
+        document.getElementById('ts').value=targets.special;
+        updateTarget();
+
+        // Önceki seçimi hatırla
+        if(selectedPerson){
+            const chip=document.querySelector(`[data-id="${selectedPerson}"]`);
+            if(chip)selectPerson(chip);
         }
+    });
+
+    // PERSON SELECT
+    function selectPerson(el){
+        document.querySelectorAll('.person-chip').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        selectedPerson=el.dataset.id;
+        localStorage.setItem('rumeli_person',selectedPerson);
+        document.getElementById('formArea').style.display='block';
+        document.getElementById('noPersonMsg').style.display='none';
+    }
+
+    // DATE
+    function onDateChange(){
+        const d=document.getElementById('selectedDate').value;
+        if(!d)return;
+        const date=new Date(d+'T00:00:00');
+        const days=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+        document.getElementById('dayName').textContent=days[date.getDay()];
+        const day=date.getDay();
+        document.getElementById('targetType').value=(day===0||day===6)?'weekend':'weekday';
+        updateTarget();
+    }
+
+    function updateTarget(){
+        const type=document.getElementById('targetType').value;
+        document.getElementById('targetAmount').textContent=fmtC(targets[type]);
+        const labels={weekday:'Pazartesi - Cuma',weekend:'Cumartesi - Pazar',special:'Bayram / Özel Gün'};
+        document.getElementById('targetLabel').textContent=labels[type];
+        calcTotal();
+    }
+
+    function v(id){return parseFloat(document.getElementById(id).value)||0}
+
+    function calcTotal(){
+        const total=v('rumeliZ1')+v('rumeliZ2')+v('balikEkmek')+v('dondurmaZ');
+        document.getElementById('totalCiro').textContent=fmtC(total);
+        const g=document.getElementById('sumGrid');
+        if(total>0){
+            g.style.display='grid';
+            document.getElementById('sTotal').textContent=fmtC(total);
+            const tgt=targets[document.getElementById('targetType').value];
+            const diff=total-tgt;const pct=((total/tgt)*100).toFixed(0);
+            const de=document.getElementById('sDiff');de.textContent=fmtC(diff);de.className='sum-v '+(diff>=0?'g':'r');
+            const pe=document.getElementById('sPct');pe.textContent='%'+pct;pe.className='sum-v '+(pct>=100?'g':pct>=80?'o':'r');
+        }else g.style.display='none';
+    }
+
+    function fmtC(v){return new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(v||0)}
+
+    // SAVE
+    async function saveData(){
+        if(!selectedPerson){showToast('Lütfen isminizi seçin!','error');return}
+        const btn=document.getElementById('saveBtn');
+        btn.disabled=true;btn.innerHTML='<span class="spinner">⏳</span> Kaydediliyor...';
+
+        const dateVal=document.getElementById('selectedDate').value;
+        if(!dateVal){showToast('Tarih seçin!','error');btn.disabled=false;btn.innerHTML='💾 Verileri Kaydet';return}
+
+        const rec={
+            date:dateVal,
+            created_by:selectedPerson,
+            rumeli_z1:v('rumeliZ1'),rumeli_z2:v('rumeliZ2'),
+            balik_ekmek:v('balikEkmek'),dondurma_z:v('dondurmaZ'),
+            gida_gelir:v('gidaGelir'),kahvalti_gelir:v('kahvaltiGelir'),
+            kahve_gelir:v('kahveGelir'),meyve_suyu_gelir:v('meyveSuyuGelir'),
+            sicak_icecek_gelir:v('sicakIcecekGelir'),soguk_icecek_gelir:v('sogukIcecekGelir'),
+            tatli_gelir:v('tatliGelir'),dondurma_satis_gelir:v('dondurmaSatisGelir'),
+            depo_gelir:v('depoGelir'),
+            day_type:document.getElementById('targetType').value,
+            daily_target:targets[document.getElementById('targetType').value],
+            notlar:document.getElementById('notlar').value
+        };
+
+        try{
+            const{error}=await sb.from('daily_revenue').upsert(rec,{onConflict:'date,created_by'}).select();
+            if(error)throw error;
+            showToast('✅ '+PEOPLE[selectedPerson].short+', veriler kaydedildi!','success');
+            setTimeout(()=>{window.location.href='dashboard.html'},1200);
+        }catch(err){
+            console.error(err);
+            showToast('❌ Hata: '+(err.message||'Bağlantı sorunu'),'error');
+            btn.disabled=false;btn.innerHTML='💾 Verileri Kaydet';
+        }
+    }
+
+    // SETTINGS
+    function openSettings(){document.getElementById('settingsModal').classList.add('on')}
+    async function saveTargets(){
+        targets.weekday=parseFloat(document.getElementById('tw').value)||150000;
+        targets.weekend=parseFloat(document.getElementById('twe').value)||200000;
+        targets.special=parseFloat(document.getElementById('ts').value)||250000;
+        try{for(const[t,a]of Object.entries(targets))await sb.from('targets').upsert({target_type:t,amount:a},{onConflict:'target_type'});showToast('✅ Hedefler kaydedildi!','success')}catch(e){console.error(e)}
+        document.getElementById('settingsModal').classList.remove('on');updateTarget();
+    }
+    document.getElementById('settingsModal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on')});
+
+    function showToast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';setTimeout(()=>el.classList.remove('show'),4000)}
     </script>
 </body>
-
 </html>
