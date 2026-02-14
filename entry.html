@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veri Girişi - Rumeli İskelesi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root {
+            --bg: #0a1628;
+            --card: #111d32;
+            --input: #162340;
+            --brd: #1e3a5f;
+            --txt: #e8edf5;
+            --txt2: #7a8ba8;
+            --txt3: #4a5d7a;
+            --acc: #3b82f6;
+            --glow: rgba(59, 130, 246, .15);
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px
+        }
+
+        /* PIN EKRANI */
+        .pin-screen {
+            max-width: 400px;
+            margin: 60px auto;
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .pin-screen h1 {
+            font-size: 24px;
+            margin-bottom: 10px
+        }
+
+        .pin-screen .subtitle {
+            font-size: 14px;
+            color: var(--txt2);
+            margin-bottom: 30px
+        }
+
+        .pin-input {
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 20px;
+            padding: 20px;
+            background: var(--input);
+            border: 2px solid var(--brd);
+            border-radius: 12px;
+            color: var(--txt);
+            outline: none;
+            margin-bottom: 20px
+        }
+
+        .pin-input:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px var(--glow)
+        }
+
+        .pin-error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none
+        }
+
+        .pin-error.show {
+            display: block
+        }
+
+        .pin-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: #fff;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .pin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+        }
+
+        .pin-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        /* VARDİYA SEÇİMİ */
+        .shift-screen {
+            max-width: 500px;
+            margin: 40px auto;
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .shift-screen h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center
+        }
+
+        .shift-subtitle {
+            font-size: 14px;
+            color: var(--txt2);
+            margin-bottom: 30px;
+            text-align: center
+        }
+
+        .cashier-info {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px
+        }
+
+        .cashier-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .av-t {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        }
+
+        .av-e {
+            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        }
+
+        .av-m {
+            background: linear-gradient(135deg, #be185d, #ec4899)
+        }
+
+        .av-c {
+            background: linear-gradient(135deg, #059669, #22c55e)
+        }
+
+        .cashier-details {
+            flex: 1
+        }
+
+        .cashier-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .cashier-role {
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        .shift-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px
+        }
+
+        .shift-option {
+            padding: 24px;
+            border: 2px solid var(--brd);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center
+        }
+
+        .shift-option:hover {
+            border-color: var(--acc);
+            background: var(--glow)
+        }
+
+        .shift-option.selected {
+            border-color: var(--acc);
+            background: var(--glow);
+            box-shadow: 0 0 20px rgba(59, 130, 246, .2)
+        }
+
+        .shift-icon {
+            font-size: 40px;
+            margin-bottom: 12px
+        }
+
+        .shift-label {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px
+        }
+
+        .shift-time {
+            font-size: 12px;
+            color: var(--txt2)
+        }
+
+        .shift-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: #fff;
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: 20px
+        }
+
+        .shift-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+        }
+
+        .shift-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none
+        }
+
+        /* Kasa ve Vardiya notları için stil */
+        .shift-note {
+            font-size: 11px;
+            color: var(--txt3);
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* Form alanı wrapper */
+        .field-wrapper {
+            transition: all 0.3s;
+        }
+
+        /* VERİ GİRİŞ EKRANI (MEVCUT) */
+        .main {
+            max-width: 900px;
+            margin: 0 auto;
+            display: none
+        }
+
+        .main.active {
+            display: block
+        }
+
+        .nav {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700
+        }
+
+        .nav-info {
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        .points-badge {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px
+        }
+
+        .card-t {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 20px
+        }
+
+        .fg {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px
+        }
+
+        .fg label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--txt2);
+            margin-bottom: 6px
+        }
+
+        .iw {
+            position: relative
+        }
+
+        .iw input {
+            width: 100%;
+            background: var(--input);
+            border: 1.5px solid var(--brd);
+            color: var(--txt);
+            padding: 12px 36px 12px 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            outline: none
+        }
+
+        .iw input:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px var(--glow)
+        }
+
+        .iw .sfx {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 13px;
+            color: var(--txt3);
+            font-weight: 600
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: #fff
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all .3s;
+            pointer-events: none
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        .toast.success {
+            background: #064e3b;
+            color: #6ee7b7;
+            border: 1px solid #065f46
+        }
+
+        .toast.error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border: 1px solid #991b1b
+        }
+
+        .nbtn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .nbtn:hover {
+            border-color: var(--acc);
+            background: var(--glow);
+        }
+
+        .hidden {
+            display: none !important
+        }
+    </style>
+</head>
+
+<body>
+    <!-- PIN EKRANI -->
+    <div id="pinScreen" class="pin-screen">
+        <h1>🔐 Güvenli Giriş</h1>
+        <p class="subtitle">4 haneli PIN kodunuzu girin</p>
+        <input type="password" id="pinInput" class="pin-input" maxlength="4" pattern="[0-9]*" inputmode="numeric"
+            placeholder="****">
+        <div id="pinError" class="pin-error">❌ Hatalı PIN! Lütfen tekrar deneyin.</div>
+        <button id="pinButton" class="pin-btn">Giriş Yap</button>
+    </div>
+
+    <!-- KASA SEÇİM EKRANI -->
+    <div id="kasaScreen" class="shift-screen hidden">
+        <h1>🏪 Kasa Seçimi</h1>
+        <p class="shift-subtitle">Hangi kasada çalışıyorsunuz?</p>
+
+        <div class="cashier-info">
+            <div id="kasaCashierAvatar" class="cashier-avatar av-t">TB</div>
+            <div class="cashier-details">
+                <div id="kasaCashierName" class="cashier-name">Tuba Bozaklı</div>
+                <div id="kasaCashierRole" class="cashier-role">Kasiyer</div>
+            </div>
+        </div>
+
+        <div class="shift-options">
+            <div class="shift-option kasa-option" data-kasa="restoran">
+                <div class="shift-icon">🍽️</div>
+                <div class="shift-label">Restoran</div>
+                <div class="shift-time">Rumeli Z2</div>
+            </div>
+            <div class="shift-option kasa-option" data-kasa="cafetarya">
+                <div class="shift-icon">☕</div>
+                <div class="shift-label">Cafetarya</div>
+                <div class="shift-time">Rumeli Z1</div>
+            </div>
+        </div>
+
+        <div class="btn-row" style="display:flex;gap:12px;margin-top:20px;">
+            <button id="kasaBackButton" class="shift-btn"
+                style="background:var(--input);color:var(--txt);border:1px solid var(--brd);flex:0 0 auto;padding:16px 24px;">
+                ← Geri
+            </button>
+            <button id="kasaButton" class="shift-btn" style="flex:1;" disabled>Devam Et</button>
+        </div>
+    </div>
+
+    <!-- VARDİYA SEÇİM EKRANI -->
+    <div id="shiftScreen" class="shift-screen hidden">
+        <h1>📅 Vardiya Seçimi</h1>
+        <p class="shift-subtitle">Hangi vardiyada çalışıyorsunuz?</p>
+
+        <div class="cashier-info">
+            <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
+            <div class="cashier-details">
+                <div id="cashierName" class="cashier-name">Tuba Bozaklı</div>
+                <div id="cashierRole" class="cashier-role">Kasiyer - Cafetarya Z1</div>
+            </div>
+        </div>
+
+        <div class="shift-options">
+            <div class="shift-option" data-shift="sabah">
+                <div class="shift-icon">🌅</div>
+                <div class="shift-label">Sabah Vardiyası</div>
+                <div class="shift-time">09:00 - 16:00</div>
+                <div class="shift-note">
+                    Kendi vardiyandaki değerleri gir<br>
+                    ⏰ 16:30'a kadar zamanında
+                </div>
+            </div>
+            <div class="shift-option" data-shift="ogle">
+                <div class="shift-icon">🌙</div>
+                <div class="shift-label">Öğle Vardiyası</div>
+                <div class="shift-time">16:00 - 00:00</div>
+                <div class="shift-note">
+                    Günün toplam değerlerini gir (sabah+öğle)<br>
+                    ⏰ 00:30'a kadar zamanında
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row" style="display:flex;gap:12px;margin-top:20px;">
+            <button id="shiftBackButton" class="shift-btn"
+                style="background:var(--input);color:var(--txt);border:1px solid var(--brd);flex:0 0 auto;padding:16px 24px;">
+                ← Geri
+            </button>
+            <button id="shiftButton" class="shift-btn" style="flex:1;" disabled>Devam Et</button>
+        </div>
+    </div>
+
+    <!-- VERİ GİRİŞ EKRANI -->
+    <div id="mainScreen" class="main">
+        <div class="nav">
+            <div>
+                <div class="nav-title" id="navTitle">Veri Girişi</div>
+                <div class="nav-info" id="navInfo">...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button id="mainBackButton" class="nbtn">← Geri</button>
+                <div class="points-badge">
+                    <span>⭐</span>
+                    <span id="pointsDisplay">+0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-t">💰 Z Raporu Değerleri</div>
+            <div class="fg">
+                <div id="rumeliZ1Field" style="display:none;">
+                    <label>Rumeli Z1 (Cafetarya)</label>
+                    <div class="iw">
+                        <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="rumeliZ2Field" style="display:none;">
+                    <label>Rumeli Z2 (Restoran)</label>
+                    <div class="iw">
+                        <input type="number" id="rumeliZ2" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="balikEkmekField" style="display:none;">
+                    <label>Balık Ekmek</label>
+                    <div class="iw">
+                        <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="dondurmaZField" style="display:none;">
+                    <label>Dondurma</label>
+                    <div class="iw">
+                        <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-t">🍽️ Kategori Satışları</div>
+            <div class="fg">
+                <div id="gidaField" style="display:none;">
+                    <label>Gıda</label>
+                    <div class="iw">
+                        <input type="number" id="gida" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="kahveField" style="display:none;">
+                    <label>Kahve</label>
+                    <div class="iw">
+                        <input type="number" id="kahve" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="sicakIcecekField" style="display:none;">
+                    <label>Sıcak İçecek</label>
+                    <div class="iw">
+                        <input type="number" id="sicakIcecek" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="sogukIcecekField" style="display:none;">
+                    <label>Soğuk İçecek</label>
+                    <div class="iw">
+                        <input type="number" id="sogukIcecek" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="tatliField" style="display:none;">
+                    <label>Tatlı</label>
+                    <div class="iw">
+                        <input type="number" id="tatli" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="meyveSuyuField" style="display:none;">
+                    <label>Meyve Suyu</label>
+                    <div class="iw">
+                        <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div id="kahvaltiField" style="display:none;">
+                    <label>Kahvaltı</label>
+                    <div class="iw">
+                        <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+
+                <!-- Salata (sadece Restoran için) -->
+                <div id="salataField" style="display:none;">
+                    <label>Salata</label>
+                    <div class="iw">
+                        <input type="number" id="salata" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+
+                <!-- Dondurma (sadece Cafetarya için) -->
+                <div id="dondurmaKategoriField" style="display:none;">
+                    <label>Dondurma</label>
+                    <div class="iw">
+                        <input type="number" id="dondurmaKategori" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="submitButton" class="btn">💾 Kaydet ve Puan Kazan!</button>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { supabase, verifyCashierPin, insertShiftEntry } from './js/supabase-client.js'
+
+        // GLOBAL STATE
+        let currentCashier = null
+        let selectedKasa = null
+        let selectedShift = null
+
+        // EKRANLAR
+        const pinScreen = document.getElementById('pinScreen')
+        const kasaScreen = document.getElementById('kasaScreen')
+        const shiftScreen = document.getElementById('shiftScreen')
+        const mainScreen = document.getElementById('mainScreen')
+
+        // PIN GİRİŞİ
+        const pinInput = document.getElementById('pinInput')
+        const pinButton = document.getElementById('pinButton')
+        const pinError = document.getElementById('pinError')
+
+        pinInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter' && pinInput.value.length === 4) {
+                pinButton.click()
+            }
+        })
+
+        pinButton.addEventListener('click', async () => {
+            const pin = pinInput.value
+
+            if (pin.length !== 4) {
+                showToast('4 haneli PIN girin!', 'error')
+                return
+            }
+
+            pinButton.disabled = true
+            pinButton.textContent = 'Kontrol ediliyor...'
+            pinError.classList.remove('show')
+
+            try {
+                // ADMIN KONTROLÜ (PIN = 0000)
+                if (pin === '0000') {
+                    console.log('Admin kontrolü başladı...')
+
+                    const { data: adminData, error: adminError } = await supabase
+                        .from('admins')
+                        .select('*')
+                        .eq('pin', pin)
+                        .single()
+
+                    console.log('Admin data:', adminData)
+                    console.log('Admin error:', adminError)
+
+                    if (adminData && !adminError) {
+                        // Admin girişi başarılı
+                        showToast(`✅ Hoş geldiniz ${adminData.name}!`, 'success')
+
+                        setTimeout(() => {
+                            window.location.href = 'admin-dashboard.html'
+                        }, 1500)
+                        return
+                    } else {
+                        // Admin bulunamadı
+                        console.error('Admin bulunamadı:', adminError)
+                        pinError.textContent = '❌ Admin girişi başarısız! Supabase admins tablosunu kontrol edin.'
+                        pinError.classList.add('show')
+                        pinInput.value = ''
+                        pinInput.focus()
+                        pinButton.disabled = false
+                        pinButton.textContent = 'Giriş Yap'
+                        setTimeout(() => pinError.classList.remove('show'), 5000)
+                        return
+                    }
+                }
+
+                // KASİYER KONTROLÜ (PIN = 1234, 2345, 3456, 4567)
+                console.log('Kasiyer kontrolü başladı...')
+
+                const { data: cashierData, error: cashierError } = await supabase
+                    .from('cashiers')
+                    .select('*')
+                    .eq('pin', pin)
+                    .single()
+
+                console.log('Cashier data:', cashierData)
+                console.log('Cashier error:', cashierError)
+
+                if (cashierData && !cashierError) {
+                    // Kasiyer girişi başarılı
+                    currentCashier = cashierData
+                    showKasaScreen()
+                    pinButton.disabled = false
+                    pinButton.textContent = 'Giriş Yap'
+                } else {
+                    // Kasiyer bulunamadı
+                    pinError.textContent = '❌ Hatalı PIN! Lütfen tekrar deneyin.'
+                    pinError.classList.add('show')
+                    pinInput.value = ''
+                    pinInput.focus()
+                    pinButton.disabled = false
+                    pinButton.textContent = 'Giriş Yap'
+                    setTimeout(() => pinError.classList.remove('show'), 3000)
+                }
+
+            } catch (err) {
+                console.error('Genel hata:', err)
+                pinError.textContent = '❌ Bağlantı hatası! Tekrar deneyin.'
+                pinError.classList.add('show')
+                pinInput.value = ''
+                pinInput.focus()
+                pinButton.disabled = false
+                pinButton.textContent = 'Giriş Yap'
+                setTimeout(() => pinError.classList.remove('show'), 3000)
+            }
+        })
+
+        // KASA SEÇİMİ
+        function showKasaScreen() {
+            pinScreen.classList.add('hidden')
+            kasaScreen.classList.remove('hidden')
+
+            document.getElementById('kasaCashierName').textContent = currentCashier.name
+            const initials = currentCashier.name.split(' ').map(n => n[0]).join('')
+            document.getElementById('kasaCashierAvatar').textContent = initials
+
+            const avatarClasses = {
+                'Tuba Bozaklı': 'av-t',
+                'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz': 'av-m',
+                'Ceren Erdem': 'av-c'
+            }
+            document.getElementById('kasaCashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
+        }
+
+        const kasaOptions = document.querySelectorAll('.kasa-option')
+        const kasaButton = document.getElementById('kasaButton')
+        const kasaBackButton = document.getElementById('kasaBackButton')
+
+        kasaOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                kasaOptions.forEach(o => o.classList.remove('selected'))
+                option.classList.add('selected')
+                selectedKasa = option.dataset.kasa
+                kasaButton.disabled = false
+            })
+        })
+
+        kasaBackButton.addEventListener('click', () => {
+            kasaScreen.classList.add('hidden')
+            pinScreen.classList.remove('hidden')
+
+            // Reset
+            selectedKasa = null
+            kasaOptions.forEach(o => o.classList.remove('selected'))
+            kasaButton.disabled = true
+            pinInput.value = ''
+            pinInput.focus()
+        })
+
+        kasaButton.addEventListener('click', () => {
+            if (!selectedKasa) return
+            showShiftScreen()
+        })
+
+        // VARDİYA SEÇİMİ
+        function showShiftScreen() {
+            kasaScreen.classList.add('hidden')
+            shiftScreen.classList.remove('hidden')
+
+            // Kasiyer bilgilerini göster
+            document.getElementById('cashierName').textContent = currentCashier.name
+            const avatarClasses = {
+                'Tuba Bozaklı': 'av-t',
+                'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz': 'av-m',
+                'Ceren Erdem': 'av-c'
+            }
+            const initials = currentCashier.name.split(' ').map(n => n[0]).join('')
+            document.getElementById('cashierAvatar').textContent = initials
+            document.getElementById('cashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
+        }
+
+        const shiftOptions = document.querySelectorAll('.shift-option')
+        const shiftButton = document.getElementById('shiftButton')
+        const shiftBackButton = document.getElementById('shiftBackButton')
+
+        shiftOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                shiftOptions.forEach(o => o.classList.remove('selected'))
+                option.classList.add('selected')
+                selectedShift = option.dataset.shift
+                shiftButton.disabled = false
+            })
+        })
+
+        shiftBackButton.addEventListener('click', () => {
+            shiftScreen.classList.add('hidden')
+            kasaScreen.classList.remove('hidden')
+
+            // Reset
+            selectedShift = null
+            shiftOptions.forEach(o => o.classList.remove('selected'))
+            shiftButton.disabled = true
+        })
+
+        shiftButton.addEventListener('click', () => {
+            if (!selectedShift) return
+            console.log('Vardiya seçildi:', selectedShift)
+            console.log('Kasa:', selectedKasa)
+            showMainScreen()
+        })
+
+        // ANA EKRANI GÖSTER
+        async function showMainScreen() {
+            console.log('showMainScreen çağrıldı')
+            console.log('selectedKasa:', selectedKasa)
+            console.log('selectedShift:', selectedShift)
+
+            shiftScreen.classList.add('hidden')
+            mainScreen.classList.add('active')
+
+            const shiftLabel = selectedShift === 'sabah' ? 'Sabah Vardiyası' : 'Öğle Vardiyası'
+            const kasaLabel = selectedKasa === 'restoran' ? 'Restoran' : 'Cafetarya'
+            document.getElementById('navInfo').textContent = `${currentCashier.name} - ${kasaLabel} - ${shiftLabel}`
+
+            // ÖNEMLİ: Form alanlarını güncelle
+            updateFormFields()
+
+            // Öğle vardiyası ise sabah verilerini yükle
+            if (selectedShift === 'ogle') {
+                loadMorningData()
+            }
+        }
+
+        const mainBackButton = document.getElementById('mainBackButton')
+        mainBackButton.addEventListener('click', () => {
+            if (confirm('Veri girişinden çıkmak istediğinize emin misiniz? Girdiğiniz veriler kaybolacak.')) {
+                mainScreen.classList.remove('active')
+                shiftScreen.classList.remove('hidden')
+
+                // Form temizle
+                document.querySelectorAll('input[type="number"]').forEach(input => {
+                    input.value = ''
+                    input.placeholder = '0.00'
+                })
+
+                // Cafetarya öğle info'yu kaldır
+                const infoCard = document.getElementById('cafeteriaOgleInfo')
+                if (infoCard) infoCard.remove()
+            }
+        })
+
+        function updateFormFields() {
+            console.log('updateFormFields çağrıldı:', selectedKasa, selectedShift)
+
+            // Önce tüm alanları gizle
+            hideAllFields()
+
+            // Kombinasyona göre göster
+            if (selectedKasa === 'restoran' && selectedShift === 'sabah') {
+                showField('rumeliZ2Field')
+                showField('gidaField')
+                showField('kahveField')
+                showField('sicakIcecekField')
+                showField('sogukIcecekField')
+                showField('tatliField')
+                showField('meyveSuyuField')
+                showField('kahvaltiField')
+                showField('salataField')
+                setRequired('rumeliZ2', true)
+            } else if (selectedKasa === 'restoran' && selectedShift === 'ogle') {
+                showField('rumeliZ2Field')
+                showField('gidaField')
+                showField('kahveField')
+                showField('sicakIcecekField')
+                showField('sogukIcecekField')
+                showField('tatliField')
+                showField('meyveSuyuField')
+                showField('kahvaltiField')
+                showField('salataField')
+                setRequired('rumeliZ2', true)
+            } else if (selectedKasa === 'cafetarya' && selectedShift === 'sabah') {
+                showField('rumeliZ1Field')
+                showField('gidaField')
+                showField('kahveField')
+                showField('sicakIcecekField')
+                showField('sogukIcecekField')
+                showField('tatliField')
+                showField('meyveSuyuField')
+                showField('kahvaltiField')
+                showField('dondurmaKategoriField')
+                setRequired('rumeliZ1', true)
+            } else if (selectedKasa === 'cafetarya' && selectedShift === 'ogle') {
+                showField('balikEkmekField')
+                showField('dondurmaZField')
+                setRequired('balikEkmek', true)
+                setRequired('dondurmaZ', true) // id'si dondurmaZ olan input
+                showCafeteriaOgleInfo()
+            }
+            console.log('Form alanları güncellendi')
+        }
+
+        function hideAllFields() {
+            const fields = [
+                'rumeliZ1Field', 'rumeliZ2Field', 'balikEkmekField', 'dondurmaZField',
+                'gidaField', 'kahveField', 'sicakIcecekField', 'sogukIcecekField',
+                'tatliField', 'meyveSuyuField', 'kahvaltiField', 'salataField', 'dondurmaKategoriField'
+            ]
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId)
+                if (field) {
+                    field.style.display = 'none'
+                    const input = field.querySelector('input')
+                    if (input) {
+                        input.value = ''
+                        input.required = false
+                    }
+                }
+            })
+        }
+
+        function showField(fieldId) {
+            const field = document.getElementById(fieldId)
+            if (field) field.style.display = 'block'
+            else console.warn(`Field not found: ${fieldId}`)
+        }
+
+        function setRequired(inputId, isRequired) {
+            const input = document.getElementById(inputId)
+            if (input) input.required = isRequired
+        }
+
+        function showCafeteriaOgleInfo() {
+            if (document.getElementById('cafeteriaOgleInfo')) return
+            const infoCard = document.createElement('div')
+            infoCard.id = 'cafeteriaOgleInfo'
+            infoCard.style.cssText = 'background:var(--input);border:1px solid var(--brd);border-radius:12px;padding:16px;margin-bottom:20px;'
+            infoCard.innerHTML = `
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="font-size:32px;">ℹ️</div>
+                    <div>
+                        <div style="font-weight:700;margin-bottom:4px;color:var(--txt);">Balık Ekmek & Dondurma Kasası</div>
+                        <div style="font-size:13px;color:var(--txt2);">
+                            Bu kasalar tek vardiya çalıştığı için sadece gün sonu toplam Z raporu değerlerini girin.
+                            Kategori satışları bu kasalar için girilmez.
+                        </div>
+                    </div>
+                </div>
+            `
+            const firstCard = mainScreen.querySelector('.card')
+            if (firstCard) mainScreen.insertBefore(infoCard, firstCard)
+        }
+
+        async function loadMorningData() {
+            const today = new Date().toISOString().split('T')[0]
+
+            // Bugünün sabah vardiyası verisini getir
+            const { data: morningData, error } = await supabase
+                .from('daily_reports')
+                .select('*')
+                .eq('date', today)
+                .eq('kasa', selectedKasa)
+                .eq('shift', 'sabah')
+                .single()
+
+            if (error || !morningData) {
+                // Sabah verisi yoksa uyarı göster
+                showToast('⚠️ Sabah vardiyası verisi bulunamadı. Toplam değerleri girdiğinizden emin olun.', 'success')
+                return
+            }
+
+            // Sabah verilerini form placeholder'larına yaz
+            // Z Raporu
+            const zField = selectedKasa === 'restoran' ? 'rumeliZ2' : 'rumeliZ1'
+            const zInput = document.getElementById(zField)
+            if (zInput && morningData[zField.toLowerCase()]) {
+                const morningVal = morningData[zField.toLowerCase()]
+                zInput.placeholder = `Sabah: ${formatCurrency(morningVal)} - Toplam gir`
+                zInput.setAttribute('data-morning-value', morningVal)
+            }
+
+            // Kategoriler
+            const categories = ['gida', 'kahve', 'sicakIcecek', 'sogukIcecek', 'tatli', 'meyveSuyu', 'kahvalti']
+            if (selectedKasa === 'restoran') categories.push('salata')
+            if (selectedKasa === 'cafetarya') categories.push('dondurmaKategori')
+
+            categories.forEach(cat => {
+                const input = document.getElementById(cat)
+                const dbColumn = cat === 'sicakIcecek' ? 'sicak_icecek' :
+                    cat === 'sogukIcecek' ? 'soguk_icecek' :
+                        cat === 'meyveSuyu' ? 'meyvesuyu' :
+                            cat === 'dondurmaKategori' ? 'dondurma_kategori' : cat
+
+                if (input && morningData[dbColumn]) {
+                    const morningVal = morningData[dbColumn]
+                    input.placeholder = `Sabah: ${formatCurrency(morningVal)} - Toplam gir`
+                    input.setAttribute('data-morning-value', morningVal)
+                }
+            })
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value) + ' ₺'
+        }
+
+        // VERİ GİRİŞİ
+        const submitButton = document.getElementById('submitButton')
+
+        submitButton.addEventListener('click', async () => {
+            const data = {
+                cashierId: currentCashier.id,
+                kasa: selectedKasa,
+                shift: selectedShift,
+                selectedDate: new Date().toISOString().split('T')[0],
+                rumeliZ1: parseFloat(document.getElementById('rumeliZ1').value) || 0,
+                rumeliZ2: parseFloat(document.getElementById('rumeliZ2').value) || 0,
+                balikEkmek: parseFloat(document.getElementById('balikEkmek').value) || 0,
+                dondurma: parseFloat(document.getElementById('dondurmaZ').value) || 0,
+                gida: parseFloat(document.getElementById('gida').value) || 0,
+                kahve: parseFloat(document.getElementById('kahve').value) || 0,
+                sicakIcecek: parseFloat(document.getElementById('sicakIcecek').value) || 0,
+                sogukIcecek: parseFloat(document.getElementById('sogukIcecek').value) || 0,
+                tatli: parseFloat(document.getElementById('tatli').value) || 0,
+                meyveSuyu: parseFloat(document.getElementById('meyveSuyu').value) || 0,
+                kahvalti: parseFloat(document.getElementById('kahvalti').value) || 0,
+                salata: parseFloat(document.getElementById('salata')?.value) || 0,
+                dondurmaKategori: parseFloat(document.getElementById('dondurmaKategori')?.value) || 0,
+                dondurmaAdet: 0,
+                depo: 0,
+                notlar: '',
+                dailyTarget: 0,
+                targetType: 'daily'
+            }
+
+            submitButton.disabled = true
+            submitButton.textContent = 'Kaydediliyor...'
+
+            const { data: result, error } = await insertShiftEntry(data)
+
+            if (error) {
+                showToast('Hata: ' + error.message, 'error')
+                submitButton.disabled = false
+                submitButton.textContent = '💾 Kaydet ve Puan Kazan!'
+                return
+            }
+
+            // Puan göster
+            document.getElementById('pointsDisplay').textContent = `+${result.pointsEarned}`
+
+            showToast(`✅ Kaydedildi! ${result.pointsEarned} puan kazandınız! ${result.isOnTime ? '⏰ Zamanında!' : '⚠️ Geç giriş'}`, 'success')
+
+            setTimeout(() => {
+                location.reload()
+            }, 2000)
+        })
+
+        // TOAST
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast')
+            toast.textContent = message
+            toast.className = `toast ${type}`
+            setTimeout(() => toast.classList.add('show'), 100)
+            setTimeout(() => toast.classList.remove('show'), 3000)
+        }
+
+        // PIN INPUT OTOMATİK FOCUS
+        pinInput.focus()
+    </script>
+</body>
+
+</html>
