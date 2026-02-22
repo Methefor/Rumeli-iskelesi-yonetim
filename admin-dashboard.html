@@ -1228,23 +1228,53 @@
             return { maxDailyCiro, activeCashiers, avgEntryTime, weeklyGrowth }
         }
 
+        function getTodayType() {
+            const today = new Date()
+            const dayOfWeek = today.getDay() // 0=Pazar, 6=Cumartesi
+
+            const specialDays = [
+                '2026-01-01', // Yılbaşı
+                '2026-04-23', // 23 Nisan
+                '2026-05-01', // 1 Mayıs
+                '2026-05-19', // 19 Mayıs
+                '2026-08-30', // 30 Ağustos
+                '2026-10-29', // 29 Ekim
+            ]
+
+            const todayStr = today.toISOString().split('T')[0]
+
+            if (specialDays.includes(todayStr)) {
+                return 'special'
+            } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return 'weekend'
+            } else {
+                return 'weekday'
+            }
+        }
+
         async function fetchDailyTarget() {
             try {
-                const today = new Date().toISOString().split('T')[0]
+                const targetType = getTodayType()
+                console.log('Hedef tipi:', targetType)
+
                 const { data, error } = await supabase
                     .from('targets')
-                    .select('daily_target')
-                    .eq('date', today)
-                    .eq('target_type', 'daily')
-                    .maybeSingle()
+                    .select('amount')
+                    .eq('target_type', targetType)
+                    .single()
 
-                if (data && !error) {
-                    return data.daily_target
+                if (error) {
+                    console.error('Hedef çekme hatası:', error)
+                    const fallbacks = { weekday: 150000, weekend: 200000, special: 250000 }
+                    return fallbacks[targetType]
                 }
-            } catch (e) {
-                console.warn('Target fetch error:', e)
+
+                console.log('Çekilen hedef:', data.amount)
+                return parseFloat(data.amount) || 150000
+            } catch (err) {
+                console.error('fetchDailyTarget hatası:', err)
+                return 150000
             }
-            return 50000 // Default
         }
 
         // ═══════════════════════════════════════
