@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasiyer Dashboard - Rumeli İskelesi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root {
+            --bg: #0a1628;
+            --card: #111d32;
+            --input: #162340;
+            --brd: #1e3a5f;
+            --txt: #e8edf5;
+            --txt2: #7a8ba8;
+            --txt3: #4a5d7a;
+            --acc: #3b82f6;
+            --glow: rgba(59, 130, 246, .15);
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --gold: #fbbf24;
+            --silver: #94a3b8;
+            --bronze: #d97706;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto
+        }
+
+        /* HEADER */
+
+        .header {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
+        }
+
+        .av-t {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        }
+
+        .av-e {
+            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        }
+
+        .av-m {
+            background: linear-gradient(135deg, #be185d, #ec4899)
+        }
+
+        .av-c {
+            background: linear-gradient(135deg, #059669, #22c55e)
+        }
+
+        .profile-info {
+            flex: 1
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px
+        }
+
+        .profile-role {
+            font-size: 14px;
+            color: var(--txt2);
+            margin-bottom: 16px
+        }
+
+        .badge-row {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #fff
+        }
+
+        .points-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold)
+        }
+
+        /* PROGRESS BAR */
+
+        .progress-section {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--input);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--brd)
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: 10px;
+            transition: width .5s ease
+        }
+
+        /* STATS GRID */
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all .2s
+        }
+
+        .stat-card:hover {
+            border-color: var(--acc);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, .2)
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        /* LEADERBOARD */
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all .2s
+        }
+
+        .leaderboard-item:hover {
+            border-color: var(--acc);
+            transform: translateX(4px)
+        }
+
+        .leaderboard-item.current {
+            border-color: var(--acc);
+            background: var(--glow)
+        }
+
+        .rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            width: 40px;
+            text-align: center
+        }
+
+        .rank-1 {
+            color: var(--gold)
+        }
+
+        .rank-2 {
+            color: var(--silver)
+        }
+
+        .rank-3 {
+            color: var(--bronze)
+        }
+
+        .leaderboard-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .leaderboard-info {
+            flex: 1
+        }
+
+        .leaderboard-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 2px
+        }
+
+        .leaderboard-stats {
+            font-size: 12px;
+            color: var(--txt2)
+        }
+
+        .leaderboard-points {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold)
+        }
+
+        /* HISTORY TABLE */
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .history-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--brd);
+            font-size: 14px
+        }
+
+        .history-table tr:hover {
+            background: var(--input)
+        }
+
+        .shift-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .shift-sabah {
+            background: rgba(251, 191, 36, .2);
+            color: var(--gold)
+        }
+
+        .shift-ogle {
+            background: rgba(139, 92, 246, .2);
+            color: var(--purple)
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .status-ontime {
+            color: var(--green)
+        }
+
+        .status-late {
+            color: var(--orange)
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--txt2)
+        }
+
+        .error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 40px 0
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 10px;
+            color: var(--txt);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all .2s
+        }
+
+        .back-btn:hover {
+            border-color: var(--acc);
+            transform: translateX(-4px)
+        }
+    </style>
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/cashier-BtP4eicZ.js"></script>
+  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-DN31Znua.js">
+</head>
+
+<body>
+    <div class="container">
+        <a href="entry.html" class="back-btn">← Veri Girişine Dön</a>
+
+        <div id="loading" class="loading">
+            <div style="font-size: 48px; margin-bottom: 16px">⏳</div>
+            <div style="font-size: 18px; font-weight: 600">Yükleniyor...</div>
+        </div>
+
+        <div id="error" class="error" style="display: none"></div>
+
+        <div id="dashboard" style="display: none">
+            <!-- HEADER / PROFILE -->
+            <div class="header">
+                <div class="profile">
+                    <div id="profileAvatar" class="avatar av-t">TB</div>
+                    <div class="profile-info">
+                        <div id="profileName" class="profile-name">Tuba Bozaklı</div>
+                        <div id="profileRole" class="profile-role">Kasiyer - Cafetarya Z1</div>
+                        <div class="badge-row">
+                            <div class="badge">
+                                <span id="badgeIcon">🥉</span>
+                                <span id="badgeLabel">Bronz</span>
+                            </div>
+                            <div class="points-display">
+                                <span>⭐ </span>
+                                <span id="totalPoints">0</span>
+                                <span style="font-size: 14px; color: var(--txt2)"> puan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Sonraki rozete: <strong id="nextBadge">Gümüş</strong></span>
+                        <span id="pointsNeeded">50 puan kaldı</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div id="statEntries" class="stat-value">0</div>
+                    <div class="stat-label">Bu Hafta Giriş</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div id="statOnTime" class="stat-value">0</div>
+                    <div class="stat-label">Zamanında Giriş</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div id="statRevenue" class="stat-value">0₺</div>
+                    <div class="stat-label">Toplam Ciro</div>
+                </div>
+            </div>
+
+            <!-- LEADERBOARD -->
+            <div class="section">
+                <div class="section-title">
+                    <span>🏆</span>
+                    <span>Lider Tablosu</span>
+                </div>
+                <div id="leaderboard"></div>
+            </div>
+
+            <!-- HISTORY -->
+            <div class="section">
+                <div class="section-title">
+                    <span>📜</span>
+                    <span>Son Girişler</span>
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Vardiya</th>
+                            <th>Durum</th>
+                            <th>Ciro</th>
+                            <th>Puan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
