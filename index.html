@@ -1189,10 +1189,15 @@
                 .eq('date', selectedDate)
                 .eq('kasa', selectedKasa)
                 .eq('shift', 'sabah')
-                .single()
+                .maybeSingle()
 
-            if (error || !morningData) {
-                console.log('Sabah verisi bulunamadı')
+            if (error) {
+                console.error('Sabah verisi çekme hatası:', error)
+                return
+            }
+
+            if (!morningData) {
+                console.log('Sabah verisi bulunamadı - normal (ilk vardiya)')
                 return
             }
 
