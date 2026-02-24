@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müdür Paneli - Rumeli İskelesi</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root {
+            --bg: #0a1628;
+            --card: #111d32;
+            --input: #162340;
+            --brd: #1e3a5f;
+            --txt: #e8edf5;
+            --txt2: #7a8ba8;
+            --txt3: #4a5d7a;
+            --acc: #3b82f6;
+            --glow: rgba(59, 130, 246, .12);
+            --green: #22c55e;
+            --red: #ef4444;
+            --orange: #f59e0b;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--brd);
+            border-radius: 3px
+        }
+
+        /* NAV */
+        .nav {
+            background: var(--card);
+            border-bottom: 1px solid var(--brd);
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100
+        }
+
+        .nav-in {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .nbrand {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .nicon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px
+        }
+
+        .ntitle {
+            font-weight: 700;
+            font-size: 16px
+        }
+
+        .nsub {
+            font-size: 11px;
+            color: var(--txt2)
+        }
+
+        .nb {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .2s
+        }
+
+        .nb:hover {
+            border-color: var(--acc);
+            background: var(--glow)
+        }
+
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px 16px 80px
+        }
+
+        /* HERO */
+        .hero {
+            border-radius: 18px;
+            padding: 32px;
+            margin-bottom: 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden
+        }
+
+        .hero.gold {
+            background: linear-gradient(135deg, #78350f, #b45309, #f59e0b)
+        }
+
+        .hero.blue {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb, #60a5fa)
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            background: rgba(0, 0, 0, .2);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, .9);
+            margin-bottom: 12px
+        }
+
+        .hero-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px
+        }
+
+        .hero-amt {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .hero-sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .7);
+            margin-top: 8px
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 32px;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* KASİYER SIRALAMALARI */
+        .rank-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px
+        }
+
+        .rank-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all .2s
+        }
+
+        .rank-card:hover {
+            border-color: var(--acc);
+            transform: translateY(-2px)
+        }
+
+        .rank-pos {
+            font-size: 24px;
+            font-weight: 800;
+            width: 36px;
+            text-align: center
+        }
+
+        .rank-pos.p1 {
+            color: var(--orange)
+        }
+
+        .rank-pos.p2 {
+            color: #94a3b8
+        }
+
+        .rank-pos.p3 {
+            color: #b45309
+        }
+
+        .rank-pos.p4 {
+            color: var(--txt3)
+        }
+
+        .rank-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .av-t {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        }
+
+        .av-e {
+            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        }
+
+        .av-m {
+            background: linear-gradient(135deg, #be185d, #ec4899)
+        }
+
+        .av-c {
+            background: linear-gradient(135deg, #059669, #22c55e)
+        }
+
+        .rank-info {
+            flex: 1
+        }
+
+        .rank-name {
+            font-size: 14px;
+            font-weight: 700
+        }
+
+        .rank-meta {
+            font-size: 11px;
+            color: var(--txt2);
+            margin-top: 2px
+        }
+
+        .rank-right {
+            text-align: right
+        }
+
+        .rank-pts {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--orange)
+        }
+
+        .rank-badge-pill {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-top: 4px;
+            display: inline-block;
+            background: rgba(245, 158, 11, .15);
+            color: var(--orange)
+        }
+
+        /* KASA CİRO KARTLARI */
+        .kasa-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 24px
+        }
+
+        .kasa-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all .2s
+        }
+
+        .kasa-card:hover {
+            border-color: var(--acc);
+            transform: translateY(-2px)
+        }
+
+        .kasa-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 14px 14px 0 0
+        }
+
+        .kasa-card.restoran::before {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa)
+        }
+
+        .kasa-card.cafetarya::before {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa)
+        }
+
+        .kasa-card.balik::before {
+            background: linear-gradient(90deg, #06b6d4, #22d3ee)
+        }
+
+        .kasa-card.dondurma::before {
+            background: linear-gradient(90deg, #ec4899, #f9a8d4)
+        }
+
+        .kasa-icon {
+            font-size: 28px;
+            margin-bottom: 10px
+        }
+
+        .kasa-label {
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 6px
+        }
+
+        .kasa-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--txt);
+            margin-bottom: 4px
+        }
+
+        .kasa-sub {
+            font-size: 11px;
+            color: var(--txt3)
+        }
+
+        .kasa-percent {
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 6px
+        }
+
+        .kasa-percent.up {
+            color: var(--green)
+        }
+
+        .kasa-percent.down {
+            color: var(--red)
+        }
+
+        /* ÖZET KARTLAR */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 24px
+        }
+
+        .sc {
+            border-radius: 14px;
+            padding: 20px;
+            color: #fff;
+            position: relative;
+            overflow: hidden
+        }
+
+        .sc::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .08)
+        }
+
+        .sc.blue {
+            background: linear-gradient(135deg, #1e40af, #3b82f6)
+        }
+
+        .sc.purple {
+            background: linear-gradient(135deg, #6d28d9, #8b5cf6)
+        }
+
+        .sc.orange {
+            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        }
+
+        .sc.green {
+            background: linear-gradient(135deg, #065f46, #22c55e)
+        }
+
+        .sc-l {
+            font-size: 12px;
+            opacity: .8;
+            margin-bottom: 6px;
+            font-weight: 500
+        }
+
+        .sc-v {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700
+        }
+
+        .sc-s {
+            font-size: 11px;
+            opacity: .65;
+            margin-top: 4px
+        }
+
+        /* GRAFİKLER */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .chart-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 22px
+        }
+
+        .chart-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 280px
+        }
+
+        /* FİLTRE BAR */
+        .filter-bar {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 18px 22px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .fsel {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            color: var(--txt);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer
+        }
+
+        .finput {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            color: var(--txt);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none
+        }
+
+        .fbtn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--acc);
+            background: var(--glow);
+            color: var(--acc);
+            cursor: pointer
+        }
+
+        /* UYARILAR */
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px
+        }
+
+        .alert-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 18px
+        }
+
+        .alert-card.warning {
+            border: 1px solid #92400e;
+            background: rgba(146, 64, 14, .1)
+        }
+
+        .alert-card.danger {
+            border: 1px solid #991b1b;
+            background: rgba(153, 27, 27, .1)
+        }
+
+        .alert-card.ok {
+            border: 1px solid #065f46;
+            background: rgba(6, 95, 70, .1)
+        }
+
+        .alert-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .alert-item {
+            font-size: 13px;
+            color: var(--txt2);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--brd);
+            display: flex;
+            justify-content: space-between
+        }
+
+        .alert-item:last-child {
+            border-bottom: none
+        }
+
+        /* TABLO */
+        .table-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 22px;
+            overflow: hidden;
+            margin-bottom: 24px
+        }
+
+        .table-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 14px
+        }
+
+        .table-wrap {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        thead {
+            background: var(--input)
+        }
+
+        th {
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            white-space: nowrap
+        }
+
+        th.r,
+        td.r {
+            text-align: right
+        }
+
+        td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(30, 58, 95, .5);
+            white-space: nowrap
+        }
+
+        tr:last-child td {
+            border-bottom: none
+        }
+
+        tr:hover td {
+            background: rgba(59, 130, 246, .04)
+        }
+
+        .badge {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700
+        }
+
+        .badge.on-time {
+            background: rgba(34, 197, 94, .15);
+            color: #22c55e
+        }
+
+        .badge.late {
+            background: rgba(239, 68, 68, .15);
+            color: #ef4444
+        }
+
+        .badge.sabah {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa
+        }
+
+        .badge.aksam {
+            background: rgba(139, 92, 246, .15);
+            color: #a78bfa
+        }
+
+        .badge.restoran {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa
+        }
+
+        .badge.cafetarya {
+            background: rgba(139, 92, 246, .15);
+            color: #a78bfa
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--txt2)
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--brd);
+            border-top-color: var(--acc);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @media(max-width:768px) {
+
+            .kasa-grid,
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .charts-grid,
+            .alerts-grid {
+                grid-template-columns: 1fr
+            }
+
+            .rank-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        /* YENİ GELİŞTİRMELER CSS */
+        .total-hero-card {
+            background: linear-gradient(135deg, #1e40af, #3b82f6, #60a5fa);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 32px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, .4);
+        }
+
+        .total-hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, .15), transparent 70%);
+            border-radius: 50%;
+        }
+
+        .total-hero-left {
+            position: relative;
+            z-index: 1;
+        }
+
+        .total-hero-label {
+            font-size: 14px;
+            opacity: 0.85;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .total-hero-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, .2);
+        }
+
+        .total-hero-breakdown {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .breakdown-item {
+            font-size: 14px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, .2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .total-hero-right {
+            position: relative;
+            z-index: 1;
+        }
+
+        .target-section {
+            background: rgba(255, 255, 255, .15);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, .2);
+        }
+
+        .target-label {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .target-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-container {
+            background: rgba(0, 0, 0, .2);
+            border-radius: 12px;
+            height: 16px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, #22c55e, #10b981);
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(34, 197, 94, .6);
+        }
+
+        .progress-percent {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .sc.cyan {
+            background: linear-gradient(135deg, #0891b2, #06b6d4);
+        }
+
+        .sc.pink {
+            background: linear-gradient(135deg, #be185d, #ec4899);
+        }
+
+        .sc.indigo {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+        }
+
+        .sc.emerald {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .kasa-card {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .kasa-card:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .kasa-card:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .kasa-card:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        .kasa-card:nth-child(4) {
+            animation-delay: 0.9s;
+        }
+
+        .kasa-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, .3);
+        }
+
+        .rank-card:hover {
+            transform: translateX(4px) scale(1.02);
+        }
+
+        .sc:hover {
+            transform: scale(1.05);
+        }
+
+        .particles-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particles-bg::before,
+        .particles-bg::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            opacity: 0.05;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .particles-bg::before {
+            background: radial-gradient(circle, #3b82f6, transparent);
+            top: 10%;
+            left: 10%;
+        }
+
+        .particles-bg::after {
+            background: radial-gradient(circle, #8b5cf6, transparent);
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -10s;
+        }
+
+        @media (max-width: 768px) {
+            .total-hero-card {
+                grid-template-columns: 1fr;
+            }
+
+            .total-hero-amount {
+                font-size: 36px;
+            }
+        }
+
+        .action-btn {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all .2s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+        }
+
+        .action-btn.edit:hover {
+            border-color: var(--acc);
+            background: rgba(59, 130, 246, .1);
+        }
+
+        .action-btn.delete:hover {
+            border-color: var(--red);
+            background: rgba(239, 68, 68, .1);
+        }
+
+        /* Modal stilleri */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 10, 20, .8);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+        }
+
+        .modal-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, .6);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-content {
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+
+        .modal-btn.cancel {
+            background: var(--input);
+            color: var(--txt);
+            border: 1px solid var(--brd);
+        }
+
+        .modal-btn.confirm {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="particles-bg"></div>
+
+    <!-- NAV -->
+    <div class="nav">
+        <div class="nav-in">
+            <div class="nbrand">
+                <div class="nicon">👨‍💼</div>
+                <div>
+                    <div class="ntitle">Müdür Paneli</div>
+                    <div class="nsub">Metehan Arslan · Rumeli İskelesi</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <div id="lastUpdate" style="font-size:12px;color:var(--txt2)">Yükleniyor...</div>
+                <button id="refreshBtn" class="nb">🔄 Yenile</button>
+                <a href="index.html" class="nb">← Çıkış</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainContent">
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>Veriler yükleniyor...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js'
+
+        // ═══════════════════════════════════════
+        // VERİ ÇEKME FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        async function fetchAllData() {
+            const today = new Date()
+            const sevenDaysAgo = new Date(today)
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
+            // Paralel veri çek
+            const [weeklyPerf, reportsRes, cashiersRes] = await Promise.all([
+                supabase.from('weekly_performance').select('*').order('weekly_points', { ascending: false }),
+                supabase.from('daily_reports')
+                    .select('*, cashiers(name)')
+                    .gte('date', sevenDaysAgo.toISOString().split('T')[0])
+                    .order('date', { ascending: false }),
+                supabase.from('cashiers').select('*').order('total_points', { ascending: false })
+            ])
+
+            return {
+                weekly: weeklyPerf.data || [],
+                reports: reportsRes.data || [],
+                cashiers: cashiersRes.data || []
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // ANA HESAPLAMA FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        function calcKasaCiros(reports) {
+            // Her gün+kasa için sadece akşam vardiyasını al (yoksa sabah)
+            const dailyReports = {}
+            reports.forEach(r => {
+                const key = `${r.date}-${r.kasa}`
+                if (!dailyReports[key] || r.shift === 'aksam') {
+                    dailyReports[key] = r
+                }
+            })
+
+            return Object.values(dailyReports).reduce((acc, r) => {
+                acc.restoran += parseFloat(r.rumeli_z2 || 0)
+                acc.cafetarya += parseFloat(r.rumeli_z1 || 0)
+                acc.balik += parseFloat(r.balik_ekmek || 0)
+                acc.dondurma += parseFloat(r.dondurma || 0)
+                acc.total += parseFloat(r.rumeli_z2 || 0) + parseFloat(r.rumeli_z1 || 0) +
+                    parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
+                return acc
+            }, { restoran: 0, cafetarya: 0, balik: 0, dondurma: 0, total: 0 })
+        }
+
+        function calcDailyCiros(reports) {
+            // Her gün+kasa için sadece akşam vardiyasını al (yoksa sabah)
+            const dailyReports = {}
+            reports.forEach(r => {
+                const key = `${r.date}-${r.kasa}`
+                if (!dailyReports[key] || r.shift === 'aksam') {
+                    dailyReports[key] = r
+                }
+            })
+
+            // Günlük toplamları hesapla
+            const days = {}
+            Object.values(dailyReports).forEach(r => {
+                const day = r.date
+                if (!days[day]) days[day] = 0
+                days[day] += parseFloat(r.rumeli_z2 || 0) + parseFloat(r.rumeli_z1 || 0) +
+                    parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
+            })
+
+            // Tarihe göre sırala
+            const sorted = Object.keys(days).sort()
+            return {
+                labels: sorted.map(d => formatDateShort(d)),
+                data: sorted.map(d => days[d])
+            }
+        }
+
+        function calcShiftCiros(reports) {
+            // Her gün+kasa için sadece akşam vardiyasını al (yoksa sabah)
+            const dailyReports = {}
+            reports.forEach(r => {
+                const key = `${r.date}-${r.kasa}`
+                if (!dailyReports[key] || r.shift === 'aksam') {
+                    dailyReports[key] = r
+                }
+            })
+
+            const shifts = { sabah: 0, aksam: 0 }
+            Object.values(dailyReports).forEach(r => {
+                const ciro = parseFloat(r.rumeli_z2 || 0) + parseFloat(r.rumeli_z1 || 0) +
+                    parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
+                if (r.shift === 'sabah') shifts.sabah += ciro
+                else if (r.shift === 'aksam') shifts.aksam += ciro
+            })
+            return shifts
+        }
+
+        function calcCashierCiros(reports, cashiers) {
+            // Kasiyer performansı için individual_revenue kullan
+            const ciros = {}
+            reports.forEach(r => {
+                const name = r.cashiers?.name || 'Bilinmiyor'
+                if (!ciros[name]) ciros[name] = 0
+                ciros[name] += parseFloat(r.individual_revenue || 0)
+            })
+            return ciros
+        }
+
+        function calcAlerts(reports, cashiers) {
+            const today = new Date().toISOString().split('T')[0]
+
+            // Bugün giriş yapmayanlar
+            const todayReports = reports.filter(r => r.date === today)
+            const enteredToday = [...new Set(todayReports.map(r => r.cashier_id))]
+            const notEntered = cashiers.filter(c => !enteredToday.includes(c.id))
+
+            // Geç girişler (son 7 gün)
+            const lateEntries = reports.filter(r => !r.is_on_time)
+
+            // En yüksek günlük ciro
+            const dailyCirosArr = calcDailyCiros(reports)
+            const maxCiro = Math.max(...dailyCirosArr.data, 0)
+
+            return { notEntered, lateEntries, maxCiro }
+        }
+
+        function calcDetailedStats(reports) {
+            // En yüksek günlük ciro (her gün+kasa için sadece akşam/sabah al)
+            const dailyCirosArr = calcDailyCiros(reports)
+            const maxDailyCiro = Math.max(...dailyCirosArr.data, 0)
+
+            // Aktif kasiyer (bugün giriş yapan)
+            const today = new Date().toISOString().split('T')[0]
+            const todayReports = reports.filter(r => r.date === today)
+            const uniqueCashiers = [...new Set(todayReports.map(r => r.cashier_id))]
+            const activeCashiers = uniqueCashiers.length
+
+            // Ortalama işlem süresi (sabit veya hesaplanabilir)
+            const avgEntryTime = "2.5dk"
+
+            // Haftalık büyüme (simülasyon)
+            const weeklyGrowth = "+12%"
+
+            return { maxDailyCiro, activeCashiers, avgEntryTime, weeklyGrowth }
+        }
+
+        function getTodayType() {
+            const today = new Date()
+            const dayOfWeek = today.getDay() // 0=Pazar, 6=Cumartesi
+
+            const specialDays = [
+                '2026-01-01', // Yılbaşı
+                '2026-04-23', // 23 Nisan
+                '2026-05-01', // 1 Mayıs
+                '2026-05-19', // 19 Mayıs
+                '2026-08-30', // 30 Ağustos
+                '2026-10-29', // 29 Ekim
+            ]
+
+            const todayStr = today.toISOString().split('T')[0]
+
+            if (specialDays.includes(todayStr)) {
+                return 'special'
+            } else if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return 'weekend'
+            } else {
+                return 'weekday'
+            }
+        }
+
+        async function fetchDailyTarget() {
+            try {
+                const targetType = getTodayType()
+                console.log('Hedef tipi:', targetType)
+
+                const { data, error } = await supabase
+                    .from('targets')
+                    .select('amount')
+                    .eq('target_type', targetType)
+                    .single()
+
+                if (error) {
+                    console.error('Hedef çekme hatası:', error)
+                    const fallbacks = { weekday: 150000, weekend: 200000, special: 250000 }
+                    return fallbacks[targetType]
+                }
+
+                console.log('Çekilen hedef:', data.amount)
+                return parseFloat(data.amount) || 150000
+            } catch (err) {
+                console.error('fetchDailyTarget hatası:', err)
+                return 150000
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // ANİMASYON FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        function animateCards() {
+            if (typeof anime === 'undefined') return
+            anime({
+                targets: '.kasa-card, .sc, .total-hero-card',
+                opacity: [0, 1],
+                translateY: [40, 0],
+                delay: anime.stagger(100),
+                duration: 800,
+                easing: 'easeOutCubic'
+            })
+
+            anime({
+                targets: '.rank-card',
+                opacity: [0, 1],
+                translateX: [-40, 0],
+                delay: anime.stagger(120),
+                duration: 700,
+                easing: 'easeOutCubic'
+            })
+        }
+
+        function animateNumbers() {
+            if (typeof anime === 'undefined') return
+            // Toplam ciro animasyonu
+            const totalCiroEl = document.getElementById('totalDailyCiro')
+            const targetValue = parseFloat(totalCiroEl.getAttribute('data-value') || 0)
+
+            anime({
+                targets: { value: 0 },
+                value: targetValue,
+                duration: 2000,
+                easing: 'easeOutExpo',
+                update: function (anim) {
+                    totalCiroEl.textContent = formatCurrency(anim.animations[0].currentValue)
+                }
+            })
+
+            // Progress bar animasyonu
+            const fillEl = document.getElementById('progressBarFill')
+            const percent = parseFloat(fillEl.getAttribute('data-percent') || 0)
+            anime({
+                targets: '#progressBarFill',
+                width: percent + '%',
+                duration: 1500,
+                easing: 'easeInOutQuad'
+            })
+        }
+
+        // ═══════════════════════════════════════
+        // RENDER FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        async function renderPage(weekly, reports, cashiers) {
+            const dailyTarget = await fetchDailyTarget()
+            const kasaCiros = calcKasaCiros(reports)
+            const dailyCirosArr = calcDailyCiros(reports)
+            const shiftCiros = calcShiftCiros(reports)
+            const cashierCiros = calcCashierCiros(reports, cashiers)
+            const alerts = calcAlerts(reports, cashiers)
+            const stats = calcDetailedStats(reports)
+
+            const topCashier = weekly.length > 0 ? weekly[0] : null
+            const totalEntries = reports.length
+            const onTimeEntries = reports.filter(r => r.is_on_time).length
+            const onTimeRate = totalEntries > 0 ? Math.round((onTimeEntries / totalEntries) * 100) : 0
+
+            // Günlük ortalama
+            const uniqueDays = [...new Set(reports.map(r => r.date))].length
+            const dailyAvg = uniqueDays > 0 ? kasaCiros.total / uniqueDays : 0
+
+            const totalCiro = kasaCiros.total
+            const progressPercent = Math.min(100, Math.round((totalCiro / dailyTarget) * 100))
+
+            document.getElementById('mainContent').innerHTML = `
+            <!-- HERO -->
+            <div id="heroSection" class="hero ${topCashier && topCashier.weekly_points > 0 ? 'gold' : 'blue'}">
+                <div class="hero-badge">🏆 HAFTANIN ELEMANI</div>
+                <div class="hero-name">${topCashier ? topCashier.name : 'Henüz Veri Yok'}</div>
+                <div class="hero-amt">${topCashier ? topCashier.weekly_points || 0 : 0} Puan</div>
+                <div class="hero-sub">
+                    ${topCashier ? `${topCashier.total_entries || 0} giriş · ${formatCurrency(topCashier.total_revenue || 0)}` : 'İlk veriyi girin!'}
+                </div>
+            </div>
+
+            <!-- GÜNLÜK TOPLAM HERO KARTI -->
+            <div class="section-title">💰 Rumeli İskelesi Toplam Ciro</div>
+            <div class="total-hero-card">
+                <div class="total-hero-left">
+                    <div class="total-hero-label">Günlük Toplam Ciro</div>
+                    <div class="total-hero-amount" id="totalDailyCiro" data-value="${totalCiro}">0,00 ₺</div>
+                    <div class="total-hero-breakdown">
+                        <span class="breakdown-item">🍽️ <span id="breakdownRestoran">${formatCurrencyShort(kasaCiros.restoran)}</span></span>
+                        <span class="breakdown-item">☕ <span id="breakdownCafetarya">${formatCurrencyShort(kasaCiros.cafetarya)}</span></span>
+                        <span class="breakdown-item">🐟 <span id="breakdownBalik">${formatCurrencyShort(kasaCiros.balik)}</span></span>
+                        <span class="breakdown-item">🍦 <span id="breakdownDondurma">${formatCurrencyShort(kasaCiros.dondurma)}</span></span>
+                    </div>
+                </div>
+                <div class="total-hero-right">
+                    <div class="target-section">
+                        <div class="target-label">📊 Günlük Hedef</div>
+                        <div class="target-amount" id="targetAmount">${formatCurrency(dailyTarget)}</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progressBarFill" style="width:0%" data-percent="${progressPercent}"></div>
+                        </div>
+                        <div class="progress-percent" id="progressPercent">${progressPercent}% Tamamlandı</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KASİYER SIRALAMALARI -->
+            <div class="section-title">👥 Kasiyer Sıralaması</div>
+            <div id="rankGrid" class="rank-grid">
+                ${weekly.slice(0, 4).map((c, i) => `
+                    <div class="rank-card">
+                        <div class="rank-pos p${i + 1}">#${i + 1}</div>
+                        <div class="rank-avatar av-${getAvatarClass(c.name)}">${getInitials(c.name)}</div>
+                        <div class="rank-info">
+                            <div class="rank-name">${c.name}</div>
+                            <div class="rank-meta">
+                                ${c.total_entries || 0} giriş · 
+                                %${c.total_entries > 0 ? Math.round(((c.on_time_entries || 0) / c.total_entries) * 100) : 0} zamanında
+                            </div>
+                        </div>
+                        <div class="rank-right">
+                            <div class="rank-pts">${c.weekly_points || 0}</div>
+                            <div class="rank-badge-pill">${getBadgeLabel(c.badge_level)}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- KASA BAZLI CİROLAR -->
+            <div class="section-title">🏪 Kasa Bazlı Cirolar (Son 7 Gün)</div>
+            <div class="kasa-grid">
+                <div class="kasa-card restoran">
+                    <div class="kasa-icon">🍽️</div>
+                    <div class="kasa-label">Restoran</div>
+                    <div class="kasa-amount">${formatCurrency(kasaCiros.restoran)}</div>
+                    <div class="kasa-sub">Rumeli Z2</div>
+                    <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.restoran / kasaCiros.total) * 100) : 0} toplam</div>
+                </div>
+                <div class="kasa-card cafetarya">
+                    <div class="kasa-icon">☕</div>
+                    <div class="kasa-label">Cafetarya</div>
+                    <div class="kasa-amount">${formatCurrency(kasaCiros.cafetarya)}</div>
+                    <div class="kasa-sub">Rumeli Z1</div>
+                    <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.cafetarya / kasaCiros.total) * 100) : 0} toplam</div>
+                </div>
+                <div class="kasa-card balik">
+                    <div class="kasa-icon">🐟</div>
+                    <div class="kasa-label">Balık Ekmek</div>
+                    <div class="kasa-amount">${formatCurrency(kasaCiros.balik)}</div>
+                    <div class="kasa-sub">Z Raporu</div>
+                    <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.balik / kasaCiros.total) * 100) : 0} toplam</div>
+                </div>
+                <div class="kasa-card dondurma">
+                    <div class="kasa-icon">🍦</div>
+                    <div class="kasa-label">Dondurma</div>
+                    <div class="kasa-amount">${formatCurrency(kasaCiros.dondurma)}</div>
+                    <div class="kasa-sub">Z Raporu</div>
+                    <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.dondurma / kasaCiros.total) * 100) : 0} toplam</div>
+                </div>
+            </div>
+
+            <!-- ÖZET İSTATİSTİKLER -->
+            <div class="section-title">📊 Özet İstatistikler</div>
+            <div class="summary-grid">
+                <div class="sc blue">
+                    <div class="sc-l">Bu Hafta Toplam Ciro</div>
+                    <div class="sc-v">${formatCurrencyShort(kasaCiros.total)}</div>
+                    <div class="sc-s">${uniqueDays} günlük veri</div>
+                </div>
+                <div class="sc purple">
+                    <div class="sc-l">Günlük Ortalama</div>
+                    <div class="sc-v">${formatCurrencyShort(dailyAvg)}</div>
+                    <div class="sc-s">Son ${uniqueDays} gün</div>
+                </div>
+                <div class="sc orange">
+                    <div class="sc-l">Zamanında Giriş</div>
+                    <div class="sc-v">%${onTimeRate}</div>
+                    <div class="sc-s">${onTimeEntries}/${totalEntries} giriş</div>
+                </div>
+                <div class="sc green">
+                    <div class="sc-l">Toplam Giriş Sayısı</div>
+                    <div class="sc-v">${totalEntries}</div>
+                    <div class="sc-s">Son 7 gün</div>
+                </div>
+
+                <!-- YENİ KARTLAR -->
+                <div class="sc cyan">
+                    <div class="sc-l">Ortalama İşlem Süresi</div>
+                    <div class="sc-v" id="avgEntryTime">${stats.avgEntryTime}</div>
+                    <div class="sc-s">Son 7 günlük ortalama</div>
+                </div>
+
+                <div class="sc pink">
+                    <div class="sc-l">En Yüksek Günlük Ciro</div>
+                    <div class="sc-v" id="maxDailyCiro">${formatCurrencyShort(stats.maxDailyCiro)}</div>
+                    <div class="sc-s">Bu hafta rekor</div>
+                </div>
+
+                <div class="sc indigo">
+                    <div class="sc-l">Aktif Kasiyer</div>
+                    <div class="sc-v" id="activeCashiers">${stats.activeCashiers}/${cashiers.length}</div>
+                    <div class="sc-s">Bugün giriş yapan</div>
+                </div>
+
+                <div class="sc emerald">
+                    <div class="sc-l">Haftalık Büyüme</div>
+                    <div class="sc-v" id="weeklyGrowth">${stats.weeklyGrowth}</div>
+                    <div class="sc-s">Önceki haftaya göre</div>
+                </div>
+            </div>
+
+            <!-- GRAFİKLER -->
+            <div class="section-title">📈 Grafikler</div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">📈 Günlük Ciro Trendi (Son 7 Gün)</div>
+                    <div class="chart-wrap">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">🥧 Kasa Dağılımı</div>
+                    <div class="chart-wrap">
+                        <canvas id="kasaChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">⚖️ Vardiya Karşılaştırması</div>
+                    <div class="chart-wrap">
+                        <canvas id="shiftChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">👥 Kasiyer Ciro Performansı</div>
+                    <div class="chart-wrap">
+                        <canvas id="cashierChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UYARILAR -->
+            <div class="section-title">⚠️ Uyarılar</div>
+            <div class="alerts-grid">
+                <div class="alert-card ${alerts.notEntered.length > 0 ? 'danger' : 'ok'}">
+                    <div class="alert-title">
+                        ${alerts.notEntered.length > 0 ? '❌' : '✅'} Bugün Giriş Yapmayanlar
+                    </div>
+                    ${alerts.notEntered.length === 0
+                    ? '<div class="alert-item">Tüm kasiyerler giriş yaptı!</div>'
+                    : alerts.notEntered.map(c => `
+                            <div class="alert-item">
+                                <span>${c.name}</span>
+                                <span style="color:var(--red)">Giriş Yok</span>
+                            </div>
+                        `).join('')
+                }
+                </div>
+                <div class="alert-card ${alerts.lateEntries.length > 0 ? 'warning' : 'ok'}">
+                    <div class="alert-title">⚠️ Geç Girişler (Bu Hafta)</div>
+                    ${alerts.lateEntries.length === 0
+                    ? '<div class="alert-item">Bu hafta geç giriş yok! 🎉</div>'
+                    : alerts.lateEntries.slice(0, 5).map(e => `
+                            <div class="alert-item">
+                                <span>${e.cashiers?.name || 'Bilinmiyor'}</span>
+                                <span style="color:var(--orange)">${formatTime(e.entry_time)}</span>
+                            </div>
+                        `).join('')
+                }
+                </div>
+                <div class="alert-card ok">
+                    <div class="alert-title">📊 Haftalık Özet</div>
+                    <div class="alert-item">
+                        <span>En Yüksek Gün</span>
+                        <span style="color:var(--green)">${formatCurrency(alerts.maxCiro)}</span>
+                    </div>
+                    <div class="alert-item">
+                        <span>Toplam Puan</span>
+                        <span style="color:var(--orange)">${weekly.reduce((s, c) => s + (c.weekly_points || 0), 0)}</span>
+                    </div>
+                    <div class="alert-item">
+                        <span>Aktif Kasiyer</span>
+                        <span style="color:var(--green)">${weekly.filter(c => (c.total_entries || 0) > 0).length}/${cashiers.length}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FİLTRE BAR -->
+            <div class="filter-bar">
+                <div>
+                    <div style="font-size:18px;font-weight:700;">Tüm Girişler</div>
+                    <div style="font-size:13px;color:var(--txt2);">${reports.length} kayıt</div>
+                </div>
+                <div class="filter-controls">
+                    <input type="date" id="filterDate" class="finput">
+                    <select id="filterKasiyer" class="fsel">
+                        <option value="">Tüm Kasiyerler</option>
+                        ${cashiers.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                    </select>
+                    <select id="filterKasa" class="fsel">
+                        <option value="">Tüm Kasalar</option>
+                        <option value="restoran">Restoran</option>
+                        <option value="cafetarya">Cafetarya</option>
+                    </select>
+                    <select id="filterVardiya" class="fsel">
+                        <option value="">Tüm Vardiyalar</option>
+                        <option value="sabah">Sabah</option>
+                        <option value="aksam">Akşam</option>
+                    </select>
+                    <button id="applyFiltersBtn" class="fbtn">🔍 Filtrele</button>
+                    <button id="clearFiltersBtn" class="fbtn" style="border-color:var(--brd);background:var(--input);color:var(--txt);">✕ Sıfırla</button>
+                </div>
+            </div>
+
+            <!-- DETAYLI TABLO -->
+            <div class="table-card">
+                <div class="table-title">Tüm Girişler Detayı</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Kasiyer</th>
+                                <th>Kasa</th>
+                                <th>Vardiya</th>
+                                <th>Giriş Saati</th>
+                                <th class="r">Z Ciro</th>
+                                <th class="r">Puan</th>
+                                <th>Durum</th>
+        <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entriesBody">
+                            ${renderTableRows(reports)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `
+
+            // Grafikleri çiz
+            renderCharts(dailyCirosArr, kasaCiros, shiftCiros, cashierCiros)
+
+            // Event listeners (içerik yüklendikten sonra)
+            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters)
+            document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters)
+
+            // Son güncelleme zamanı
+            document.getElementById('lastUpdate').textContent =
+                'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR')
+
+            // Animasyonları başlat
+            setTimeout(() => {
+                animateCards()
+                animateNumbers()
+            }, 100)
+        }
+
+        // ═══════════════════════════════════════
+        // GRAFİK FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        let charts = {}
+
+        function renderCharts(dailyCirosArr, kasaCiros, shiftCiros, cashierCiros) {
+            // Ortak Chart.js ayarları
+            Chart.defaults.color = '#7a8ba8'
+            Chart.defaults.borderColor = '#1e3a5f'
+            Chart.defaults.font.family = 'DM Sans'
+
+            // 1. Günlük Ciro Trendi (Bar)
+            const dailyCtx = document.getElementById('dailyChart')
+            if (dailyCtx) {
+                if (charts.daily) charts.daily.destroy()
+                charts.daily = new Chart(dailyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dailyCirosArr.labels.length > 0 ? dailyCirosArr.labels : ['Veri Yok'],
+                        datasets: [{
+                            label: 'Günlük Ciro (₺)',
+                            data: dailyCirosArr.data.length > 0 ? dailyCirosArr.data : [0],
+                            backgroundColor: 'rgba(59,130,246,.7)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#1e3a5f' } },
+                            y: {
+                                grid: { color: '#1e3a5f' },
+                                ticks: {
+                                    callback: val => '₺' + new Intl.NumberFormat('tr-TR').format(val)
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+
+            // 2. Kasa Dağılımı (Doughnut)
+            const kasaCtx = document.getElementById('kasaChart')
+            if (kasaCtx) {
+                if (charts.kasa) charts.kasa.destroy()
+
+                const hasData = kasaCiros.total > 0
+                const displayData = hasData
+                    ? [kasaCiros.restoran, kasaCiros.cafetarya, kasaCiros.balik, kasaCiros.dondurma]
+                    : [0.001, 0.001, 0.001, 0.001]
+
+                charts.kasa = new Chart(kasaCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Restoran', 'Cafetarya', 'Balık Ekmek', 'Dondurma'],
+                        datasets: [{
+                            data: displayData,
+                            backgroundColor: [
+                                'rgba(59,130,246,.8)',
+                                'rgba(139,92,246,.8)',
+                                'rgba(6,182,212,.8)',
+                                'rgba(236,72,153,.8)'
+                            ],
+                            borderColor: '#111d32',
+                            borderWidth: 3,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 16, usePointStyle: true }
+                            },
+                            tooltip: {
+                                enabled: hasData,
+                                callbacks: {
+                                    label: ctx => {
+                                        const val = ctx.raw
+                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0)
+                                        const pct = Math.round((val / total) * 100)
+                                        return ` ${ctx.label}: ${formatCurrency(val)} (%${pct})`
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                })
+            }
+
+            // 3. Vardiya Karşılaştırması (Bar)
+            const shiftCtx = document.getElementById('shiftChart')
+            if (shiftCtx) {
+                if (charts.shift) charts.shift.destroy()
+                charts.shift = new Chart(shiftCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Sabah Vardiyası', 'Akşam Vardiyası'],
+                        datasets: [{
+                            label: 'Ciro (₺)',
+                            data: [shiftCiros.sabah || 0, shiftCiros.aksam || 0],
+                            backgroundColor: [
+                                'rgba(245,158,11,.7)',
+                                'rgba(139,92,246,.7)'
+                            ],
+                            borderColor: ['#f59e0b', '#8b5cf6'],
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#1e3a5f' } },
+                            y: {
+                                grid: { color: '#1e3a5f' },
+                                ticks: {
+                                    callback: val => '₺' + new Intl.NumberFormat('tr-TR').format(val)
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+
+            // 4. Kasiyer Ciro Performansı (Bar)
+            const cashierCtx = document.getElementById('cashierChart')
+            if (cashierCtx) {
+                if (charts.cashier) charts.cashier.destroy()
+                const names = Object.keys(cashierCiros)
+                const values = Object.values(cashierCiros)
+
+                charts.cashier = new Chart(cashierCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: names.length > 0 ? names : ['Veri Yok'],
+                        datasets: [{
+                            label: 'Ciro (₺)',
+                            data: values.length > 0 ? values : [0],
+                            backgroundColor: [
+                                'rgba(139,92,246,.7)',
+                                'rgba(245,158,11,.7)',
+                                'rgba(236,72,153,.7)',
+                                'rgba(34,197,94,.7)'
+                            ],
+                            borderColor: ['#8b5cf6', '#f59e0b', '#ec4899', '#22c55e'],
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#1e3a5f' } },
+                            y: {
+                                grid: { color: '#1e3a5f' },
+                                ticks: {
+                                    callback: val => '₺' + new Intl.NumberFormat('tr-TR').format(val)
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        }
+
+        // ═══════════════════════════════════════
+        // TABLO RENDER
+        // ═══════════════════════════════════════
+
+        let allReports = []
+
+        function renderTableRows(reports) {
+            if (reports.length === 0) {
+                return '<tr><td colspan="9" style="text-align:center;color:var(--txt2);padding:40px;">Henüz veri yok</td></tr>'
+            }
+
+            return reports.map(r => {
+                const totalCiro = parseFloat(r.total_revenue || 0)
+                const individualCiro = parseFloat(r.individual_revenue || totalCiro)
+
+                return `
+                <tr>
+                    <td>${formatDateShort(r.date)}</td>
+                    <td style="font-weight:600">${r.cashiers?.name || '-'}</td>
+                    <td><span class="badge ${r.kasa || ''}">${r.kasa === 'restoran' ? '🍽️ Restoran' : r.kasa === 'cafetarya' ? '☕ Cafetarya' : '-'}</span></td>
+                    <td><span class="badge ${r.shift || ''}">${r.shift === 'sabah' ? '🌅 Sabah' : r.shift === 'aksam' ? '🌙 Akşam' : '-'}</span></td>
+                    <td class="mono">${formatTime(r.entry_time)}</td>
+                    <td class="r">
+                        <div class="mono" style="font-weight:700;color:var(--txt);">${formatCurrency(individualCiro)}</div>
+                        ${r.shift === 'aksam' && totalCiro !== individualCiro ?
+                        `<div style="font-size:11px;color:var(--txt3);">EOD Toplam: ${formatCurrency(totalCiro)}</div>`
+                        : ''
+                    }
+                    </td>
+                    <td class="r mono" style="color:var(--orange)">${r.points_earned || 0}</td>
+                    <td><span class="badge ${r.is_on_time ? 'on-time' : 'late'}">${r.is_on_time ? '✅' : '⚠️'}</span></td>
+                <td>
+                    <div style="display:flex;gap:6px;">
+                        <button class="action-btn edit" onclick="editEntry('${r.id}')" title="Düzenle">
+                            ✏️
+                        </button>
+                        <button class="action-btn delete" onclick="deleteEntry('${r.id}')" title="Sil">
+                            🗑️
+                        </button>
+                    </div>
+                </td>
+                </tr>
+            `
+            }).join('')
+        }
+
+        // ═══════════════════════════════════════
+        // FİLTRE FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        function applyFilters() {
+            const date = document.getElementById('filterDate').value
+            const kasiyerId = document.getElementById('filterKasiyer').value
+            const kasa = document.getElementById('filterKasa').value
+            const vardiya = document.getElementById('filterVardiya').value
+
+            let filtered = [...allReports]
+            if (date) filtered = filtered.filter(r => r.date === date)
+            if (kasiyerId) filtered = filtered.filter(r => r.cashier_id === kasiyerId)
+            if (kasa) filtered = filtered.filter(r => r.kasa === kasa)
+            if (vardiya) filtered = filtered.filter(r => r.shift === vardiya)
+
+            document.getElementById('entriesBody').innerHTML = renderTableRows(filtered)
+        }
+
+        function clearFilters() {
+            document.getElementById('filterDate').value = ''
+            document.getElementById('filterKasiyer').value = ''
+            document.getElementById('filterKasa').value = ''
+            document.getElementById('filterVardiya').value = ''
+            document.getElementById('entriesBody').innerHTML = renderTableRows(allReports)
+        }
+
+        // ═══════════════════════════════════════
+        // YARDIMCI FONKSİYONLAR
+        // ═══════════════════════════════════════
+
+        function formatCurrency(val) {
+            return new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(val || 0) + ' ₺'
+        }
+
+        function formatCurrencyShort(val) {
+            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M ₺'
+            if (val >= 1000) return (val / 1000).toFixed(1) + 'K ₺'
+            return formatCurrency(val)
+        }
+
+        function formatDateShort(dateStr) {
+            if (!dateStr) return '-'
+            const d = new Date(dateStr)
+            return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+        }
+
+        function formatTime(dt) {
+            if (!dt) return '-'
+            return new Date(dt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+        }
+
+        function getInitials(name) {
+            if (!name) return '??'
+            return name.split(' ').map(n => n[0]).join('')
+        }
+
+        function getAvatarClass(name) {
+            if (!name) return 't'
+            const first = name.split(' ')[0]
+            const map = { 'Tuba': 't', 'Elif': 'e', 'Melda': 'm', 'Ceren': 'c' }
+            return map[first] || 't'
+        }
+
+        function getBadgeLabel(level) {
+            const labels = {
+                'yeni': '🆕 Yeni',
+                'bronz': '🥉 Bronz',
+                'gumus': '🥈 Gümüş',
+                'altin': '🥇 Altın',
+                'elmas': '💎 Elmas',
+                'efsane': '👑 Efsane'
+            }
+            return labels[level] || '🆕 Yeni'
+        }
+
+        // ═══════════════════════════════════════
+        // ANA YÜKLEME
+        // ═══════════════════════════════════════
+        window.loadDashboard = async function () {
+            try {
+                // Loading göster
+                document.getElementById('mainContent').innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Veriler yükleniyor...</div>
+                    </div>
+                `
+
+                const { weekly, reports, cashiers } = await fetchAllData()
+                allReports = reports
+                await renderPage(weekly, reports, cashiers)
+            } catch (err) {
+                console.error('Dashboard yükleme hatası:', err)
+                document.getElementById('mainContent').innerHTML = `
+                <div class="loading">
+                    <div style="font-size:48px;margin-bottom:16px;">❌</div>
+                    <div style="font-size:18px;color:var(--red);">Veri yükleme hatası!</div>
+                    <div style="color:var(--txt2);margin-top:8px;">${err.message}</div>
+                    <button onclick="loadDashboard()" class="nb" style="margin-top:20px;">🔄 Tekrar Dene</button>
+                </div>
+            `
+            }
+        }
+
+        // Sayfa yüklenince başlat
+        window.loadDashboard()
+
+        // Otomatik yenileme (5 dakika)
+        setInterval(() => window.loadDashboard(), 5 * 60 * 1000)
+
+        // ═══════════════════════════════════════
+        // SİL/DÜZENLE FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        window.deleteEntry = async function (entryId) {
+            console.log('deleteEntry çağrıldı:', entryId)
+            // Confirm modal göster
+            const modal = document.createElement('div')
+            modal.className = 'modal-overlay'
+            modal.innerHTML = `
+                <div class="modal-box">
+                    <div class="modal-title">🗑️ Kaydı Sil</div>
+                    <div class="modal-content">
+                        <p style="color:var(--txt2);">Bu kaydı silmek istediğinize emin misiniz?</p>
+                        <p style="color:var(--red);margin-top:8px;font-size:13px;">⚠️ Bu işlem geri alınamaz!</p>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">
+                            İptal
+                        </button>
+                        <button class="modal-btn confirm" onclick="confirmDelete('${entryId}')">
+                            Sil
+                        </button>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(modal)
+        }
+
+        window.confirmDelete = async function (entryId) {
+            const modal = document.querySelector('.modal-overlay')
+
+            try {
+                console.log('Siliniyor:', entryId)
+
+                // Supabase'den sil
+                const { data, error } = await supabase
+                    .from('daily_reports')
+                    .delete()
+                    .eq('id', entryId)
+
+                console.log('Delete response:', { data, error })
+
+                if (error) {
+                    throw new Error(error.message)
+                }
+
+                // Modal kapat
+                if (modal) modal.remove()
+
+                // Toast göster
+                showToast('✅ Kayıt başarıyla silindi!', 'success')
+
+                // Tabloyu HEMEN yenile
+                await loadDashboard()
+
+            } catch (err) {
+                console.error('Silme hatası:', err)
+                showToast('❌ Silme başarısız: ' + err.message, 'error')
+
+                // Modal kapat (hata olsa bile)
+                if (modal) modal.remove()
+            }
+        }
+
+        window.editEntry = async function (entryId) {
+            console.log('editEntry çağrıldı:', entryId)
+            // Önce kaydı getir
+            const { data: entry, error } = await supabase
+                .from('daily_reports')
+                .select('*')
+                .eq('id', entryId)
+                .single()
+
+            if (error) {
+                showToast('❌ Kayıt bulunamadı', 'error')
+                return
+            }
+
+            // Düzenleme modalı
+            const modal = document.createElement('div')
+            modal.className = 'modal-overlay'
+            modal.innerHTML = `
+                <div class="modal-box" style="max-width:600px;">
+                    <div class="modal-title">✏️ Kaydı Düzenle</div>
+                    <div class="modal-content">
+                        <div style="display:grid;gap:12px;">
+                            <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Z Ciro</label>
+                                <input type="number" id="editZCiro" value="${parseFloat(entry.rumeli_z1 || 0) + parseFloat(entry.rumeli_z2 || 0) + parseFloat(entry.balik_ekmek || 0) + parseFloat(entry.dondurma || 0)}" 
+                                    style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Puan</label>
+                                <input type="number" id="editPuan" value="${entry.points_earned || 0}" 
+                                    style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Durum</label>
+                                <select id="editDurum" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                                    <option value="true" ${entry.is_on_time ? 'selected' : ''}>✅ Zamanında</option>
+                                    <option value="false" ${!entry.is_on_time ? 'selected' : ''}>⚠️ Geç</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">
+                            İptal
+                        </button>
+                        <button class="modal-btn confirm" style="background:var(--acc);" onclick="confirmEdit('${entryId}')">
+                            Kaydet
+                        </button>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(modal)
+        }
+
+        window.confirmEdit = async function (entryId) {
+            const modal = document.querySelector('.modal-overlay')
+
+            try {
+                const newZCiro = parseFloat(document.getElementById('editZCiro').value) || 0
+                const newPuan = parseInt(document.getElementById('editPuan').value) || 0
+                const newDurum = document.getElementById('editDurum').value === 'true'
+
+                console.log('Güncelleniyor:', { entryId, newZCiro, newPuan, newDurum })
+
+                // 1. daily_reports'u güncelle
+                const { error: reportError } = await supabase
+                    .from('daily_reports')
+                    .update({
+                        total_revenue: newZCiro,
+                        points_earned: newPuan,
+                        is_on_time: newDurum
+                    })
+                    .eq('id', entryId)
+
+                if (reportError) throw reportError
+
+                // 2. Kasiyer ID'sini al
+                const { data: reportData } = await supabase
+                    .from('daily_reports')
+                    .select('cashier_id')
+                    .eq('id', entryId)
+                    .single()
+
+                if (!reportData) throw new Error('Kayıt bulunamadı')
+
+                // 3. Bu kasiyerin TÜM raporlarından toplam puanı hesapla
+                const { data: allReportsRes } = await supabase
+                    .from('daily_reports')
+                    .select('points_earned')
+                    .eq('cashier_id', reportData.cashier_id)
+
+                const totalPoints = allReportsRes.reduce((sum, r) => sum + (parseInt(r.points_earned) || 0), 0)
+
+                console.log('Toplam puan:', totalPoints)
+
+                // 4. Rozet seviyesini belirle
+                let badgeLevel = 'yeni'
+                if (totalPoints >= 1000) badgeLevel = 'efsane'
+                else if (totalPoints >= 500) badgeLevel = 'elmas'
+                else if (totalPoints >= 300) badgeLevel = 'altin'
+                else if (totalPoints >= 150) badgeLevel = 'gumus'
+                else if (totalPoints >= 50) badgeLevel = 'bronz'
+
+                // 5. cashiers tablosunu güncelle
+                const { error: cashierError } = await supabase
+                    .from('cashiers')
+                    .update({
+                        total_points: totalPoints,
+                        badge_level: badgeLevel
+                    })
+                    .eq('id', reportData.cashier_id)
+
+                if (cashierError) throw cashierError
+
+                // Modal kapat
+                if (modal) modal.remove()
+
+                // Toast
+                showToast('✅ Kayıt ve kasiyer puanı güncellendi!', 'success')
+
+                // Dashboard yenile
+                await loadDashboard()
+
+            } catch (err) {
+                console.error('Güncelleme hatası:', err)
+                showToast('❌ Güncelleme başarısız: ' + err.message, 'error')
+                if (modal) modal.remove()
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div')
+            toast.style.cssText = `
+                position:fixed;
+                bottom:20px;
+                right:20px;
+                background:${type === 'success' ? 'var(--green)' : 'var(--red)'};
+                color:#fff;
+                padding:16px 20px;
+                border-radius:12px;
+                font-size:14px;
+                font-weight:600;
+                z-index:3000;
+                box-shadow:0 8px 24px rgba(0,0,0,.3);
+                animation:slideIn .3s;
+            `
+            toast.textContent = message
+            document.body.appendChild(toast)
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut .3s'
+                setTimeout(() => toast.remove(), 300)
+            }, 3000)
+        }
+    </script>
+
+</body>
+
+</html>

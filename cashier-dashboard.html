@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasiyer Dashboard - Rumeli İskelesi</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        :root {
+            --bg: #0a1628;
+            --card: #111d32;
+            --input: #162340;
+            --brd: #1e3a5f;
+            --txt: #e8edf5;
+            --txt2: #7a8ba8;
+            --txt3: #4a5d7a;
+            --acc: #3b82f6;
+            --glow: rgba(59, 130, 246, .15);
+            --green: #22c55e;
+            --orange: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --gold: #fbbf24;
+            --silver: #94a3b8;
+            --bronze: #d97706;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--txt);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto
+        }
+
+        /* HEADER */
+        .header {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
+        }
+
+        .av-t {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        }
+
+        .av-e {
+            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        }
+
+        .av-m {
+            background: linear-gradient(135deg, #be185d, #ec4899)
+        }
+
+        .av-c {
+            background: linear-gradient(135deg, #059669, #22c55e)
+        }
+
+        .profile-info {
+            flex: 1
+        }
+
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px
+        }
+
+        .profile-role {
+            font-size: 14px;
+            color: var(--txt2);
+            margin-bottom: 16px
+        }
+
+        .badge-row {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #fff
+        }
+
+        .points-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold)
+        }
+
+        /* PROGRESS BAR */
+        .progress-section {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--input);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--brd)
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: 10px;
+            transition: width .5s ease
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all .2s
+        }
+
+        .stat-card:hover {
+            border-color: var(--acc);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, .2)
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--txt2)
+        }
+
+        /* LEADERBOARD */
+        .section {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all .2s
+        }
+
+        .leaderboard-item:hover {
+            border-color: var(--acc);
+            transform: translateX(4px)
+        }
+
+        .leaderboard-item.current {
+            border-color: var(--acc);
+            background: var(--glow)
+        }
+
+        .rank {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            width: 40px;
+            text-align: center
+        }
+
+        .rank-1 {
+            color: var(--gold)
+        }
+
+        .rank-2 {
+            color: var(--silver)
+        }
+
+        .rank-3 {
+            color: var(--bronze)
+        }
+
+        .leaderboard-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff
+        }
+
+        .leaderboard-info {
+            flex: 1
+        }
+
+        .leaderboard-name {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 2px
+        }
+
+        .leaderboard-stats {
+            font-size: 12px;
+            color: var(--txt2)
+        }
+
+        .leaderboard-points {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gold)
+        }
+
+        /* HISTORY TABLE */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--txt2);
+            border-bottom: 1px solid var(--brd)
+        }
+
+        .history-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--brd);
+            font-size: 14px
+        }
+
+        .history-table tr:hover {
+            background: var(--input)
+        }
+
+        .shift-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .shift-sabah {
+            background: rgba(251, 191, 36, .2);
+            color: var(--gold)
+        }
+
+        .shift-aksam {
+            background: rgba(139, 92, 246, .2);
+            color: var(--purple)
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        .status-ontime {
+            color: var(--green)
+        }
+
+        .status-late {
+            color: var(--orange)
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--txt2)
+        }
+
+        .error {
+            background: #7f1d1d;
+            color: #fca5a5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 40px 0
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 10px;
+            color: var(--txt);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 20px;
+            transition: all .2s
+        }
+
+        .back-btn:hover {
+            border-color: var(--acc);
+            transform: translateX(-4px)
+        }
+
+        /* ── GİRİŞLERİM ── */
+        .my-entries-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .today-entries, .past-entries {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .today-entries h3, .past-entries h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--txt);
+        }
+
+        .entry-card {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .entry-time {
+            font-size: 13px;
+            color: var(--txt2);
+        }
+
+        .entry-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .entry-badge.on-time { background: var(--green); color: #fff; }
+        .entry-badge.late    { background: var(--orange); color: #fff; }
+
+        .entry-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .entry-detail-label {
+            color: var(--txt2);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .entry-detail-value {
+            font-weight: 700;
+            color: var(--txt);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+
+        .entry-actions { display: flex; gap: 8px; }
+
+        .entry-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--brd);
+            background: var(--bg);
+            color: var(--txt);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .entry-btn.edit   { border-color: var(--acc); color: var(--acc); }
+        .entry-btn.delete { border-color: var(--red); color: var(--red); }
+        .entry-btn:hover  { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+
+        /* ── DÜZENLEME MODALI ── */
+        .edit-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,20,.85);
+            backdrop-filter: blur(4px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn .3s;
+        }
+
+        .edit-modal-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0,0,0,.6);
+        }
+
+        .edit-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--brd);
+        }
+
+        .edit-modal-header h2 { font-size: 20px; font-weight: 700; margin: 0; }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--txt2);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all .2s;
+        }
+
+        .close-btn:hover { background: var(--input); color: var(--txt); }
+
+        .edit-modal-content { padding: 24px; }
+
+        .edit-info-card {
+            background: rgba(59,130,246,.1);
+            border: 1px solid rgba(59,130,246,.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .edit-section { margin-bottom: 24px; }
+        .edit-section h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; }
+
+        .edit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .edit-field label {
+            display: block;
+            font-size: 12px;
+            color: var(--txt2);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .edit-field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+        }
+
+        .edit-field input:focus {
+            outline: none;
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+        }
+
+        .edit-modal-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--brd);
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+
+        .modal-btn.cancel { background: var(--input); color: var(--txt); border: 1px solid var(--brd); }
+        .modal-btn.save   { background: var(--acc); color: #fff; }
+        .modal-btn:hover  { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .my-entries-section { grid-template-columns: 1fr; }
+            .edit-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="entry.html" class="back-btn">← Veri Girişine Dön</a>
+
+        <div id="loading" class="loading">
+            <div style="font-size: 48px; margin-bottom: 16px">⏳</div>
+            <div style="font-size: 18px; font-weight: 600">Yükleniyor...</div>
+        </div>
+
+        <div id="error" class="error" style="display: none"></div>
+
+        <div id="dashboard" style="display: none">
+            <!-- HEADER / PROFILE -->
+            <div class="header">
+                <div class="profile">
+                    <div id="profileAvatar" class="avatar av-t">TB</div>
+                    <div class="profile-info">
+                        <div id="profileName" class="profile-name">Tuba Bozaklı</div>
+                        <div id="profileRole" class="profile-role">Kasiyer - Cafetarya Z1</div>
+                        <div class="badge-row">
+                            <div class="badge">
+                                <span id="badgeIcon">🥉</span>
+                                <span id="badgeLabel">Bronz</span>
+                            </div>
+                            <div class="points-display">
+                                <span>⭐ </span>
+                                <span id="totalPoints">0</span>
+                                <span style="font-size: 14px; color: var(--txt2)"> puan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Sonraki rozete: <strong id="nextBadge">Gümüş</strong></span>
+                        <span id="pointsNeeded">50 puan kaldı</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div id="statEntries" class="stat-value">0</div>
+                    <div class="stat-label">Bu Hafta Giriş</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏰</div>
+                    <div id="statOnTime" class="stat-value">0</div>
+                    <div class="stat-label">Zamanında Giriş</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div id="statRevenue" class="stat-value">0₺</div>
+                    <div class="stat-label">Toplam Ciro</div>
+                </div>
+            </div>
+
+            <!-- LEADERBOARD -->
+            <div class="section">
+                <div class="section-title">
+                    <span>🏆</span>
+                    <span>Lider Tablosu</span>
+                </div>
+                <div id="leaderboard"></div>
+            </div>
+
+            <!-- HISTORY -->
+            <div class="section">
+                <div class="section-title">
+                    <span>📜</span>
+                    <span>Son Girişler</span>
+                </div>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Vardiya</th>
+                            <th>Durum</th>
+                            <th>Ciro</th>
+                            <th>Puan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+
+            <!-- GİRİŞLERİM -->
+            <div class="section-title" style="font-size:17px;font-weight:700;margin-bottom:16px;">📝 Girişlerim</div>
+            <div class="my-entries-section">
+                <div class="today-entries">
+                    <h3>🕐 Bugün</h3>
+                    <div id="todayEntriesContainer"></div>
+                </div>
+                <div class="past-entries">
+                    <h3>📅 Son 7 Gün</h3>
+                    <div id="pastEntriesContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js'
+
+        // URL'den cashier_id al
+        const urlParams = new URLSearchParams(window.location.search)
+        const cashierId = urlParams.get('cashier_id')
+
+        if (!cashierId) {
+            showError('Kasiyer ID\'si bulunamadı. Lütfen giriş sayfasından tekrar deneyin.')
+            document.getElementById('loading').style.display = 'none'
+        } else {
+            loadDashboard()
+        }
+
+        async function loadDashboard() {
+            try {
+                // Kasiyer bilgilerini çek
+                const { data: cashier, error: cashierError } = await supabase
+                    .from('cashiers')
+                    .select('*')
+                    .eq('id', cashierId)
+                    .single()
+
+                if (cashierError) throw cashierError
+
+                // Haftalık performans çek
+                const { data: weeklyPerf, error: weeklyError } = await supabase
+                    .from('weekly_performance')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+
+                if (weeklyError) throw weeklyError
+
+                // Giriş geçmişi çek (son 10)
+                const { data: history, error: historyError } = await supabase
+                    .from('entry_history')
+                    .select('*')
+                    .eq('cashier_id', cashierId)
+                    .order('entry_time', { ascending: false })
+                    .limit(10)
+
+                if (historyError) throw historyError
+
+                // Dashboard'u render et
+                renderDashboard(cashier, weeklyPerf, history)
+                await fetchMyEntries(cashierId)
+
+                document.getElementById('loading').style.display = 'none'
+                document.getElementById('dashboard').style.display = 'block'
+
+            } catch (error) {
+                console.error('Dashboard yükleme hatası:', error)
+                showError('Dashboard yüklenirken bir hata oluştu: ' + error.message)
+                document.getElementById('loading').style.display = 'none'
+            }
+        }
+
+        function renderDashboard(cashier, weeklyPerf, history) {
+            // PROFILE
+            const avatarClasses = {
+                'Tuba Bozaklı': 'av-t',
+                'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz': 'av-m',
+                'Ceren Erdem': 'av-c'
+            }
+            const initials = cashier.name.split(' ').map(n => n[0]).join('')
+            document.getElementById('profileAvatar').textContent = initials
+            document.getElementById('profileAvatar').className = 'avatar ' + (avatarClasses[cashier.name] || 'av-t')
+            document.getElementById('profileName').textContent = cashier.name
+            document.getElementById('profileRole').textContent = `Kasiyer - ${cashier.role || 'Cafetarya'}`
+
+            // BADGE & POINTS
+            const totalPoints = cashier.total_points || 0
+            document.getElementById('totalPoints').textContent = totalPoints
+
+            const badge = getBadge(totalPoints)
+            document.getElementById('badgeIcon').textContent = badge.icon
+            document.getElementById('badgeLabel').textContent = badge.label
+
+            // PROGRESS
+            const nextBadge = getNextBadge(totalPoints)
+            document.getElementById('nextBadge').textContent = nextBadge.label
+            const pointsNeeded = nextBadge.threshold - totalPoints
+            document.getElementById('pointsNeeded').textContent = pointsNeeded > 0 ? `${pointsNeeded} puan kaldı` : 'Tamamlandı!'
+            const progress = nextBadge.threshold > 0 ? Math.min((totalPoints / nextBadge.threshold) * 100, 100) : 100
+            document.getElementById('progressFill').style.width = progress + '%'
+
+            // STATS (bu hafta)
+            const currentCashierPerf = weeklyPerf.find(p => p.cashier_id === cashier.id) || {}
+            document.getElementById('statEntries').textContent = currentCashierPerf.total_entries || 0
+            document.getElementById('statOnTime').textContent = currentCashierPerf.on_time_entries || 0
+            const revenue = currentCashierPerf.total_revenue || 0
+            document.getElementById('statRevenue').textContent = formatCurrency(revenue)
+
+            // LEADERBOARD (top 4)
+            renderLeaderboard(weeklyPerf.slice(0, 4), cashier.id)
+
+            // HISTORY
+            renderHistory(history)
+        }
+
+        function getBadge(points) {
+            if (points >= 500) return { icon: '💎', label: 'Elmas' }
+            if (points >= 300) return { icon: '🥇', label: 'Altın' }
+            if (points >= 150) return { icon: '🥈', label: 'Gümüş' }
+            if (points >= 50) return { icon: '🥉', label: 'Bronz' }
+            return { icon: '🌱', label: 'Yeni Başlayan' }
+        }
+
+        function getNextBadge(points) {
+            if (points >= 500) return { label: 'Maksimum Seviye', threshold: 500 }
+            if (points >= 300) return { label: 'Elmas', threshold: 500 }
+            if (points >= 150) return { label: 'Altın', threshold: 300 }
+            if (points >= 50) return { label: 'Gümüş', threshold: 150 }
+            return { label: 'Bronz', threshold: 50 }
+        }
+
+        function renderLeaderboard(leaders, currentCashierId) {
+            const container = document.getElementById('leaderboard')
+            container.innerHTML = ''
+
+            const avatarClasses = {
+                'Tuba Bozaklı': 'av-t',
+                'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz': 'av-m',
+                'Ceren Erdem': 'av-c'
+            }
+
+            leaders.forEach((leader, index) => {
+                const rank = index + 1
+                const isCurrent = leader.cashier_id === currentCashierId
+                const initials = leader.cashier_name ? leader.cashier_name.split(' ').map(n => n[0]).join('') : '??'
+
+                const item = document.createElement('div')
+                item.className = 'leaderboard-item' + (isCurrent ? ' current' : '')
+                item.innerHTML = `
+                    <div class="rank rank-${rank}">#${rank}</div>
+                    <div class="leaderboard-avatar ${avatarClasses[leader.cashier_name] || 'av-t'}">${initials}</div>
+                    <div class="leaderboard-info">
+                        <div class="leaderboard-name">${leader.cashier_name || 'Bilinmiyor'}${isCurrent ? ' (Sen)' : ''}</div>
+                        <div class="leaderboard-stats">${leader.total_entries || 0} giriş • ${leader.on_time_entries || 0} zamanında</div>
+                    </div>
+                    <div class="leaderboard-points">⭐ ${leader.total_points || 0}</div>
+                `
+                container.appendChild(item)
+            })
+        }
+
+        function renderHistory(history) {
+            const tbody = document.getElementById('historyBody')
+            tbody.innerHTML = ''
+
+            if (history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--txt2); padding: 40px">Henüz giriş kaydı yok</td></tr>'
+                return
+            }
+
+            history.forEach(entry => {
+                const tr = document.createElement('tr')
+                const date = new Date(entry.entry_time)
+                const dateStr = date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
+                const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+
+                const shiftLabel = entry.shift === 'sabah' ? 'Sabah' : 'Akşam'
+                const shiftClass = entry.shift === 'sabah' ? 'shift-sabah' : 'shift-aksam'
+
+                const statusIcon = entry.is_on_time ? '✅' : '⚠️'
+                const statusLabel = entry.is_on_time ? 'Zamanında' : 'Geç'
+                const statusClass = entry.is_on_time ? 'status-ontime' : 'status-late'
+
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight: 600">${dateStr}</div>
+                        <div style="font-size: 12px; color: var(--txt2)">${timeStr}</div>
+                    </td>
+                    <td><span class="shift-badge ${shiftClass}">${shiftLabel}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusIcon} ${statusLabel}</span></td>
+                    <td class="mono">${formatCurrency(entry.revenue_amount || 0)}</td>
+                    <td class="mono" style="color: var(--gold)">+${entry.points_earned || 0}</td>
+                `
+                tbody.appendChild(tr)
+            })
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('tr-TR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value) + '₺'
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error')
+            errorDiv.textContent = '❌ ' + message
+            errorDiv.style.display = 'block'
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div')
+            toast.style.cssText = `
+                position:fixed;top:20px;right:20px;padding:14px 20px;border-radius:10px;
+                font-weight:600;font-size:14px;z-index:9999;
+                background:${type === 'success' ? '#064e3b' : '#7f1d1d'};
+                color:${type === 'success' ? '#6ee7b7' : '#fca5a5'};
+                border:1px solid ${type === 'success' ? '#065f46' : '#991b1b'};
+                box-shadow:0 8px 25px rgba(0,0,0,.3);
+            `
+            toast.textContent = message
+            document.body.appendChild(toast)
+            setTimeout(() => toast.remove(), 3000)
+        }
+
+        function formatDateShort(dateStr) {
+            return new Date(dateStr + 'T00:00:00').toLocaleDateString('tr-TR', {
+                day: '2-digit', month: '2-digit'
+            })
+        }
+
+        // ── GİRİŞLERİM ──────────────────────────────────────────
+
+        async function fetchMyEntries(id) {
+            try {
+                const today = new Date().toISOString().split('T')[0]
+                const sevenDaysAgo = new Date()
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+                const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+
+                const { data, error } = await supabase
+                    .from('daily_reports')
+                    .select('*')
+                    .eq('cashier_id', id)
+                    .gte('date', sevenDaysAgoStr)
+                    .order('date', { ascending: false })
+                    .order('entry_time', { ascending: false })
+
+                if (error) throw error
+
+                const todayEntries = data.filter(e => e.date === today)
+                const pastEntries  = data.filter(e => e.date !== today)
+
+                renderMyEntries(todayEntries, pastEntries)
+            } catch (err) {
+                console.error('Girişleri çekme hatası:', err)
+            }
+        }
+
+        function renderMyEntries(todayEntries, pastEntries) {
+            const todayContainer = document.getElementById('todayEntriesContainer')
+            const pastContainer  = document.getElementById('pastEntriesContainer')
+
+            todayContainer.innerHTML = todayEntries.length === 0
+                ? `<div style="text-align:center;padding:20px;color:var(--txt2);">
+                       <div style="font-size:48px;margin-bottom:8px;">📭</div>
+                       <div>Bugün henüz giriş yapmadınız</div>
+                   </div>`
+                : todayEntries.map(e => renderEntryCard(e, true)).join('')
+
+            pastContainer.innerHTML = pastEntries.length === 0
+                ? `<div style="text-align:center;padding:20px;color:var(--txt2);">
+                       <div style="font-size:48px;margin-bottom:8px;">📂</div>
+                       <div>Geçmiş giriş bulunamadı</div>
+                   </div>`
+                : pastEntries.map(e => renderEntryCard(e, false)).join('')
+        }
+
+        function renderEntryCard(entry, isToday) {
+            const kasaLabel = { restoran: '🍽️ Restoran', cafetarya: '☕ Cafetarya' }[entry.kasa] || entry.kasa
+            const shiftLabel = { sabah: '🌅 Sabah', aksam: '🌙 Akşam' }[entry.shift] || entry.shift
+
+            const zCiro = (parseFloat(entry.rumeli_z1) || 0)
+                        + (parseFloat(entry.rumeli_z2) || 0)
+                        + (parseFloat(entry.balik_ekmek) || 0)
+                        + (parseFloat(entry.dondurma) || 0)
+
+            const timeStr = new Date(entry.entry_time)
+                .toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+
+            const actionsHtml = isToday
+                ? `<div class="entry-actions">
+                       <button class="entry-btn edit"   onclick="editMyEntry('${entry.id}')">✏️ Düzenle</button>
+                       <button class="entry-btn delete" onclick="deleteMyEntry('${entry.id}')">🗑️ Sil</button>
+                   </div>`
+                : `<div style="text-align:center;font-size:11px;color:var(--txt3);padding:8px;">
+                       Geçmiş girişler düzenlenemez
+                   </div>`
+
+            return `
+                <div class="entry-card" data-entry-id="${entry.id}">
+                    <div class="entry-header">
+                        <div>
+                            <div style="font-weight:700;margin-bottom:4px;">${formatDateShort(entry.date)}</div>
+                            <div class="entry-time">⏰ ${timeStr}</div>
+                        </div>
+                        <span class="entry-badge ${entry.is_on_time ? 'on-time' : 'late'}">
+                            ${entry.is_on_time ? '✅ Zamanında' : '⚠️ Geç'}
+                        </span>
+                    </div>
+                    <div class="entry-details">
+                        <div class="entry-detail">
+                            <div class="entry-detail-label">Kasa</div>
+                            <div class="entry-detail-value">${kasaLabel}</div>
+                        </div>
+                        <div class="entry-detail">
+                            <div class="entry-detail-label">Vardiya</div>
+                            <div class="entry-detail-value">${shiftLabel}</div>
+                        </div>
+                        <div class="entry-detail">
+                            <div class="entry-detail-label">Z Ciro</div>
+                            <div class="entry-detail-value">${formatCurrency(zCiro)}</div>
+                        </div>
+                        <div class="entry-detail">
+                            <div class="entry-detail-label">Puan</div>
+                            <div class="entry-detail-value" style="color:var(--orange);">+${entry.points_earned}</div>
+                        </div>
+                    </div>
+                    ${actionsHtml}
+                </div>`
+        }
+
+        // ── DÜZENLEME MODALI ─────────────────────────────────────
+
+        window.editMyEntry = async function(entryId) {
+            try {
+                const { data: entry, error } = await supabase
+                    .from('daily_reports')
+                    .select('*')
+                    .eq('id', entryId)
+                    .single()
+
+                if (error) throw error
+
+                const zFields = [
+                    { id: 'editRumeliZ1',   db: 'rumeli_z1',  label: 'Rumeli Z1 (Cafetarya)' },
+                    { id: 'editRumeliZ2',   db: 'rumeli_z2',  label: 'Rumeli Z2 (Restoran)'  },
+                    { id: 'editBalikEkmek', db: 'balik_ekmek',label: 'Balık Ekmek'            },
+                    { id: 'editDondurma',   db: 'dondurma',   label: 'Dondurma'               },
+                ].filter(f => entry[f.db] !== null && entry[f.db] !== 0)
+
+                const catLabels = {
+                    gida: 'Gıda', kahvalti: 'Kahvaltı', kahve: 'Kahve',
+                    meyvesuyu: 'Meyve Suyu', sicak_icecek: 'Sıcak İçecek',
+                    soguk_icecek: 'Soğuk İçecek', tatli: 'Tatlı',
+                    salata: 'Salata', dondurma_kategori: 'Dondurma (Kategori)'
+                }
+
+                const catFields = Object.keys(catLabels)
+                    .filter(k => entry[k] !== null && entry[k] !== 0)
+                    .map(k => ({
+                        id: 'editCat_' + k,
+                        db: k,
+                        label: catLabels[k]
+                    }))
+
+                const buildInputs = (fields) => fields.map(f => `
+                    <div class="edit-field">
+                        <label>${f.label}</label>
+                        <input type="number" id="${f.id}" value="${entry[f.db]}" step="0.01">
+                    </div>`).join('')
+
+                const modal = document.createElement('div')
+                modal.className = 'edit-modal-overlay'
+                modal.innerHTML = `
+                    <div class="edit-modal-box">
+                        <div class="edit-modal-header">
+                            <h2>✏️ Girişi Düzenle</h2>
+                            <button onclick="this.closest('.edit-modal-overlay').remove()" class="close-btn">✕</button>
+                        </div>
+                        <div class="edit-modal-content">
+                            <div class="edit-info-card">
+                                <strong>ℹ️ Önemli:</strong> Sadece bugün girdiğiniz verileri düzenleyebilirsiniz.
+                                Z raporu ve kategori değerlerini dikkatli kontrol edin.
+                            </div>
+                            ${zFields.length > 0 ? `
+                            <div class="edit-section">
+                                <h3>💰 Z Raporu Değerleri</h3>
+                                <div class="edit-grid">${buildInputs(zFields)}</div>
+                            </div>` : ''}
+                            ${catFields.length > 0 ? `
+                            <div class="edit-section">
+                                <h3>🍽️ Kategori Satışları</h3>
+                                <div class="edit-grid">${buildInputs(catFields)}</div>
+                            </div>` : ''}
+                        </div>
+                        <div class="edit-modal-actions">
+                            <button onclick="this.closest('.edit-modal-overlay').remove()" class="modal-btn cancel">İptal</button>
+                            <button onclick="confirmEditMyEntry('${entryId}')" class="modal-btn save">💾 Kaydet</button>
+                        </div>
+                    </div>`
+
+                document.body.appendChild(modal)
+            } catch (err) {
+                console.error('Düzenleme modal hatası:', err)
+                alert('❌ Giriş yüklenemedi: ' + err.message)
+            }
+        }
+
+        window.confirmEditMyEntry = async function(entryId) {
+            try {
+                const updates = {}
+
+                // Z Raporu alanları
+                const zMap = {
+                    editRumeliZ1: 'rumeli_z1', editRumeliZ2: 'rumeli_z2',
+                    editBalikEkmek: 'balik_ekmek', editDondurma: 'dondurma'
+                }
+                Object.entries(zMap).forEach(([inputId, col]) => {
+                    const el = document.getElementById(inputId)
+                    if (el) updates[col] = parseFloat(el.value) || 0
+                })
+
+                // Kategori alanları
+                const catCols = ['gida','kahvalti','kahve','meyvesuyu','sicak_icecek',
+                                  'soguk_icecek','tatli','salata','dondurma_kategori']
+                catCols.forEach(col => {
+                    const el = document.getElementById('editCat_' + col)
+                    if (el) updates[col] = parseFloat(el.value) || 0
+                })
+
+                // Total revenue yeniden hesapla
+                updates.total_revenue = (updates.rumeli_z1   || 0)
+                                      + (updates.rumeli_z2   || 0)
+                                      + (updates.balik_ekmek || 0)
+                                      + (updates.dondurma    || 0)
+
+                const { error } = await supabase
+                    .from('daily_reports')
+                    .update(updates)
+                    .eq('id', entryId)
+
+                if (error) throw error
+
+                document.querySelector('.edit-modal-overlay').remove()
+                showToast('✅ Giriş başarıyla güncellendi!', 'success')
+                await fetchMyEntries(cashierId)
+            } catch (err) {
+                console.error('Güncelleme hatası:', err)
+                alert('❌ Güncelleme başarısız: ' + err.message)
+            }
+        }
+
+        window.deleteMyEntry = async function(entryId) {
+            if (!confirm('⚠️ Bu girişi silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!')) return
+
+            try {
+                const { error } = await supabase
+                    .from('daily_reports')
+                    .delete()
+                    .eq('id', entryId)
+
+                if (error) throw error
+
+                showToast('✅ Giriş silindi!', 'success')
+                await fetchMyEntries(cashierId)
+            } catch (err) {
+                console.error('Silme hatası:', err)
+                alert('❌ Silme başarısız: ' + err.message)
+            }
+        }
+    </script>
+</body>
+
+</html>
