@@ -242,29 +242,61 @@
             color: var(--txt2)
         }
 
-        .shift-btn {
-            width: 100%;
-            padding: 16px;
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn-back {
+            flex: 0 0 120px;
+            padding: 14px 20px;
+            background: var(--input);
+            border: 1px solid var(--brd);
+            color: var(--txt);
             border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
             transition: all .2s;
-            margin-top: 20px
         }
 
-        .shift-btn:hover {
+        .btn-back:hover {
+            background: var(--card);
             transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
         }
 
-        .shift-btn:disabled {
-            opacity: .5;
+        .btn-continue {
+            flex: 1;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--acc), #4f46e5);
+            border: none;
+            color: #fff;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,.4);
+        }
+
+        .btn-continue:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none
+        }
+
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn-back {
+                flex: 1;
+            }
         }
 
         /* Kasa ve Vardiya notları için stil */
@@ -545,12 +577,9 @@
             </div>
         </div>
 
-        <div class="btn-row" style="display:flex;gap:12px;margin-top:20px;">
-            <button id="kasaBackButton" class="shift-btn"
-                style="background:var(--input);color:var(--txt);border:1px solid var(--brd);flex:0 0 auto;padding:16px 24px;">
-                ← Geri
-            </button>
-            <button id="kasaButton" class="shift-btn" style="flex:1;" disabled>Devam Et</button>
+        <div class="btn-group">
+            <button id="kasaBackButton" class="btn-back">← Geri</button>
+            <button id="kasaButton" class="btn-continue" disabled>Devam Et →</button>
         </div>
     </div>
 
@@ -599,12 +628,9 @@
             </div>
         </div>
 
-        <div class="btn-row" style="display:flex;gap:12px;margin-top:20px;">
-            <button id="shiftBackButton" class="shift-btn"
-                style="background:var(--input);color:var(--txt);border:1px solid var(--brd);flex:0 0 auto;padding:16px 24px;">
-                ← Geri
-            </button>
-            <button id="shiftButton" class="shift-btn" style="flex:1;" disabled>Devam Et</button>
+        <div class="btn-group">
+            <button id="shiftBackButton" class="btn-back">← Geri</button>
+            <button id="shiftButton" class="btn-continue" disabled>Devam Et →</button>
         </div>
     </div>
 
