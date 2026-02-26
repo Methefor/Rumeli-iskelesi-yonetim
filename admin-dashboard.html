@@ -1080,8 +1080,184 @@
                 opacity: 0;
             }
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Tarih Filtresi */
+
+        .date-filter-section {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--txt);
+            margin-bottom: 12px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .filter-btn:hover {
+            background: var(--card);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--acc), #4f46e5);
+            border-color: var(--acc);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(59,130,246,.3);
+        }
+
+        .filter-info {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--txt2);
+            font-style: italic;
+        }
+
+        /* Özel Tarih Modal */
+
+        .custom-date-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,20,.85);
+            backdrop-filter: blur(4px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn .3s;
+        }
+
+        .custom-date-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0,0,0,.6);
+        }
+
+        .custom-date-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--brd);
+        }
+
+        .custom-date-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .custom-date-content {
+            padding: 24px;
+        }
+
+        .date-input-group {
+            margin-bottom: 20px;
+        }
+
+        .date-input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .date-input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--txt2);
+            margin-bottom: 8px;
+        }
+
+        .date-input-group input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--brd);
+            background: var(--input);
+            color: var(--txt);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .date-input-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+        }
+
+        .custom-date-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--brd);
+        }
+
+        .custom-date-actions .modal-btn {
+            flex: 1;
+        }
+
+        .modal-btn.apply {
+            background: linear-gradient(135deg, var(--acc), #4f46e5);
+            color: #fff;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--txt2);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all .2s;
+        }
+
+        .close-btn:hover {
+            background: var(--input);
+            color: var(--txt);
+        }
+
+        @media (max-width: 768px) {
+            .filter-buttons {
+                flex-direction: column;
+            }
+            .filter-btn {
+                width: 100%;
+            }
+        }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-DYrT1oLR.js"></script>
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-BKRCcC9r.js"></script>
   <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-ngkqdeIq.js">
 </head>
 
@@ -1111,6 +1287,34 @@
         <div class="loading">
             <div class="spinner"></div>
             <div>Veriler yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- Özel Tarih Aralığı Modal -->
+    <div class="custom-date-modal" id="customDateModal" style="display: none;">
+        <div class="custom-date-box">
+            <div class="custom-date-header">
+                <h3>📅 Özel Tarih Aralığı</h3>
+                <button onclick="closeCustomDatePicker()" class="close-btn">✕</button>
+            </div>
+            <div class="custom-date-content">
+                <div class="date-input-group">
+                    <label>Başlangıç Tarihi</label>
+                    <input type="date" id="customStartDate" />
+                </div>
+                <div class="date-input-group">
+                    <label>Bitiş Tarihi</label>
+                    <input type="date" id="customEndDate" />
+                </div>
+            </div>
+            <div class="custom-date-actions">
+                <button onclick="closeCustomDatePicker()" class="modal-btn cancel">
+                    İptal
+                </button>
+                <button onclick="applyCustomDateRange()" class="modal-btn apply">
+                    Uygula
+                </button>
+            </div>
         </div>
     </div>
 
