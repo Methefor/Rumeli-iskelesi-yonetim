@@ -1241,6 +1241,163 @@
                 width: 100%;
             }
         }
+
+        /* Kategori Satış Analizi */
+        .category-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .category-card {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all .2s;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.2);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-icon {
+            font-size: 24px;
+        }
+
+        .category-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .category-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--txt);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .category-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-percentage {
+            font-size: 13px;
+            color: var(--txt2);
+        }
+
+        .category-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .category-chart-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .category-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-bar-label {
+            width: 130px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--txt);
+            flex-shrink: 0;
+        }
+
+        .category-bar-track {
+            flex: 1;
+            height: 32px;
+            background: var(--input);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .category-bar-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            transition: width .6s ease;
+            min-width: 60px;
+        }
+
+        .category-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .category-summary-card {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .summary-icon {
+            font-size: 22px;
+            margin-bottom: 6px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .summary-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--txt);
+        }
+
+        @media (max-width: 1024px) {
+            .category-charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .category-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .category-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 
@@ -1590,6 +1747,120 @@
         }
 
         // ═══════════════════════════════════════
+        // KATEGORİ SATIŞ FONKSİYONLARI
+        // ═══════════════════════════════════════
+
+        function calcCategorySales(reports) {
+            const categories = {
+                gida:         { name: 'Gıda',          icon: '🥗', total: 0, color: '#22c55e' },
+                kahvalti:     { name: 'Kahvaltı',       icon: '🥐', total: 0, color: '#f59e0b' },
+                kahve:        { name: 'Kahve',          icon: '☕', total: 0, color: '#8b5cf6' },
+                meyvesuyu:    { name: 'Meyve Suyu',     icon: '🧃', total: 0, color: '#ec4899' },
+                sicak_icecek: { name: 'Sıcak İçecek',  icon: '🔥', total: 0, color: '#ef4444' },
+                soguk_icecek: { name: 'Soğuk İçecek',  icon: '🥤', total: 0, color: '#3b82f6' },
+                tatli:        { name: 'Tatlı',          icon: '🍰', total: 0, color: '#a855f7' }
+            }
+
+            // Her gün+kasa için sadece akşam vardiyasını al (çift sayım önleme)
+            const dailyReports = {}
+            reports.forEach(r => {
+                const key = `${r.date}-${r.kasa}`
+                if (!dailyReports[key] || r.shift === 'aksam') {
+                    dailyReports[key] = r
+                }
+            })
+
+            Object.values(dailyReports).forEach(r => {
+                categories.gida.total         += parseFloat(r.gida)         || 0
+                categories.kahvalti.total     += parseFloat(r.kahvalti)     || 0
+                categories.kahve.total        += parseFloat(r.kahve)        || 0
+                categories.meyvesuyu.total    += parseFloat(r.meyvesuyu)    || 0
+                categories.sicak_icecek.total += parseFloat(r.sicak_icecek) || 0
+                categories.soguk_icecek.total += parseFloat(r.soguk_icecek) || 0
+                categories.tatli.total        += parseFloat(r.tatli)        || 0
+            })
+
+            const totalCategorySales = Object.values(categories).reduce((sum, c) => sum + c.total, 0)
+
+            Object.values(categories).forEach(c => {
+                c.percentage = totalCategorySales > 0 ? (c.total / totalCategorySales * 100) : 0
+            })
+
+            const sorted = Object.entries(categories)
+                .map(([key, cat]) => ({ key, ...cat }))
+                .sort((a, b) => b.total - a.total)
+
+            return {
+                categories: sorted,
+                total:    totalCategorySales,
+                highest:  sorted[0],
+                lowest:   sorted[sorted.length - 1],
+                average:  totalCategorySales / sorted.length
+            }
+        }
+
+        function renderCategoryCards(categorySales) {
+            return categorySales.categories.map(cat => `
+                <div class="category-card">
+                    <div class="category-header">
+                        <span class="category-icon">${cat.icon}</span>
+                        <span class="category-name">${cat.name}</span>
+                    </div>
+                    <div class="category-amount">${formatCurrency(cat.total)}</div>
+                    <div class="category-stats">
+                        <span class="category-percentage">${cat.percentage.toFixed(1)}% pay</span>
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        function renderCategoryBarChart(categorySales) {
+            const maxValue = categorySales.categories[0]?.total || 1
+            return categorySales.categories.map(cat => {
+                const widthPercent = maxValue > 0 ? (cat.total / maxValue * 100) : 0
+                return `
+                    <div class="category-bar">
+                        <div class="category-bar-label">${cat.icon} ${cat.name}</div>
+                        <div class="category-bar-track">
+                            <div class="category-bar-fill" style="width:${widthPercent}%;background:${cat.color};">
+                                ${formatCurrencyShort(cat.total)}
+                            </div>
+                        </div>
+                    </div>
+                `
+            }).join('')
+        }
+
+        function renderCategorySummary(categorySales) {
+            return `
+                <div class="category-summary-card">
+                    <div class="summary-icon">🏆</div>
+                    <div class="summary-label">En Çok Satan</div>
+                    <div class="summary-value">${categorySales.highest.icon} ${categorySales.highest.name}</div>
+                    <div style="font-size:12px;color:var(--acc);margin-top:4px;font-weight:600;">${formatCurrencyShort(categorySales.highest.total)}</div>
+                </div>
+                <div class="category-summary-card">
+                    <div class="summary-icon">📉</div>
+                    <div class="summary-label">En Az Satan</div>
+                    <div class="summary-value">${categorySales.lowest.icon} ${categorySales.lowest.name}</div>
+                    <div style="font-size:12px;color:var(--txt3);margin-top:4px;font-weight:600;">${formatCurrencyShort(categorySales.lowest.total)}</div>
+                </div>
+                <div class="category-summary-card">
+                    <div class="summary-icon">📊</div>
+                    <div class="summary-label">Kategori Ort.</div>
+                    <div class="summary-value">${formatCurrencyShort(categorySales.average)}</div>
+                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">Kategori başına</div>
+                </div>
+                <div class="category-summary-card">
+                    <div class="summary-icon">💰</div>
+                    <div class="summary-label">Kategori Toplamı</div>
+                    <div class="summary-value">${formatCurrencyShort(categorySales.total)}</div>
+                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">7 kategori</div>
+                </div>
+            `
+        }
+
+        // ═══════════════════════════════════════
         // RENDER FONKSİYONLARI
         // ═══════════════════════════════════════
 
@@ -1601,6 +1872,7 @@
             const cashierCiros = calcCashierCiros(reports, cashiers)
             const alerts = calcAlerts(reports, cashiers)
             const stats = calcDetailedStats(reports)
+            const categorySales = calcCategorySales(reports)
 
             const topCashier = weekly.length > 0 ? weekly[0] : null
             const totalEntries = reports.length
@@ -1778,6 +2050,28 @@
                     <div class="sc-l">Haftalık Büyüme</div>
                     <div class="sc-v" id="weeklyGrowth">${stats.weeklyGrowth}</div>
                     <div class="sc-s">Önceki haftaya göre</div>
+                </div>
+            </div>
+
+            <!-- KATEGORİ SATIŞ ANALİZİ -->
+            <div class="section-title">🏷️ Kategori Bazlı Satış Analizi</div>
+
+            <!-- Kategori Kartları -->
+            <div class="category-cards-grid">
+                ${renderCategoryCards(categorySales)}
+            </div>
+
+            <!-- Kategori Grafikler + Özet -->
+            <div class="category-charts">
+                <div class="category-chart-box">
+                    <div class="chart-title">📊 Kategori Karşılaştırması</div>
+                    ${renderCategoryBarChart(categorySales)}
+                </div>
+                <div class="category-chart-box">
+                    <div class="chart-title">📋 Özet İstatistikler</div>
+                    <div class="category-summary">
+                        ${renderCategorySummary(categorySales)}
+                    </div>
                 </div>
             </div>
 
