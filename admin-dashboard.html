@@ -1257,6 +1257,130 @@
             }
         }
 
+        /* Günlük Hedef Kartı */
+
+        .daily-target-card {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 1px solid rgba(245,158,11,.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(245,158,11,.3);
+        }
+
+        .target-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,.2);
+        }
+
+        .target-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .target-date {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .target-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .target-amount-section,
+        .target-current-section {
+            text-align: center;
+        }
+
+        .target-current {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .target-progress-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,.2);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .daily-target-card .progress-percent {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-bar-wrapper {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 24px;
+            background: rgba(255,255,255,.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .daily-target-card .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fff, rgba(255,255,255,.8));
+            border-radius: 12px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(255,255,255,.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .daily-target-card .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-status {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .target-body {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
         /* Kategori Satış Analizi */
 
         .category-cards-grid {
@@ -1415,7 +1539,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-BYG4KJyf.js"></script>
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-BgYJWguS.js"></script>
   <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-ngkqdeIq.js">
 </head>
 
