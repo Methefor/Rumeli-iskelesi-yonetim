@@ -85,22 +85,20 @@ export async function insertShiftEntry(data) {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
   let isOnTime = false
+  const hour = now.getHours()
+  const minute = now.getMinutes()
 
   // Sadece BUGÜN için zamanında kontrolü yap
   if (selectedDate.getTime() === today.getTime()) {
-    const hour = now.getHours()
-    const minute = now.getMinutes()
-
     if (data.shift === 'sabah') {
-      // Sabah: 17:00'den önce (16:59'a kadar) zamanında
-      isOnTime = (hour < 17)
+      // Sabah: 17:30'a kadar zamanında
+      isOnTime = (hour < 17) || (hour === 17 && minute <= 30)
     } else if (data.shift === 'aksam') {
-      // Akşam: 00:30'a kadar zamanında
+      // Akşam: 01:00'a kadar zamanında
       if (hour >= 16 && hour <= 23) {
-        // 16:00 - 23:59 arası (vardiya saatleri) zamanında kabul et
         isOnTime = true
-      } else if (hour === 0 && minute <= 30) {
-        isOnTime = true  // 00:00 - 00:30 zamanında
+      } else if ((hour === 0 && minute <= 59) || (hour === 1 && minute === 0)) {
+        isOnTime = true
       } else {
         isOnTime = false
       }
@@ -110,15 +108,67 @@ export async function insertShiftEntry(data) {
     isOnTime = false
   }
 
-  // Eksiksiz mi kontrolü (tüm kategoriler dolu mu?)
-  const isComplete = data.gida && data.kahve && data.sicakIcecek &&
-    data.sogukIcecek && data.tatli && data.meyveSuyu &&
-    data.kahvalti
+  // 7 gün üst üste giriş kontrolü
+  async function checkConsecutiveDays(cashierId) {
+    try {
+      const { data: recentReports, error } = await supabase
+        .from('daily_reports')
+        .select('date')
+        .eq('cashier_id', cashierId)
+        .order('date', { ascending: false })
+        .limit(14)
+
+      if (error || !recentReports) return false
+
+      const uniqueDays = [...new Set(recentReports.map(r => r.date))].sort().reverse()
+      if (uniqueDays.length < 7) return false
+
+      for (let i = 0; i < 6; i++) {
+        const d1 = new Date(uniqueDays[i])
+        const d2 = new Date(uniqueDays[i + 1])
+        if (Math.floor((d1 - d2) / 86400000) !== 1) return false
+      }
+      return true
+    } catch (err) {
+      console.error('Ardışık gün kontrolü hatası:', err)
+      return false
+    }
+  }
+
+  const has7DayStreak = await checkConsecutiveDays(data.cashierId)
+
+  // Eksiksiz veri kontrolü
+  const hasCompleteData = (
+    (data.rumeliZ1 && parseFloat(data.rumeliZ1) > 0) ||
+    (data.rumeliZ2 && parseFloat(data.rumeliZ2) > 0) ||
+    (data.balikEkmek && parseFloat(data.balikEkmek) > 0) ||
+    (data.dondurma && parseFloat(data.dondurma) > 0) ||
+    (data.dondurmaZ && parseFloat(data.dondurmaZ) > 0)
+  ) && (
+    [data.gida, data.kahvalti, data.kahve, data.meyveSuyu,
+     data.sicakIcecek, data.sogukIcecek, data.tatli].filter(cat =>
+      cat && parseFloat(cat) > 0
+    ).length >= 3
+  )
+
+  // Eski uyumluluk için
+  const isComplete = hasCompleteData
 
   // Puan hesapla
-  let pointsEarned = 10 // Base puan
-  if (isOnTime) pointsEarned += 5 // Zamanında bonus
-  if (isComplete) pointsEarned += 10 // Eksiksiz bonus
+  let pointsEarned = 10                        // 1. Temel puan
+  if (isOnTime) pointsEarned += 10             // 2. Zamanında: +10
+  else          pointsEarned -= 5              //    Geç: -5
+  if (hasCompleteData) pointsEarned += 10      // 3. Eksiksiz veri: +10
+  if (has7DayStreak)   pointsEarned += 25      // 4. 7 gün streak: +25
+
+  console.log('Puan Detayları:', {
+    temelPuan: 10,
+    zamanindaBonus: isOnTime ? 10 : -5,
+    eksiksizBonus: hasCompleteData ? 10 : 0,
+    ardisikBonus: has7DayStreak ? 25 : 0,
+    toplamPuan: pointsEarned,
+    isOnTime, hasCompleteData, has7DayStreak
+  })
 
   // AKŞAM VARDİYASI İÇİN SABAH VERİSİNİ ÇIKAR
   let actualRevenue = {
@@ -241,8 +291,31 @@ export async function insertShiftEntry(data) {
     .from('entry_history')
     .insert([historyRecord])
 
-  // Kasiyerin toplam puanını güncelle
-  await updateCashierPoints(data.cashierId, pointsEarned)
+  // Kasiyer toplam puanını tüm raporlardan yeniden hesapla
+  try {
+    const { data: allReports } = await supabase
+      .from('daily_reports')
+      .select('points_earned')
+      .eq('cashier_id', data.cashierId)
+
+    const totalPoints = (allReports || []).reduce((sum, r) => sum + (parseInt(r.points_earned) || 0), 0)
+
+    let badgeLevel = 'yeni'
+    if (totalPoints >= 1000) badgeLevel = 'efsane'
+    else if (totalPoints >= 500) badgeLevel = 'elmas'
+    else if (totalPoints >= 300) badgeLevel = 'altin'
+    else if (totalPoints >= 150) badgeLevel = 'gumus'
+    else if (totalPoints >= 50)  badgeLevel = 'bronz'
+
+    await supabase
+      .from('cashiers')
+      .update({ total_points: totalPoints, badge_level: badgeLevel })
+      .eq('id', data.cashierId)
+
+    console.log('Kasiyer puanı senkronize edildi:', { totalPoints, badgeLevel })
+  } catch (syncError) {
+    console.error('Puan senkronizasyonu hatası:', syncError)
+  }
 
   return {
     data: {
