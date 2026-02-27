@@ -1242,6 +1242,129 @@
             }
         }
 
+        /* Günlük Hedef Kartı */
+        .daily-target-card {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 1px solid rgba(245,158,11,.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(245,158,11,.3);
+        }
+
+        .target-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,.2);
+        }
+
+        .target-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .target-date {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .target-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .target-amount-section,
+        .target-current-section {
+            text-align: center;
+        }
+
+        .target-current {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .target-progress-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,.2);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .daily-target-card .progress-percent {
+            font-size: 20px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .progress-bar-wrapper {
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 24px;
+            background: rgba(255,255,255,.2);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .daily-target-card .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fff, rgba(255,255,255,.8));
+            border-radius: 12px;
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(255,255,255,.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .daily-target-card .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-status {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .target-body {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
         /* Kategori Satış Analizi */
         .category-cards-grid {
             display: grid;
@@ -1467,6 +1590,7 @@
         let currentDateRange = 'month'
         let customStartDate = null
         let customEndDate = null
+        let selectedSingleDay = null
 
         // ═══════════════════════════════════════
         // VERİ ÇEKME FONKSİYONLARI
@@ -1476,7 +1600,10 @@
             let startDate
             let endDate = null
 
-            if (currentDateRange === 'custom' && customStartDate && customEndDate) {
+            if (currentDateRange === 'day' && selectedSingleDay) {
+                startDate = selectedSingleDay
+                endDate = selectedSingleDay
+            } else if (currentDateRange === 'custom' && customStartDate && customEndDate) {
                 startDate = customStartDate
                 endDate = customEndDate
             } else {
@@ -1884,7 +2011,22 @@
             const dailyAvg = uniqueDays > 0 ? kasaCiros.total / uniqueDays : 0
 
             const totalCiro = kasaCiros.total
-            const progressPercent = Math.min(100, Math.round((totalCiro / dailyTarget) * 100))
+
+            // Günlük hedef için bugün/seçili günün cirosunu hesapla
+            const targetDay = (currentDateRange === 'day' && selectedSingleDay)
+                ? selectedSingleDay
+                : new Date().toISOString().split('T')[0]
+            const targetDayMap = {}
+            reports.filter(r => r.date === targetDay).forEach(r => {
+                const key = `${r.date}-${r.kasa}`
+                if (!targetDayMap[key] || r.shift === 'aksam') targetDayMap[key] = r
+            })
+            const todayCiro = Object.values(targetDayMap).reduce(
+                (s, r) => s + parseFloat(r.total_revenue || 0), 0
+            )
+            const progressPercent = dailyTarget > 0
+                ? Math.min(100, Math.round((todayCiro / dailyTarget) * 100))
+                : 0
 
             document.getElementById('mainContent').innerHTML = `
             <!-- HERO -->
@@ -1922,10 +2064,48 @@
                 </div>
             </div>
 
+            <!-- GÜNLÜK HEDEF GÖSTERGESİ -->
+            <div class="daily-target-card">
+                <div class="target-header">
+                    <div class="target-title">🎯 Bugünkü Hedef</div>
+                    <div class="target-date">${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                </div>
+                <div class="target-body">
+                    <div class="target-amount-section">
+                        <div class="target-label">Hedef</div>
+                        <div class="target-amount">${formatCurrency(dailyTarget)}</div>
+                    </div>
+                    <div class="target-current-section">
+                        <div class="target-label">Gerçekleşen</div>
+                        <div class="target-current">${formatCurrency(todayCiro)}</div>
+                    </div>
+                </div>
+                <div class="target-progress-section">
+                    <div class="progress-header">
+                        <span class="progress-label">İlerleme</span>
+                        <span class="progress-percent">${progressPercent}%</span>
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="dailyProgressBar" data-percent="${progressPercent}" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-status">
+                        ${progressPercent >= 100 ? '🎉 Hedef Tamamlandı!' :
+                          progressPercent >= 80  ? '💪 Hedefe Yakın!' :
+                          progressPercent >= 50  ? '⏰ Yarı Yolda!' :
+                          '🚀 Devam Edelim!'}
+                    </div>
+                </div>
+            </div>
+
             <!-- TARİH FİLTRESİ -->
             <div class="date-filter-section">
                 <div class="filter-label">📅 Tarih Aralığı:</div>
                 <div class="filter-buttons">
+                    <button class="filter-btn ${currentDateRange === 'day' ? 'active' : ''}" data-range="day" onclick="showDayPicker()">
+                        📅 Belirli Gün
+                    </button>
                     <button class="filter-btn ${currentDateRange === 'month' ? 'active' : ''}" data-range="month" onclick="setDateFilter('month')">
                         Bu Ay
                     </button>
@@ -1943,6 +2123,7 @@
                     ${currentDateRange === 'week' ? 'Son 7 gün' :
                       currentDateRange === 'month' ? 'Son 30 gün' :
                       currentDateRange === 'all' ? 'Tüm veriler' :
+                      currentDateRange === 'day' && selectedSingleDay ? new Date(selectedSingleDay).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) :
                       customStartDate ? `${new Date(customStartDate).toLocaleDateString('tr-TR')} - ${new Date(customEndDate).toLocaleDateString('tr-TR')}` :
                       'Son 30 gün'}
                 </div>
@@ -2219,6 +2400,14 @@
                 animateCards()
                 animateNumbers()
             }, 100)
+
+            // Günlük hedef progress bar animasyonu
+            setTimeout(() => {
+                const dailyBar = document.getElementById('dailyProgressBar')
+                if (dailyBar) {
+                    dailyBar.style.width = Math.min(100, parseFloat(dailyBar.dataset.percent)) + '%'
+                }
+            }, 200)
         }
 
         // ═══════════════════════════════════════
@@ -2544,6 +2733,67 @@
             }
             const filterInfoEl = document.getElementById('filterInfo')
             if (filterInfoEl) filterInfoEl.textContent = infoTexts[range] || ''
+
+            window.loadDashboard()
+        }
+
+        window.showDayPicker = function () {
+            const modal = document.createElement('div')
+            modal.className = 'custom-date-modal'
+            modal.style.display = 'flex'
+            modal.id = 'dayPickerModal'
+            modal.innerHTML = `
+                <div class="custom-date-box">
+                    <div class="custom-date-header">
+                        <h3>📅 Belirli Gün Seçin</h3>
+                        <button onclick="document.getElementById('dayPickerModal').remove()" class="close-btn">✕</button>
+                    </div>
+                    <div class="custom-date-content">
+                        <div class="date-input-group">
+                            <label>Tarih Seçin</label>
+                            <input type="date" id="singleDayPicker" max="${new Date().toISOString().split('T')[0]}" />
+                        </div>
+                        <div style="margin-top:12px;padding:12px;background:rgba(59,130,246,.1);border-radius:8px;font-size:13px;color:var(--txt2);">
+                            💡 Yalnızca seçilen günün verileri gösterilir.
+                        </div>
+                    </div>
+                    <div class="custom-date-actions">
+                        <button onclick="document.getElementById('dayPickerModal').remove()" class="modal-btn cancel">
+                            İptal
+                        </button>
+                        <button onclick="applyDayFilter()" class="modal-btn apply">
+                            Göster
+                        </button>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(modal)
+            document.getElementById('singleDayPicker').value =
+                selectedSingleDay || new Date().toISOString().split('T')[0]
+        }
+
+        window.applyDayFilter = function () {
+            const input = document.getElementById('singleDayPicker')
+            const day = input?.value
+            if (!day) { alert('⚠️ Lütfen bir tarih seçin!'); return }
+
+            selectedSingleDay = day
+            currentDateRange = 'day'
+            customStartDate = null
+            customEndDate = null
+
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'))
+            const btn = document.querySelector('[data-range="day"]')
+            if (btn) btn.classList.add('active')
+
+            const displayDate = new Date(day).toLocaleDateString('tr-TR', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            })
+            const infoEl = document.getElementById('filterInfo')
+            if (infoEl) infoEl.textContent = displayDate
+
+            const modal = document.getElementById('dayPickerModal')
+            if (modal) modal.remove()
 
             window.loadDashboard()
         }
