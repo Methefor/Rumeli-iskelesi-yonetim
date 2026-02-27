@@ -1464,7 +1464,7 @@
         // ═══════════════════════════════════════
         // GLOBAL DEĞİŞKENLER - TARİH FİLTRESİ
         // ═══════════════════════════════════════
-        let currentDateRange = 'week'
+        let currentDateRange = 'month'
         let customStartDate = null
         let customEndDate = null
 
@@ -1926,11 +1926,11 @@
             <div class="date-filter-section">
                 <div class="filter-label">📅 Tarih Aralığı:</div>
                 <div class="filter-buttons">
-                    <button class="filter-btn ${currentDateRange === 'week' ? 'active' : ''}" data-range="week" onclick="setDateFilter('week')">
-                        Bu Hafta
-                    </button>
                     <button class="filter-btn ${currentDateRange === 'month' ? 'active' : ''}" data-range="month" onclick="setDateFilter('month')">
                         Bu Ay
+                    </button>
+                    <button class="filter-btn ${currentDateRange === 'week' ? 'active' : ''}" data-range="week" onclick="setDateFilter('week')">
+                        Bu Hafta
                     </button>
                     <button class="filter-btn ${currentDateRange === 'all' ? 'active' : ''}" data-range="all" onclick="setDateFilter('all')">
                         Tümü
@@ -1944,7 +1944,7 @@
                       currentDateRange === 'month' ? 'Son 30 gün' :
                       currentDateRange === 'all' ? 'Tüm veriler' :
                       customStartDate ? `${new Date(customStartDate).toLocaleDateString('tr-TR')} - ${new Date(customEndDate).toLocaleDateString('tr-TR')}` :
-                      'Son 7 gün'}
+                      'Son 30 gün'}
                 </div>
             </div>
 
