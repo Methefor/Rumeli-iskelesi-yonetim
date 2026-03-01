@@ -111,24 +111,36 @@ export async function insertShiftEntry(data) {
   // 7 gün üst üste giriş kontrolü
   async function checkConsecutiveDays(cashierId) {
     try {
-      const { data: recentReports, error } = await supabase
+      const today = new Date()
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
+
+      const { data: monthReports, error } = await supabase
         .from('daily_reports')
         .select('date')
         .eq('cashier_id', cashierId)
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
         .order('date', { ascending: false })
-        .limit(14)
 
-      if (error || !recentReports) return false
+      if (error || !monthReports || monthReports.length < 7) return false
 
-      const uniqueDays = [...new Set(recentReports.map(r => r.date))].sort().reverse()
+      const uniqueDays = [...new Set(monthReports.map(r => r.date))].sort().reverse()
       if (uniqueDays.length < 7) return false
 
-      for (let i = 0; i < 6; i++) {
+      let streak = 1
+      for (let i = 0; i < uniqueDays.length - 1; i++) {
         const d1 = new Date(uniqueDays[i])
         const d2 = new Date(uniqueDays[i + 1])
-        if (Math.floor((d1 - d2) / 86400000) !== 1) return false
+        const diffDays = Math.floor((d1 - d2) / (1000 * 60 * 60 * 24))
+        if (diffDays === 1) {
+          streak++
+          if (streak >= 7) return true
+        } else {
+          streak = 1
+        }
       }
-      return true
+      return false
     } catch (err) {
       console.error('Ardışık gün kontrolü hatası:', err)
       return false

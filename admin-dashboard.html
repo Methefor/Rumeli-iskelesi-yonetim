@@ -1521,6 +1521,41 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* ── DETAYLI VERİLER TOGGLE ── */
+        .details-toggle-section {
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .details-toggle-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--acc), #4f46e5);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,.4);
+        }
+
+        .detailed-section {
+            animation: slideDown .3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -1600,6 +1635,8 @@
             let startDate
             let endDate = null
 
+            const today = new Date()
+
             if (currentDateRange === 'day' && selectedSingleDay) {
                 startDate = selectedSingleDay
                 endDate = selectedSingleDay
@@ -1614,17 +1651,17 @@
                         startDate = weekAgo.toISOString().split('T')[0]
                         break
                     case 'month':
-                        const monthAgo = new Date()
-                        monthAgo.setDate(monthAgo.getDate() - 30)
-                        startDate = monthAgo.toISOString().split('T')[0]
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+                        break
+                    case 'lastmonth':
+                        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0]
+                        endDate = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0]
                         break
                     case 'all':
                         startDate = '2020-01-01'
                         break
                     default:
-                        const defaultWeekAgo = new Date()
-                        defaultWeekAgo.setDate(defaultWeekAgo.getDate() - 7)
-                        startDate = defaultWeekAgo.toISOString().split('T')[0]
+                        startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
                 }
             }
 
@@ -2103,11 +2140,11 @@
             <div class="date-filter-section">
                 <div class="filter-label">📅 Tarih Aralığı:</div>
                 <div class="filter-buttons">
-                    <button class="filter-btn ${currentDateRange === 'day' ? 'active' : ''}" data-range="day" onclick="showDayPicker()">
-                        📅 Belirli Gün
-                    </button>
                     <button class="filter-btn ${currentDateRange === 'month' ? 'active' : ''}" data-range="month" onclick="setDateFilter('month')">
                         Bu Ay
+                    </button>
+                    <button class="filter-btn ${currentDateRange === 'lastmonth' ? 'active' : ''}" data-range="lastmonth" onclick="setDateFilter('lastmonth')">
+                        Geçen Ay
                     </button>
                     <button class="filter-btn ${currentDateRange === 'week' ? 'active' : ''}" data-range="week" onclick="setDateFilter('week')">
                         Bu Hafta
@@ -2115,17 +2152,21 @@
                     <button class="filter-btn ${currentDateRange === 'all' ? 'active' : ''}" data-range="all" onclick="setDateFilter('all')">
                         Tümü
                     </button>
+                    <button class="filter-btn ${currentDateRange === 'day' ? 'active' : ''}" data-range="day" onclick="showDayPicker()">
+                        📅 Belirli Gün
+                    </button>
                     <button class="filter-btn ${currentDateRange === 'custom' ? 'active' : ''}" data-range="custom" onclick="showCustomDatePicker()">
                         Özel Aralık ▼
                     </button>
                 </div>
                 <div class="filter-info" id="filterInfo">
                     ${currentDateRange === 'week' ? 'Son 7 gün' :
-                      currentDateRange === 'month' ? 'Son 30 gün' :
+                      currentDateRange === 'month' ? `Bu Ay (${new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })})` :
+                      currentDateRange === 'lastmonth' ? `Geçen Ay (${new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })})` :
                       currentDateRange === 'all' ? 'Tüm veriler' :
                       currentDateRange === 'day' && selectedSingleDay ? new Date(selectedSingleDay).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) :
                       customStartDate ? `${new Date(customStartDate).toLocaleDateString('tr-TR')} - ${new Date(customEndDate).toLocaleDateString('tr-TR')}` :
-                      'Son 30 gün'}
+                      `Bu Ay (${new Date().toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })})`}
                 </div>
             </div>
 
@@ -2331,55 +2372,65 @@
                 </div>
             </div>
 
-            <!-- FİLTRE BAR -->
-            <div class="filter-bar">
-                <div>
-                    <div style="font-size:18px;font-weight:700;">Tüm Girişler</div>
-                    <div style="font-size:13px;color:var(--txt2);">${reports.length} kayıt</div>
-                </div>
-                <div class="filter-controls">
-                    <input type="date" id="filterDate" class="finput">
-                    <select id="filterKasiyer" class="fsel">
-                        <option value="">Tüm Kasiyerler</option>
-                        ${cashiers.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
-                    </select>
-                    <select id="filterKasa" class="fsel">
-                        <option value="">Tüm Kasalar</option>
-                        <option value="restoran">Restoran</option>
-                        <option value="cafetarya">Cafetarya</option>
-                    </select>
-                    <select id="filterVardiya" class="fsel">
-                        <option value="">Tüm Vardiyalar</option>
-                        <option value="sabah">Sabah</option>
-                        <option value="aksam">Akşam</option>
-                    </select>
-                    <button id="applyFiltersBtn" class="fbtn">🔍 Filtrele</button>
-                    <button id="clearFiltersBtn" class="fbtn" style="border-color:var(--brd);background:var(--input);color:var(--txt);">✕ Sıfırla</button>
-                </div>
+            <!-- DETAYLI VERİLER TOGGLE -->
+            <div class="details-toggle-section">
+                <button class="details-toggle-btn" onclick="toggleDetails()">
+                    <span id="toggleIcon">👁️</span>
+                    <span id="toggleText">Detaylı Verileri Göster</span>
+                </button>
             </div>
 
-            <!-- DETAYLI TABLO -->
-            <div class="table-card">
-                <div class="table-title">Tüm Girişler Detayı</div>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tarih</th>
-                                <th>Kasiyer</th>
-                                <th>Kasa</th>
-                                <th>Vardiya</th>
-                                <th>Giriş Saati</th>
-                                <th class="r">Z Ciro</th>
-                                <th class="r">Puan</th>
-                                <th>Durum</th>
-        <th>İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody id="entriesBody">
-                            ${renderTableRows(reports)}
-                        </tbody>
-                    </table>
+            <div id="detailedSection" style="display:none;" class="detailed-section">
+                <!-- FİLTRE BAR -->
+                <div class="filter-bar">
+                    <div>
+                        <div style="font-size:18px;font-weight:700;">Tüm Girişler</div>
+                        <div style="font-size:13px;color:var(--txt2);">${reports.length} kayıt</div>
+                    </div>
+                    <div class="filter-controls">
+                        <input type="date" id="filterDate" class="finput">
+                        <select id="filterKasiyer" class="fsel">
+                            <option value="">Tüm Kasiyerler</option>
+                            ${cashiers.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                        </select>
+                        <select id="filterKasa" class="fsel">
+                            <option value="">Tüm Kasalar</option>
+                            <option value="restoran">Restoran</option>
+                            <option value="cafetarya">Cafetarya</option>
+                        </select>
+                        <select id="filterVardiya" class="fsel">
+                            <option value="">Tüm Vardiyalar</option>
+                            <option value="sabah">Sabah</option>
+                            <option value="aksam">Akşam</option>
+                        </select>
+                        <button id="applyFiltersBtn" class="fbtn">🔍 Filtrele</button>
+                        <button id="clearFiltersBtn" class="fbtn" style="border-color:var(--brd);background:var(--input);color:var(--txt);">✕ Sıfırla</button>
+                    </div>
+                </div>
+
+                <!-- DETAYLI TABLO -->
+                <div class="table-card">
+                    <div class="table-title">Tüm Girişler Detayı</div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Kasiyer</th>
+                                    <th>Kasa</th>
+                                    <th>Vardiya</th>
+                                    <th>Giriş Saati</th>
+                                    <th class="r">Z Ciro</th>
+                                    <th class="r">Puan</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entriesBody">
+                                ${renderTableRows(reports)}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         `
@@ -2388,8 +2439,10 @@
             renderCharts(dailyCirosArr, kasaCiros, shiftCiros, cashierCiros)
 
             // Event listeners (içerik yüklendikten sonra)
-            document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters)
-            document.getElementById('clearFiltersBtn').addEventListener('click', clearFilters)
+            const applyBtn = document.getElementById('applyFiltersBtn')
+            const clearBtn = document.getElementById('clearFiltersBtn')
+            if (applyBtn) applyBtn.addEventListener('click', applyFilters)
+            if (clearBtn) clearBtn.addEventListener('click', clearFilters)
 
             // Son güncelleme zamanı
             document.getElementById('lastUpdate').textContent =
@@ -2717,6 +2770,23 @@
         // TARİH FİLTRESİ FONKSİYONLARI
         // ═══════════════════════════════════════
 
+        window.toggleDetails = function () {
+            const section = document.getElementById('detailedSection')
+            const icon = document.getElementById('toggleIcon')
+            const text = document.getElementById('toggleText')
+            if (!section) return
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block'
+                icon.textContent = '🙈'
+                text.textContent = 'Detaylı Verileri Gizle'
+            } else {
+                section.style.display = 'none'
+                icon.textContent = '👁️'
+                text.textContent = 'Detaylı Verileri Göster'
+            }
+        }
+
         window.setDateFilter = function (range) {
             currentDateRange = range
             customStartDate = null
@@ -2726,9 +2796,15 @@
             const activeBtn = document.querySelector(`[data-range="${range}"]`)
             if (activeBtn) activeBtn.classList.add('active')
 
+            const now = new Date()
+            const thisMonthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+            const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+            const lastMonthLabel = lastMonthDate.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+
             const infoTexts = {
                 week: 'Son 7 gün',
-                month: 'Son 30 gün',
+                month: `Bu Ay (${thisMonthLabel})`,
+                lastmonth: `Geçen Ay (${lastMonthLabel})`,
                 all: 'Tüm veriler'
             }
             const filterInfoEl = document.getElementById('filterInfo')
