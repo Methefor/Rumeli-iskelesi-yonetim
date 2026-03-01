@@ -1538,9 +1538,45 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        /* ── DETAYLI VERİLER TOGGLE ── */
+
+        .details-toggle-section {
+            margin: 24px 0;
+            text-align: center;
+        }
+
+        .details-toggle-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, var(--acc), #4f46e5);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59,130,246,.4);
+        }
+
+        .detailed-section {
+            animation: slideDown .3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-CEU1iAMK.js"></script>
-  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-Ct8-IVBM.js">
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-BMps0Ulq.js"></script>
+  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-BYSCEbDX.js">
 </head>
 
 <body>
