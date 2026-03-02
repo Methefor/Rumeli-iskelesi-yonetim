@@ -881,7 +881,7 @@
                     .single()
 
                 if (data && !error) {
-                    window.location.href = `cashier-dashboard.html?cashier_id=${data.id}`
+                    window.location.href = `entry.html?cashier_id=${data.id}`
                 } else {
                     showError(errorEl, '❌ PIN hatalı! Tekrar deneyin.')
                     currentPin = ''
