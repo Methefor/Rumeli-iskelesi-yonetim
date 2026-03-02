@@ -671,8 +671,8 @@
             </div>
             <div class="auth-form">
                 <div class="auth-error" id="adminError"></div>
-                <input class="auth-input" type="text" placeholder="Kullanıcı Adı" id="adminUsername" autocomplete="off">
-                <input class="auth-input" type="password" placeholder="Şifre" id="adminPassword" maxlength="10" autocomplete="off">
+                <input class="auth-input" type="text" placeholder="Ad Soyad (ör: Metehan Arslan)" id="adminUsername" autocomplete="off">
+                <input class="auth-input" type="password" placeholder="PIN (4 hane)" id="adminPassword" maxlength="4" autocomplete="off">
                 <button class="auth-btn green" id="adminLoginBtn" onclick="verifyAdmin()">Giriş Yap</button>
                 <button class="auth-cancel" onclick="closeModal('adminModal')">İptal</button>
             </div>
@@ -767,13 +767,13 @@
         }
 
         window.verifyAdmin = async function() {
-            const username = document.getElementById('adminUsername').value.trim()
-            const password = document.getElementById('adminPassword').value.trim()
+            const name = document.getElementById('adminUsername').value.trim()
+            const pin = document.getElementById('adminPassword').value.trim()
             const btn = document.getElementById('adminLoginBtn')
             const errorEl = document.getElementById('adminError')
 
-            if (!username || !password) {
-                showError(errorEl, 'Kullanıcı adı ve şifre gerekli.')
+            if (!name || !pin) {
+                showError(errorEl, 'Ad ve PIN gerekli.')
                 return
             }
 
@@ -785,15 +785,15 @@
                 const { data, error } = await supabase
                     .from('admins')
                     .select('*')
-                    .eq('username', username)
-                    .eq('password', password)
+                    .eq('name', name)
+                    .eq('pin', pin)
                     .single()
 
                 if (data && !error) {
                     btn.textContent = '✅ Yönlendiriliyor...'
                     window.location.href = 'admin-dashboard.html'
                 } else {
-                    showError(errorEl, '❌ Kullanıcı adı veya şifre hatalı!')
+                    showError(errorEl, '❌ Ad veya PIN hatalı!')
                     btn.disabled = false
                     btn.textContent = 'Giriş Yap'
                 }
