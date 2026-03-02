@@ -84,21 +84,48 @@
         }
 
         .login-header h1 {
-            font-size: 32px;
+            font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 30%, rgba(255,255,255,.6));
+            background: linear-gradient(135deg, #fff 30%, #cbd5e1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .login-header p {
-            font-size: 14px;
+        .header-icon {
+            display: inline-block;
+            font-size: 1.2em;
+            margin-right: 8px;
+            -webkit-text-fill-color: initial;
+            filter: drop-shadow(0 0 12px rgba(255,255,255,.4));
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 12px rgba(255,255,255,.4));
+            }
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 22px rgba(255,255,255,.7));
+            }
+        }
+
+        .company-name {
+            font-size: 0.85rem;
             color: var(--txt2);
-            letter-spacing: 0.5px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
+            font-weight: 500;
+            margin-top: 6px;
+            opacity: 0.8;
         }
 
         /* ── CARDS GRID ── */
@@ -608,7 +635,7 @@
         @media (max-width: 720px) {
             .cards-grid { grid-template-columns: 1fr; gap: 20px; }
             .card-inner { min-height: 300px; padding: 36px 28px; }
-            .login-header h1 { font-size: 24px; }
+            .login-header h1 { font-size: 1.6rem; }
             .card-electric:hover { transform: translateY(-8px); }
         }
 
@@ -617,8 +644,8 @@
             .auth-box { border-radius: 20px; }
         }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-D1INynKu.js"></script>
-  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-BYSCEbDX.js">
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-CqsZiKql.js"></script>
+  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-DmvsPI0b.js">
 </head>
 
 <body>
@@ -627,8 +654,11 @@
 
     <div class="login-container">
         <div class="login-header">
-            <h1>🍽️ Rumeli İskelesi Yönetim Sistemi</h1>
-            <p>Mutlukent Esenlik Hizmetleri A.Ş</p>
+            <h1>
+                <span class="header-icon">🏢</span>
+                Rumeli İskelesi
+            </h1>
+            <p class="company-name">Mutlukent Esenlik Hizmetleri A.Ş</p>
         </div>
 
         <div class="cards-grid">
@@ -669,8 +699,8 @@
             </div>
             <div class="auth-form">
                 <div class="auth-error" id="adminError"></div>
-                <input class="auth-input" type="text" placeholder="Kullanıcı Adı" id="adminUsername" autocomplete="off">
-                <input class="auth-input" type="password" placeholder="Şifre" id="adminPassword" maxlength="10" autocomplete="off">
+                <input class="auth-input" type="text" placeholder="Ad Soyad (ör: Metehan Arslan)" id="adminUsername" autocomplete="off">
+                <input class="auth-input" type="password" placeholder="PIN (4 hane)" id="adminPassword" maxlength="4" autocomplete="off">
                 <button class="auth-btn green" id="adminLoginBtn" onclick="verifyAdmin()">Giriş Yap</button>
                 <button class="auth-cancel" onclick="closeModal('adminModal')">İptal</button>
             </div>
