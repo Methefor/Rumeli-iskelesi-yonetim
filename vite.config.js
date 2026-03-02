@@ -18,7 +18,6 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin-dashboard.html'),
         cashier: resolve(__dirname, 'cashier-dashboard.html'),
-        entry: resolve(__dirname, 'entry.html'),
       },
     },
   },
