@@ -933,35 +933,53 @@
 
         async function loadDashboard() {
             try {
-                // Kasiyer bilgilerini çek
-                const { data: cashier, error: cashierError } = await supabase
-                    .from('cashiers')
-                    .select('*')
-                    .eq('id', cashierId)
-                    .single()
+                const today = new Date()
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
 
-                if (cashierError) throw cashierError
+                // Tüm verileri paralel çek
+                const [cashierRes, monthlyRes, allMonthlyRes, historyRes] = await Promise.all([
+                    supabase.from('cashiers').select('*').eq('id', cashierId).single(),
+                    // Bu kasiyerin bu ayki raporları
+                    supabase.from('daily_reports').select('*')
+                        .eq('cashier_id', cashierId).gte('date', monthStart),
+                    // Tüm kasiyerlerin bu ayki puanları (leaderboard için)
+                    supabase.from('daily_reports')
+                        .select('cashier_id, points_earned, cashiers(name)')
+                        .gte('date', monthStart),
+                    // Son 10 giriş geçmişi
+                    supabase.from('entry_history').select('*')
+                        .eq('cashier_id', cashierId)
+                        .order('entry_time', { ascending: false }).limit(10)
+                ])
 
-                // Haftalık performans çek
-                const { data: weeklyPerf, error: weeklyError } = await supabase
-                    .from('weekly_performance')
-                    .select('*')
-                    .order('total_points', { ascending: false })
+                if (cashierRes.error) throw cashierRes.error
 
-                if (weeklyError) throw weeklyError
+                const cashier        = cashierRes.data
+                const monthlyReports = monthlyRes.data   || []
+                const allMonthly     = allMonthlyRes.data || []
+                const history        = historyRes.data   || []
 
-                // Giriş geçmişi çek (son 10)
-                const { data: history, error: historyError } = await supabase
-                    .from('entry_history')
-                    .select('*')
-                    .eq('cashier_id', cashierId)
-                    .order('entry_time', { ascending: false })
-                    .limit(10)
+                // Aylık istatistikler hesapla
+                const monthStats = {
+                    entries:  monthlyReports.length,
+                    onTime:   monthlyReports.filter(r => r.is_on_time).length,
+                    revenue:  monthlyReports.reduce((s, r) => s + (parseFloat(r.individual_revenue) || 0), 0),
+                    points:   monthlyReports.reduce((s, r) => s + (parseInt(r.points_earned) || 0), 0)
+                }
 
-                if (historyError) throw historyError
+                // Aylık leaderboard hesapla
+                const leaderMap = {}
+                allMonthly.forEach(r => {
+                    const id   = r.cashier_id
+                    const name = r.cashiers?.name || 'Bilinmiyor'
+                    if (!leaderMap[id]) leaderMap[id] = { cashier_id: id, cashier_name: name, total_points: 0, total_entries: 0 }
+                    leaderMap[id].total_points  += parseInt(r.points_earned) || 0
+                    leaderMap[id].total_entries += 1
+                })
+                const leaders = Object.values(leaderMap).sort((a, b) => b.total_points - a.total_points)
 
                 // Dashboard'u render et
-                renderDashboard(cashier, weeklyPerf, history)
+                renderDashboard(cashier, monthStats, leaders, history)
                 await fetchMyEntries(cashierId)
 
                 document.getElementById('loading').style.display = 'none'
@@ -974,7 +992,7 @@
             }
         }
 
-        function renderDashboard(cashier, weeklyPerf, history) {
+        function renderDashboard(cashier, monthStats, leaders, history) {
             // PROFILE
             const avatarClasses = {
                 'Tuba Bozaklı': 'av-t',
@@ -988,50 +1006,68 @@
             document.getElementById('profileName').textContent = cashier.name
             document.getElementById('profileRole').textContent = `Kasiyer - ${cashier.role || 'Cafetarya'}`
 
-            // BADGE & POINTS
-            const totalPoints = cashier.total_points || 0
-            document.getElementById('totalPoints').textContent = totalPoints
+            // BADGE & POINTS (aylık puan + müdür rozet önceliği)
+            const monthlyPoints = monthStats.points
+            document.getElementById('totalPoints').textContent = monthlyPoints
 
-            const badge = getBadge(totalPoints)
+            const badge = getBadge(cashier.badge_level, monthlyPoints)
             document.getElementById('badgeIcon').textContent = badge.icon
             document.getElementById('badgeLabel').textContent = badge.label
 
             // PROGRESS
-            const nextBadge = getNextBadge(totalPoints)
+            const nextBadge = getNextBadge(monthlyPoints, cashier.badge_level)
             document.getElementById('nextBadge').textContent = nextBadge.label
-            const pointsNeeded = nextBadge.threshold - totalPoints
+            const pointsNeeded = nextBadge.threshold - monthlyPoints
             document.getElementById('pointsNeeded').textContent = pointsNeeded > 0 ? `${pointsNeeded} puan kaldı` : 'Tamamlandı!'
-            const progress = nextBadge.threshold > 0 ? Math.min((totalPoints / nextBadge.threshold) * 100, 100) : 100
+            const progress = nextBadge.threshold > 0 ? Math.min((monthlyPoints / nextBadge.threshold) * 100, 100) : 100
             document.getElementById('progressFill').style.width = progress + '%'
 
-            // STATS (bu hafta)
-            const currentCashierPerf = weeklyPerf.find(p => p.cashier_id === cashier.id) || {}
-            document.getElementById('statEntries').textContent = currentCashierPerf.total_entries || 0
-            document.getElementById('statOnTime').textContent = currentCashierPerf.on_time_entries || 0
-            const revenue = currentCashierPerf.total_revenue || 0
-            document.getElementById('statRevenue').textContent = formatCurrency(revenue)
+            // STATS (bu ay)
+            document.getElementById('statEntries').textContent = monthStats.entries
+            document.getElementById('statOnTime').textContent = monthStats.onTime
+            document.getElementById('statRevenue').textContent = formatCurrency(monthStats.revenue)
+            // Stat etiketlerini güncelle
+            const statLabels = document.querySelectorAll('.stat-label')
+            if (statLabels[0]) statLabels[0].textContent = 'Bu Ay Giriş'
 
-            // LEADERBOARD (top 4)
-            renderLeaderboard(weeklyPerf.slice(0, 4), cashier.id)
+            // LEADERBOARD (top 4, aylık)
+            renderLeaderboard(leaders.slice(0, 4), cashier.id)
 
             // HISTORY
             renderHistory(history)
         }
 
-        function getBadge(points) {
-            if (points >= 500) return { icon: '💎', label: 'Elmas' }
-            if (points >= 300) return { icon: '🥇', label: 'Altın' }
-            if (points >= 150) return { icon: '🥈', label: 'Gümüş' }
-            if (points >= 50) return { icon: '🥉', label: 'Bronz' }
+        // badgeLevel: müdür tarafından atanan özel rozet (öncelikli)
+        // points: bu ayın puanı (otomatik rozet için)
+        function getBadge(badgeLevel, points) {
+            const SPECIAL = {
+                'ozel_yildiz': { icon: '🌟', label: 'Yılın Yıldızı' },
+                'ozel_ates':   { icon: '🔥', label: 'Ateş Çıkışlı' },
+                'ozel_roket':  { icon: '🚀', label: 'Hızlı Yükseliş' },
+                'ozel_onur':   { icon: '🏅', label: 'Onur Madalyası' },
+                'ozel_takim':  { icon: '🤝', label: 'Takım Ruhu' },
+            }
+            if (badgeLevel && SPECIAL[badgeLevel]) return SPECIAL[badgeLevel]
+
+            // Aylık puan bazlı otomatik rozet
+            if (points >= 600) return { icon: '👑⭐', label: 'Süper Efsane' }
+            if (points >= 400) return { icon: '👑',   label: 'Efsane' }
+            if (points >= 250) return { icon: '💎',   label: 'Elmas' }
+            if (points >= 150) return { icon: '🥇',   label: 'Altın' }
+            if (points >= 75)  return { icon: '🥈',   label: 'Gümüş' }
+            if (points >= 30)  return { icon: '🥉',   label: 'Bronz' }
             return { icon: '🌱', label: 'Yeni Başlayan' }
         }
 
-        function getNextBadge(points) {
-            if (points >= 500) return { label: 'Maksimum Seviye', threshold: 500 }
-            if (points >= 300) return { label: 'Elmas', threshold: 500 }
-            if (points >= 150) return { label: 'Altın', threshold: 300 }
-            if (points >= 50) return { label: 'Gümüş', threshold: 150 }
-            return { label: 'Bronz', threshold: 50 }
+        function getNextBadge(points, badgeLevel) {
+            if (badgeLevel?.startsWith('ozel_')) return { label: 'Özel Rozet (Müdür)', threshold: points }
+            if (points >= 600) return { label: 'Maksimum Seviye', threshold: 600 }
+            if (points >= 400) return { label: 'Süper Efsane',    threshold: 600 }
+            if (points >= 250) return { label: 'Efsane',          threshold: 400 }
+            if (points >= 150) return { label: 'Elmas',           threshold: 250 }
+            if (points >= 75)  return { label: 'Altın',           threshold: 150 }
+            if (points >= 30)  return { label: 'Gümüş',           threshold: 75 }
+            return { label: 'Bronz', threshold: 30 }
         }
 
         function renderLeaderboard(leaders, currentCashierId) {
@@ -1183,13 +1219,15 @@
         }
 
         function renderEntryCard(entry, isToday) {
-            const kasaLabel = { restoran: '🍽️ Restoran', cafetarya: '☕ Cafetarya' }[entry.kasa] || entry.kasa
-            const shiftLabel = { sabah: '🌅 Sabah', aksam: '🌙 Akşam' }[entry.shift] || entry.shift
+            const kasaLabel  = { restoran: '🍽️ Restoran', cafetarya: '☕ Cafetarya' }[entry.kasa] || entry.kasa
+            const shiftLabel = { sabah: '🌅 Sabah', aksam: '🌙 Akşam', ogle: '🌙 Öğle' }[entry.shift] || entry.shift
 
-            const zCiro = (parseFloat(entry.rumeli_z1) || 0)
-                        + (parseFloat(entry.rumeli_z2) || 0)
-                        + (parseFloat(entry.balik_ekmek) || 0)
-                        + (parseFloat(entry.dondurma) || 0)
+            // individual_revenue: akşam vardiyasında sabah çıkarılmış net katkı
+            const displayRevenue = parseFloat(entry.individual_revenue)
+                || ((parseFloat(entry.rumeli_z1) || 0)
+                  + (parseFloat(entry.rumeli_z2) || 0)
+                  + (parseFloat(entry.balik_ekmek) || 0)
+                  + (parseFloat(entry.dondurma) || 0))
 
             const timeStr = new Date(entry.entry_time)
                 .toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
@@ -1224,8 +1262,8 @@
                             <div class="entry-detail-value">${shiftLabel}</div>
                         </div>
                         <div class="entry-detail">
-                            <div class="entry-detail-label">Z Ciro</div>
-                            <div class="entry-detail-value">${formatCurrency(zCiro)}</div>
+                            <div class="entry-detail-label">Vardiya Cirosu</div>
+                            <div class="entry-detail-value">${formatCurrency(displayRevenue)}</div>
                         </div>
                         <div class="entry-detail">
                             <div class="entry-detail-label">Puan</div>

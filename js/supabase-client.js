@@ -303,28 +303,50 @@ export async function insertShiftEntry(data) {
     .from('entry_history')
     .insert([historyRecord])
 
-  // Kasiyer toplam puanını tüm raporlardan yeniden hesapla
+  // Kasiyer aylık puanını bu ayın raporlarından hesapla (ay başında kendiliğinden sıfırlanır)
   try {
-    const { data: allReports } = await supabase
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+
+    const { data: monthReports } = await supabase
       .from('daily_reports')
       .select('points_earned')
       .eq('cashier_id', data.cashierId)
+      .gte('date', monthStart)
+      .lte('date', monthEnd)
 
-    const totalPoints = (allReports || []).reduce((sum, r) => sum + (parseInt(r.points_earned) || 0), 0)
+    const totalPoints = (monthReports || []).reduce((sum, r) => sum + (parseInt(r.points_earned) || 0), 0)
 
+    // Aylık baz rozet eşikleri
     let badgeLevel = 'yeni'
-    if (totalPoints >= 1000) badgeLevel = 'efsane'
-    else if (totalPoints >= 500) badgeLevel = 'elmas'
-    else if (totalPoints >= 300) badgeLevel = 'altin'
-    else if (totalPoints >= 150) badgeLevel = 'gumus'
-    else if (totalPoints >= 50)  badgeLevel = 'bronz'
+    if (totalPoints >= 600) badgeLevel = 'efsane_plus'
+    else if (totalPoints >= 400) badgeLevel = 'efsane'
+    else if (totalPoints >= 250) badgeLevel = 'elmas'
+    else if (totalPoints >= 150) badgeLevel = 'altin'
+    else if (totalPoints >= 75)  badgeLevel = 'gumus'
+    else if (totalPoints >= 30)  badgeLevel = 'bronz'
 
-    await supabase
+    // Müdür tarafından özel rozet atanmışsa dokunma
+    const { data: cashierRow } = await supabase
       .from('cashiers')
-      .update({ total_points: totalPoints, badge_level: badgeLevel })
+      .select('badge_level')
       .eq('id', data.cashierId)
+      .single()
 
-    console.log('Kasiyer puanı senkronize edildi:', { totalPoints, badgeLevel })
+    const isSpecialBadge = cashierRow?.badge_level?.startsWith('ozel_')
+    if (!isSpecialBadge) {
+      await supabase
+        .from('cashiers')
+        .update({ total_points: totalPoints, badge_level: badgeLevel })
+        .eq('id', data.cashierId)
+    } else {
+      await supabase
+        .from('cashiers')
+        .update({ total_points: totalPoints })
+        .eq('id', data.cashierId)
+    }
+
+    console.log('Kasiyer aylık puanı senkronize edildi:', { totalPoints, badgeLevel, monthStart, monthEnd })
   } catch (syncError) {
     console.error('Puan senkronizasyonu hatası:', syncError)
   }

@@ -305,6 +305,89 @@
             color: var(--orange)
         }
 
+        .badge-assign-btn {
+            display: block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--brd);
+            background: var(--bg);
+            color: var(--txt2);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .badge-assign-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+        /* ROZET ATAMA MODALI */
+        .badge-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,20,.85);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn .25s;
+        }
+        .badge-modal-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0,0,0,.6);
+            overflow: hidden;
+        }
+        .badge-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--brd);
+        }
+        .badge-modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
+        .badge-option-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 20px 22px;
+        }
+        .badge-option {
+            padding: 14px 10px;
+            border: 2px solid var(--brd);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .badge-option:hover { border-color: var(--orange); background: rgba(245,158,11,.08); }
+        .badge-option.selected { border-color: var(--orange); background: rgba(245,158,11,.15); }
+        .badge-option .badge-icon { font-size: 28px; margin-bottom: 6px; }
+        .badge-option .badge-name { font-size: 11px; font-weight: 700; color: var(--txt); }
+        .badge-option .badge-desc { font-size: 10px; color: var(--txt2); margin-top: 2px; }
+        .badge-modal-actions {
+            display: flex;
+            gap: 10px;
+            padding: 16px 22px;
+            border-top: 1px solid var(--brd);
+        }
+        .badge-modal-actions button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+        .badge-save-btn { background: var(--orange); color: #fff; }
+        .badge-cancel-btn { background: var(--input); color: var(--txt); border: 1px solid var(--brd) !important; }
+
         /* KASA CİRO KARTLARI */
         .kasa-grid {
             display: grid;
@@ -1675,14 +1758,13 @@
                 reportsQuery = reportsQuery.lte('date', endDate)
             }
 
-            const [weeklyPerf, reportsRes, cashiersRes] = await Promise.all([
-                supabase.from('weekly_performance').select('*').order('weekly_points', { ascending: false }),
+            const [reportsRes, cashiersRes] = await Promise.all([
                 reportsQuery,
                 supabase.from('cashiers').select('*').order('total_points', { ascending: false })
             ])
 
             return {
-                weekly: weeklyPerf.data || [],
+                weekly: [],
                 reports: reportsRes.data || [],
                 cashiers: cashiersRes.data || []
             }
@@ -2038,7 +2120,19 @@
             const stats = calcDetailedStats(reports)
             const categorySales = calcCategorySales(reports)
 
-            const topCashier = weekly.length > 0 ? weekly[0] : null
+            // Ayın en iyi kasiyerini bu ayın raporlarından hesapla
+            const monthlyPointsMap = {}
+            reports.forEach(r => {
+                const id = r.cashier_id
+                const name = r.cashiers?.name || 'Bilinmiyor'
+                if (!monthlyPointsMap[id]) monthlyPointsMap[id] = { name, points: 0, entries: 0, revenue: 0 }
+                monthlyPointsMap[id].points  += parseInt(r.points_earned) || 0
+                monthlyPointsMap[id].entries += 1
+                monthlyPointsMap[id].revenue += parseFloat(r.individual_revenue) || 0
+            })
+            const monthlySorted = Object.values(monthlyPointsMap).sort((a, b) => b.points - a.points)
+            const topCashier = monthlySorted.length > 0 ? monthlySorted[0] : null
+
             const totalEntries = reports.length
             const onTimeEntries = reports.filter(r => r.is_on_time).length
             const onTimeRate = totalEntries > 0 ? Math.round((onTimeEntries / totalEntries) * 100) : 0
@@ -2067,12 +2161,12 @@
 
             document.getElementById('mainContent').innerHTML = `
             <!-- HERO -->
-            <div id="heroSection" class="hero ${topCashier && topCashier.weekly_points > 0 ? 'gold' : 'blue'}">
-                <div class="hero-badge">🏆 HAFTANIN ELEMANI</div>
+            <div id="heroSection" class="hero ${topCashier && topCashier.points > 0 ? 'gold' : 'blue'}">
+                <div class="hero-badge">🏆 AYIN ELEMANI</div>
                 <div class="hero-name">${topCashier ? topCashier.name : 'Henüz Veri Yok'}</div>
-                <div class="hero-amt">${topCashier ? topCashier.weekly_points || 0 : 0} Puan</div>
+                <div class="hero-amt">${topCashier ? topCashier.points : 0} Puan</div>
                 <div class="hero-sub">
-                    ${topCashier ? `${topCashier.total_entries || 0} giriş · ${formatCurrency(topCashier.total_revenue || 0)}` : 'İlk veriyi girin!'}
+                    ${topCashier ? `${topCashier.entries} giriş · ${formatCurrency(topCashier.revenue)}` : 'İlk veriyi girin!'}
                 </div>
             </div>
 
@@ -2171,25 +2265,29 @@
             </div>
 
             <!-- KASİYER SIRALAMALARI -->
-            <div class="section-title">👥 Kasiyer Sıralaması</div>
+            <div class="section-title">👥 Kasiyer Sıralaması <span style="font-size:13px;font-weight:500;color:var(--txt2);">(Bu Ay)</span></div>
             <div id="rankGrid" class="rank-grid">
-                ${weekly.slice(0, 4).map((c, i) => `
+                ${monthlySorted.map((c, i) => {
+                    const cashierObj = cashiers.find(x => (x.name || '') === c.name) || {}
+                    const cashierId  = cashierObj.id || ''
+                    const badge      = getBadgeLabel(cashierObj.badge_level)
+                    return `
                     <div class="rank-card">
-                        <div class="rank-pos p${i + 1}">#${i + 1}</div>
+                        <div class="rank-pos p${Math.min(i + 1, 4)}">#${i + 1}</div>
                         <div class="rank-avatar av-${getAvatarClass(c.name)}">${getInitials(c.name)}</div>
                         <div class="rank-info">
                             <div class="rank-name">${c.name}</div>
                             <div class="rank-meta">
-                                ${c.total_entries || 0} giriş · 
-                                %${c.total_entries > 0 ? Math.round(((c.on_time_entries || 0) / c.total_entries) * 100) : 0} zamanında
+                                ${c.entries} giriş · ${formatCurrencyShort(c.revenue)} ciro
                             </div>
                         </div>
                         <div class="rank-right">
-                            <div class="rank-pts">${c.weekly_points || 0}</div>
-                            <div class="rank-badge-pill">${getBadgeLabel(c.badge_level)}</div>
+                            <div class="rank-pts">${c.points} puan</div>
+                            <div class="rank-badge-pill">${badge}</div>
+                            ${cashierId ? `<button class="badge-assign-btn" onclick="assignBadge('${cashierId}','${c.name}')">🎖️ Rozet Ver</button>` : ''}
                         </div>
-                    </div>
-                `).join('')}
+                    </div>`
+                }).join('')}
             </div>
 
             <!-- KASA BAZLI CİROLAR -->
@@ -2756,14 +2854,104 @@
 
         function getBadgeLabel(level) {
             const labels = {
-                'yeni': '🆕 Yeni',
-                'bronz': '🥉 Bronz',
-                'gumus': '🥈 Gümüş',
-                'altin': '🥇 Altın',
-                'elmas': '💎 Elmas',
-                'efsane': '👑 Efsane'
+                'yeni':        '🌱 Yeni',
+                'bronz':       '🥉 Bronz',
+                'gumus':       '🥈 Gümüş',
+                'altin':       '🥇 Altın',
+                'elmas':       '💎 Elmas',
+                'efsane':      '👑 Efsane',
+                'efsane_plus': '👑⭐ Süper Efsane',
+                'ozel_yildiz': '🌟 Yılın Yıldızı',
+                'ozel_ates':   '🔥 Ateş Çıkışlı',
+                'ozel_roket':  '🚀 Hızlı Yükseliş',
+                'ozel_onur':   '🏅 Onur Madalyası',
+                'ozel_takim':  '🤝 Takım Ruhu'
             }
-            return labels[level] || '🆕 Yeni'
+            return labels[level] || '🌱 Yeni'
+        }
+
+        // ── ROZET ATAMA ──────────────────────────────────────────
+        window.assignBadge = async function(cashierId, cashierName) {
+            const SPECIAL_BADGES = [
+                { key: 'ozel_yildiz', icon: '🌟', name: 'Yılın Yıldızı',    desc: 'En parlak performans' },
+                { key: 'ozel_ates',   icon: '🔥', name: 'Ateş Çıkışlı',     desc: 'Haftanın en iyisi' },
+                { key: 'ozel_roket',  icon: '🚀', name: 'Hızlı Yükseliş',   desc: 'En hızlı gelişim' },
+                { key: 'ozel_onur',   icon: '🏅', name: 'Onur Madalyası',    desc: 'Olağanüstü hizmet' },
+                { key: 'ozel_takim',  icon: '🤝', name: 'Takım Ruhu',        desc: 'Ekip çalışması' },
+            ]
+
+            let selectedBadge = null
+
+            const modal = document.createElement('div')
+            modal.className = 'badge-modal-overlay'
+            modal.innerHTML = `
+                <div class="badge-modal-box">
+                    <div class="badge-modal-header">
+                        <h3>🎖️ ${cashierName} — Rozet Ver</h3>
+                        <button onclick="this.closest('.badge-modal-overlay').remove()" class="close-btn" style="background:none;border:none;font-size:20px;color:var(--txt2);cursor:pointer;">✕</button>
+                    </div>
+                    <div class="badge-option-grid">
+                        ${SPECIAL_BADGES.map(b => `
+                            <div class="badge-option" data-key="${b.key}" onclick="selectBadgeOption(this,'${b.key}')">
+                                <div class="badge-icon">${b.icon}</div>
+                                <div class="badge-name">${b.name}</div>
+                                <div class="badge-desc">${b.desc}</div>
+                            </div>
+                        `).join('')}
+                        <div class="badge-option" data-key="auto" onclick="selectBadgeOption(this,'auto')">
+                            <div class="badge-icon">🔄</div>
+                            <div class="badge-name">Otomatik</div>
+                            <div class="badge-desc">Puana göre hesapla</div>
+                        </div>
+                    </div>
+                    <div class="badge-modal-actions">
+                        <button class="badge-cancel-btn" onclick="this.closest('.badge-modal-overlay').remove()">İptal</button>
+                        <button class="badge-save-btn" onclick="saveBadgeAssignment('${cashierId}')">💾 Kaydet</button>
+                    </div>
+                </div>`
+            document.body.appendChild(modal)
+        }
+
+        window.selectBadgeOption = function(el, key) {
+            document.querySelectorAll('.badge-option').forEach(o => o.classList.remove('selected'))
+            el.classList.add('selected')
+            el.closest('.badge-modal-overlay').__selectedBadge = key
+        }
+
+        window.saveBadgeAssignment = async function(cashierId) {
+            const modal = document.querySelector('.badge-modal-overlay')
+            const badgeKey = modal?.__selectedBadge
+            if (!badgeKey) { alert('Lütfen bir rozet seçin.'); return }
+
+            try {
+                let badgeLevel = badgeKey
+                if (badgeKey === 'auto') {
+                    // Puan bazlı rozeti yeniden hesapla
+                    const { data: cashier } = await supabase.from('cashiers').select('total_points').eq('id', cashierId).single()
+                    const pts = cashier?.total_points || 0
+                    if (pts >= 600) badgeLevel = 'efsane_plus'
+                    else if (pts >= 400) badgeLevel = 'efsane'
+                    else if (pts >= 250) badgeLevel = 'elmas'
+                    else if (pts >= 150) badgeLevel = 'altin'
+                    else if (pts >= 75)  badgeLevel = 'gumus'
+                    else if (pts >= 30)  badgeLevel = 'bronz'
+                    else badgeLevel = 'yeni'
+                }
+
+                const { error } = await supabase
+                    .from('cashiers')
+                    .update({ badge_level: badgeLevel })
+                    .eq('id', cashierId)
+
+                if (error) throw error
+
+                modal.remove()
+                showToast(`✅ Rozet atandı: ${getBadgeLabel(badgeLevel)}`, 'success')
+                await loadDashboard()
+            } catch (err) {
+                console.error('Rozet atama hatası:', err)
+                alert('❌ Hata: ' + err.message)
+            }
         }
 
         // ═══════════════════════════════════════
