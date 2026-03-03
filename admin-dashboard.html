@@ -309,6 +309,105 @@
             color: var(--orange)
         }
 
+        .badge-assign-btn {
+            display: block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--brd);
+            background: var(--bg);
+            color: var(--txt2);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .badge-assign-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+        /* ROZET ATAMA MODALI */
+
+        .badge-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,20,.85);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn .25s;
+        }
+
+        .badge-modal-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0,0,0,.6);
+            overflow: hidden;
+        }
+
+        .badge-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--brd);
+        }
+
+        .badge-modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
+
+        .badge-option-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 20px 22px;
+        }
+
+        .badge-option {
+            padding: 14px 10px;
+            border: 2px solid var(--brd);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .badge-option:hover { border-color: var(--orange); background: rgba(245,158,11,.08); }
+
+        .badge-option.selected { border-color: var(--orange); background: rgba(245,158,11,.15); }
+
+        .badge-option .badge-icon { font-size: 28px; margin-bottom: 6px; }
+
+        .badge-option .badge-name { font-size: 11px; font-weight: 700; color: var(--txt); }
+
+        .badge-option .badge-desc { font-size: 10px; color: var(--txt2); margin-top: 2px; }
+
+        .badge-modal-actions {
+            display: flex;
+            gap: 10px;
+            padding: 16px 22px;
+            border-top: 1px solid var(--brd);
+        }
+
+        .badge-modal-actions button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+
+        .badge-save-btn { background: var(--orange); color: #fff; }
+
+        .badge-cancel-btn { background: var(--input); color: var(--txt); border: 1px solid var(--brd) !important; }
+
         /* KASA CİRO KARTLARI */
 
         .kasa-grid {
@@ -1575,8 +1674,8 @@
             to   { opacity: 1; transform: translateY(0); }
         }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-BMps0Ulq.js"></script>
-  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-BYSCEbDX.js">
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/admin-MoBe2xwE.js"></script>
+  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-DJwy2zW3.js">
 </head>
 
 <body>
