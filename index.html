@@ -619,6 +619,132 @@
             padding: 0 32px 8px;
         }
 
+        /* ── NEON ADMIN LOGIN BOX ── */
+
+        @keyframes adminNeonBorder {
+            0%, 100% { background-position: 0% 50%; }
+            50%       { background-position: 100% 50%; }
+        }
+
+        @keyframes adminBoxFloat {
+            0%, 100% { transform: translateY(0px); }
+            50%       { transform: translateY(-6px); }
+        }
+
+        .auth-box.admin-neon {
+            position: relative;
+            background: transparent;
+            border: none;
+            padding: 3px;
+            border-radius: 20px;
+            animation: adminBoxFloat 5s ease-in-out infinite;
+            box-shadow:
+                0 0 30px rgba(71, 243, 208, 0.2),
+                0 0 60px rgba(255, 39, 112, 0.15),
+                0 30px 80px rgba(0,0,0,.95);
+        }
+
+        .auth-box.admin-neon::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 22px;
+            background: linear-gradient(90deg, #47f3d0, #00aaff, #6600ff, #ff2770, #ff0055, #47f3d0);
+            background-size: 400% 400%;
+            animation: adminNeonBorder 3s ease infinite;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box,
+                          linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box,
+                  linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 3px;
+        }
+
+        .admin-neon .neon-inner {
+            background: rgba(0, 4, 14, 0.97);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .admin-neon .auth-header {
+            border-bottom: 1px solid rgba(71, 243, 208, 0.12);
+        }
+
+        .admin-login-title {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            background: linear-gradient(135deg, #47f3d0 0%, #00aaff 45%, #ff2770 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 2px;
+        }
+
+        .admin-neon .pin-dot {
+            border-color: rgba(71, 243, 208, 0.25);
+        }
+
+        .admin-neon .pin-dot.filled {
+            background: #47f3d0;
+            border-color: #47f3d0;
+            box-shadow: 0 0 12px rgba(71, 243, 208, 0.75);
+        }
+
+        .admin-neon .pin-keypad {
+            background: rgba(0, 8, 20, 0.6);
+        }
+
+        .admin-neon .pin-key {
+            background: rgba(0, 15, 35, 0.9);
+            border-color: rgba(71, 243, 208, 0.15);
+            color: #e0fff8;
+        }
+
+        .admin-neon .pin-key:hover {
+            background: rgba(71, 243, 208, 0.08);
+            border-color: #47f3d0;
+            color: #47f3d0;
+            box-shadow: 0 0 14px rgba(71, 243, 208, 0.3);
+        }
+
+        .admin-neon .pin-key:active {
+            transform: scale(0.93);
+        }
+
+        .admin-neon .pin-key.wide {
+            color: rgba(255, 39, 112, 0.7);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .admin-neon .pin-key.wide:hover {
+            color: #ff2770;
+            border-color: rgba(255, 39, 112, 0.4);
+            background: rgba(255, 39, 112, 0.08);
+            box-shadow: 0 0 12px rgba(255, 39, 112, 0.25);
+        }
+
+        .admin-neon .pin-key.confirm {
+            background: linear-gradient(135deg, #cc0044, #ff2770);
+            border-color: transparent;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(255, 39, 112, 0.4);
+        }
+
+        .admin-neon .pin-key.confirm:hover {
+            box-shadow: 0 6px 28px rgba(255, 39, 112, 0.6);
+            background: linear-gradient(135deg, #cc0044, #ff2770);
+        }
+
+        .admin-neon .pin-hint {
+            color: rgba(71, 243, 208, 0.55);
+            letter-spacing: 0.3px;
+        }
+
         /* ── FOOTER ── */
 
         .login-footer {
@@ -644,7 +770,7 @@
             .auth-box { border-radius: 20px; }
         }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-D5OGy00p.js"></script>
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-DaxsW9qz.js"></script>
   <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-DJwy2zW3.js">
 </head>
 
@@ -690,19 +816,39 @@
         <div class="login-footer">Rumeli İskelesi Yönetim Sistemi v2.0</div>
     </div>
 
-    <!-- ── YÖNETİCİ GİRİŞ MODALI ── -->
+    <!-- ── YÖNETİCİ GİRİŞ MODALI (NEON) ── -->
     <div class="auth-modal" id="adminModal" style="display:none;">
-        <div class="auth-box">
-            <div class="auth-header">
-                <h2>👔 Yönetici Girişi</h2>
-                <p>Metehan Arslan · Mesul Müdür</p>
-            </div>
-            <div class="auth-form">
-                <div class="auth-error" id="adminError"></div>
-                <input class="auth-input" type="text" placeholder="Ad Soyad (ör: Metehan Arslan)" id="adminUsername" autocomplete="off">
-                <input class="auth-input" type="password" placeholder="PIN (4 hane)" id="adminPassword" maxlength="4" autocomplete="off">
-                <button class="auth-btn green" id="adminLoginBtn" onclick="verifyAdmin()">Giriş Yap</button>
-                <button class="auth-cancel" onclick="closeModal('adminModal')">İptal</button>
+        <div class="auth-box admin-neon">
+            <div class="neon-inner">
+                <div class="auth-header" style="padding:32px 32px 20px; text-align:center;">
+                    <div style="font-size:48px; margin-bottom:14px; filter: drop-shadow(0 0 18px rgba(71,243,208,0.5));">👔</div>
+                    <div class="admin-login-title">LOGIN</div>
+                    <p style="font-size:13px; color:#4a6a7a; margin-top:6px; letter-spacing:0.4px;">Metehan Arslan · Mesul Müdür</p>
+                </div>
+                <div class="auth-form" style="padding-bottom:8px;">
+                    <div class="auth-error" id="adminError"></div>
+                    <div class="pin-display">
+                        <div class="pin-dot" id="adot0"></div>
+                        <div class="pin-dot" id="adot1"></div>
+                        <div class="pin-dot" id="adot2"></div>
+                        <div class="pin-dot" id="adot3"></div>
+                    </div>
+                </div>
+                <p class="pin-hint">PIN kodunuzu girin</p>
+                <div class="pin-keypad">
+                    <div class="pin-key" onclick="adminPinPress('1')">1</div>
+                    <div class="pin-key" onclick="adminPinPress('2')">2</div>
+                    <div class="pin-key" onclick="adminPinPress('3')">3</div>
+                    <div class="pin-key" onclick="adminPinPress('4')">4</div>
+                    <div class="pin-key" onclick="adminPinPress('5')">5</div>
+                    <div class="pin-key" onclick="adminPinPress('6')">6</div>
+                    <div class="pin-key" onclick="adminPinPress('7')">7</div>
+                    <div class="pin-key" onclick="adminPinPress('8')">8</div>
+                    <div class="pin-key" onclick="adminPinPress('9')">9</div>
+                    <div class="pin-key wide" onclick="adminPinCancel()">← İptal</div>
+                    <div class="pin-key" onclick="adminPinPress('0')">0</div>
+                    <div class="pin-key confirm" id="adminLoginBtn" onclick="verifyAdmin()">Giriş ✓</div>
+                </div>
             </div>
         </div>
     </div>
