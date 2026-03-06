@@ -108,6 +108,15 @@ export async function insertShiftEntry(data) {
     isOnTime = false
   }
 
+  // Mükerrer vardiya kontrolü - aynı gün aynı tipten puan alınmaz
+  const { data: existingEntries } = await supabase
+    .from('daily_reports')
+    .select('id')
+    .eq('cashier_id', data.cashierId)
+    .eq('date', data.selectedDate)
+    .eq('shift', data.shift)
+  const isDuplicateShift = existingEntries && existingEntries.length > 0
+
   // 7 gün üst üste giriş kontrolü
   async function checkConsecutiveDays(cashierId) {
     try {
@@ -166,18 +175,22 @@ export async function insertShiftEntry(data) {
   // Eski uyumluluk için
   const isComplete = hasCompleteData
 
-  // Puan hesapla
-  let pointsEarned = 10                        // 1. Temel puan
-  if (isOnTime) pointsEarned += 10             // 2. Zamanında: +10
-  else          pointsEarned -= 5              //    Geç: -5
-  if (hasCompleteData) pointsEarned += 10      // 3. Eksiksiz veri: +10
-  if (has7DayStreak)   pointsEarned += 25      // 4. 7 gün streak: +25
+  // Puan hesapla - mükerrer vardiyada puan yok
+  let pointsEarned = 0
+  if (!isDuplicateShift) {
+    pointsEarned = 10                          // 1. Temel puan
+    if (isOnTime) pointsEarned += 10           // 2. Zamanında: +10
+    else          pointsEarned -= 5            //    Geç: -5
+    if (hasCompleteData) pointsEarned += 10    // 3. Eksiksiz veri: +10
+    if (has7DayStreak)   pointsEarned += 25    // 4. 7 gün streak: +25
+  }
 
   console.log('Puan Detayları:', {
-    temelPuan: 10,
-    zamanindaBonus: isOnTime ? 10 : -5,
-    eksiksizBonus: hasCompleteData ? 10 : 0,
-    ardisikBonus: has7DayStreak ? 25 : 0,
+    mukerrerGiris: isDuplicateShift,
+    temelPuan: isDuplicateShift ? 0 : 10,
+    zamanindaBonus: isDuplicateShift ? 0 : (isOnTime ? 10 : -5),
+    eksiksizBonus: isDuplicateShift ? 0 : (hasCompleteData ? 10 : 0),
+    ardisikBonus: isDuplicateShift ? 0 : (has7DayStreak ? 25 : 0),
     toplamPuan: pointsEarned,
     isOnTime, hasCompleteData, has7DayStreak
   })
