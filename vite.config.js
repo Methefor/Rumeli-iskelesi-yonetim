@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
-  base: '/Rumeli-iskelesi-yonetim/',
+  base: '/',
   define: {
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
       process.env.VITE_SUPABASE_URL || ''

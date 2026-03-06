@@ -2,26 +2,28 @@
   "name": "Rumeli İskelesi Yönetim Sistemi",
   "short_name": "Rumeli",
   "description": "Rumeli İskelesi günlük veri giriş ve analiz sistemi",
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "background_color": "#25252b",
+  "theme_color": "#25252b",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["business", "productivity", "utilities"],
+  "categories": ["business", "productivity"],
   "lang": "tr-TR",
   "dir": "ltr",
-  "scope": "./",
   "prefer_related_applications": false
 }

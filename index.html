@@ -1,958 +1,604 @@
 <!DOCTYPE html>
 <html lang="tr">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rumeli İskelesi - Yönetim Sistemi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#25252b">
+    <meta name="description" content="Rumeli İskelesi Yönetim Sistemi - Günlük veri giriş ve analiz">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Rumeli">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+
+    <!-- Poppins (template fontu) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <title>Rumeli İskelesi · Giriş</title>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
-
-        :root {
-            --bg: #060d1a;
-            --card: #0d1b2e;
-            --input: #0f2135;
-            --brd: #1a3050;
-            --txt: #e8edf5;
-            --txt2: #7a8ba8;
-            --acc: #3b82f6;
-            --green: #22c55e;
-            --green2: #10b981;
-            --blue: #3b82f6;
-            --blue2: #2563eb;
+        /* ══════════════════════════════════════════════
+           RESET & BODY
+        ══════════════════════════════════════════════ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--txt);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            background: #25252b;
+            gap: 22px;
+            padding: 16px;
         }
 
-        /* ── BACKGROUND ── */
-        .bg-glow {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .bg-glow::before {
-            content: '';
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(34,197,94,.08) 0%, transparent 70%);
-            top: -100px;
-            left: -100px;
-            border-radius: 50%;
-        }
-
-        .bg-glow::after {
-            content: '';
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(59,130,246,.08) 0%, transparent 70%);
-            bottom: -100px;
-            right: -100px;
-            border-radius: 50%;
-        }
-
-        /* ── HEADER ── */
-        .login-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 52px;
-        }
-
-        .login-header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 30%, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
+        /* ══════════════════════════════════════════════
+           BRAND HEADER
+        ══════════════════════════════════════════════ */
+        .brand-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
+            gap: 14px;
+            z-index: 10;
         }
 
-        .header-icon {
-            display: inline-block;
-            font-size: 1.2em;
-            margin-right: 8px;
-            -webkit-text-fill-color: initial;
-            filter: drop-shadow(0 0 12px rgba(255,255,255,.4));
-            animation: iconPulse 3s ease-in-out infinite;
-        }
+        .brand-icon { font-size: 38px; }
 
-        @keyframes iconPulse {
-            0%, 100% {
-                transform: scale(1);
-                filter: drop-shadow(0 0 12px rgba(255,255,255,.4));
-            }
-            50% {
-                transform: scale(1.05);
-                filter: drop-shadow(0 0 22px rgba(255,255,255,.7));
-            }
-        }
-
-        .company-name {
-            font-size: 0.85rem;
-            color: var(--txt2);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-weight: 500;
-            margin-top: 6px;
-            opacity: 0.8;
-        }
-
-        /* ── CARDS GRID ── */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 28px;
-        }
-
-        /* ── ELECTRIC CARD ── */
-        @keyframes electricBorder {
-            0%, 100% { background-position: 0% 50%; }
-            50%       { background-position: 100% 50%; }
-        }
-
-        @keyframes cardFloat {
-            0%, 100% { transform: translateY(0px); }
-            50%       { transform: translateY(-6px); }
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { opacity: .6; }
-            50%       { opacity: 1; }
-        }
-
-        .card-electric {
-            position: relative;
-            border-radius: 24px;
-            padding: 3px;
-            cursor: pointer;
-            transform-style: preserve-3d;
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-                        box-shadow 0.4s ease;
-            animation: cardFloat 6s ease-in-out infinite;
-        }
-
-        .card-electric.blue {
-            animation-delay: -3s;
-        }
-
-        /* Electric border */
-        .card-electric::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 26px;
-            background: linear-gradient(90deg, #22c55e, #10b981, #14b8a6, #22c55e);
-            background-size: 300% 300%;
-            animation: electricBorder 3s ease infinite;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                          linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box,
-                  linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-        }
-
-        .card-electric.blue::before {
-            background: linear-gradient(90deg, #3b82f6, #2563eb, #1d4ed8, #6366f1, #3b82f6);
-            background-size: 300% 300%;
-        }
-
-        /* Card shadow */
-        .card-electric.green {
-            box-shadow:
-                0 0 20px rgba(34,197,94,.25),
-                0 0 60px rgba(34,197,94,.12),
-                0 24px 60px rgba(0,0,0,.6);
-        }
-
-        .card-electric.blue {
-            box-shadow:
-                0 0 20px rgba(59,130,246,.25),
-                0 0 60px rgba(59,130,246,.12),
-                0 24px 60px rgba(0,0,0,.6);
-        }
-
-        .card-electric:hover {
-            transform: perspective(1000px) rotateY(4deg) rotateX(-2deg) translateY(-12px);
-            animation-play-state: paused;
-        }
-
-        .card-electric.green:hover {
-            box-shadow:
-                0 0 40px rgba(34,197,94,.45),
-                0 0 80px rgba(34,197,94,.2),
-                0 32px 80px rgba(0,0,0,.7);
-        }
-
-        .card-electric.blue:hover {
-            box-shadow:
-                0 0 40px rgba(59,130,246,.45),
-                0 0 80px rgba(59,130,246,.2),
-                0 32px 80px rgba(0,0,0,.7);
-        }
-
-        /* Card inner */
-        .card-inner {
-            background: linear-gradient(145deg, rgba(15,25,45,.95), rgba(10,18,32,.98));
-            backdrop-filter: blur(12px);
-            border-radius: 22px;
-            padding: 44px 36px;
-            position: relative;
-            overflow: hidden;
-            min-height: 360px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            gap: 0;
-        }
-
-        /* Subtle inner glow */
-        .card-inner::before {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            top: -60px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: glowPulse 3s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        .card-electric.green .card-inner::before {
-            background: radial-gradient(circle, rgba(34,197,94,.15) 0%, transparent 70%);
-        }
-
-        .card-electric.blue .card-inner::before {
-            background: radial-gradient(circle, rgba(59,130,246,.15) 0%, transparent 70%);
-        }
-
-        /* Badge */
-        .card-badge {
-            font-size: 10px;
+        .brand-title {
+            font-size: 20px;
             font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-bottom: 28px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .card-electric.green .card-badge {
-            background: rgba(34,197,94,.15);
-            color: #22c55e;
-            border: 1px solid rgba(34,197,94,.3);
-        }
-
-        .card-electric.blue .card-badge {
-            background: rgba(59,130,246,.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59,130,246,.3);
-        }
-
-        /* Icon */
-        .card-icon {
-            font-size: 52px;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 12px rgba(255,255,255,.2));
-        }
-
-        /* Title */
-        .card-title {
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 12px;
             letter-spacing: -0.3px;
         }
 
-        /* Subtitle */
-        .card-subtitle {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 4px;
+        .brand-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-top: 2px;
         }
 
-        .card-electric.green .card-subtitle { color: #4ade80; }
-        .card-electric.blue .card-subtitle { color: #93c5fd; }
-
-        /* Description */
-        .card-description {
-            font-size: 13px;
-            color: var(--txt2);
-            margin-bottom: 32px;
-        }
-
-        /* Action button */
-        .card-action {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            transition: all .2s;
-            margin-top: auto;
-            letter-spacing: 0.2px;
-        }
-
-        .card-electric.green .card-action {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-            box-shadow: 0 4px 20px rgba(34,197,94,.4);
-        }
-
-        .card-electric.blue .card-action {
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-            box-shadow: 0 4px 20px rgba(59,130,246,.4);
-        }
-
-        .card-electric:hover .card-action {
-            transform: translateX(4px);
-        }
-
-        /* ── AUTH MODALS ── */
-        @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .auth-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(4, 9, 20, .92);
-            backdrop-filter: blur(10px);
-            z-index: 9000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn .25s ease;
-        }
-
-        .auth-box {
-            background: linear-gradient(145deg, #0d1b2e, #0a1422);
-            border: 1px solid var(--brd);
-            border-radius: 24px;
-            width: 100%;
-            max-width: 440px;
-            box-shadow: 0 30px 90px rgba(0,0,0,.8);
-            animation: slideUp .3s ease;
+        /* ══════════════════════════════════════════════
+           MAIN CONTAINER (animated-login-register template)
+        ══════════════════════════════════════════════ */
+        .container {
+            position: relative;
+            width: min(800px, 100%);
+            height: 490px;
+            border: 2px solid #e46033;
+            box-shadow: 0 0 28px rgba(228,96,51,0.3), 0 24px 60px rgba(0,0,0,0.6);
             overflow: hidden;
+            border-radius: 6px;
         }
 
-        .auth-header {
-            padding: 32px 32px 24px;
-            border-bottom: 1px solid var(--brd);
-            text-align: center;
-        }
-
-        .auth-header h2 {
-            font-size: 22px;
-            font-weight: 800;
-            color: #fff;
-            margin-bottom: 6px;
-        }
-
-        .auth-header p {
-            font-size: 14px;
-            color: var(--txt2);
-        }
-
-        .auth-form {
-            padding: 28px 32px 32px;
+        /* ══════════════════════════════════════════════
+           FORM PANELS
+        ══════════════════════════════════════════════ */
+        .container .form-box {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 12px;
-            color: var(--txt);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            outline: none;
-            transition: border-color .2s, box-shadow .2s;
-        }
-
-        .auth-input:focus {
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px rgba(59,130,246,.15);
-        }
-
-        .auth-input::placeholder { color: var(--txt2); }
-
-        .auth-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s;
-            margin-top: 4px;
-        }
-
-        .auth-btn.green {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
-
-        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(59,130,246,.4); }
-        .auth-btn.green:hover { box-shadow: 0 8px 24px rgba(34,197,94,.4); }
-        .auth-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-        .auth-cancel {
-            width: 100%;
-            padding: 12px;
-            background: none;
-            border: 1px solid var(--brd);
-            border-radius: 12px;
-            color: var(--txt2);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .auth-cancel:hover { background: var(--input); color: var(--txt); }
-
-        .auth-error {
-            background: rgba(239,68,68,.15);
-            border: 1px solid rgba(239,68,68,.3);
-            color: #fca5a5;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 13px;
-            display: none;
-        }
-
-        .auth-error.show { display: block; }
-
-        /* ── KASİYER SEÇİM MODALI ── */
-        .cashier-grid {
-            padding: 28px 32px 32px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .cashier-card {
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 20px 16px;
-            text-align: center;
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .cashier-card:hover {
-            border-color: var(--acc);
-            background: rgba(59,130,246,.1);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59,130,246,.2);
-        }
-
-        .cashier-avatar-mini {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-            margin: 0 auto 10px;
+            flex-direction: column;
         }
 
-        .av-t { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
-        .av-e { background: linear-gradient(135deg, #c2410c, #f59e0b); }
-        .av-c { background: linear-gradient(135deg, #0e7490, #06b6d4); }
-        .av-m { background: linear-gradient(135deg, #be185d, #f43f5e); }
-
-        .cashier-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--txt);
+        /* ── Login (sol) ── */
+        .form-box.Login {
+            left: 0;
+            padding: 0 40px;
         }
 
-        /* ── PIN MODAL - PIN boxes ── */
+        .form-box.Login .animation {
+            transform: translateX(0%);
+            transition: .7s;
+            opacity: 1;
+            transition-delay: calc(.1s * var(--S));
+        }
+
+        .container.active .form-box.Login .animation {
+            transform: translateX(-120%);
+            opacity: 0;
+            transition-delay: calc(.1s * var(--D));
+        }
+
+        /* ── Register (sağ) ── */
+        .form-box.Register {
+            right: 0;
+            padding: 0 40px;
+        }
+
+        .form-box.Register .animation {
+            transform: translateX(120%);
+            transition: .7s ease;
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(.1s * var(--S));
+        }
+
+        .container.active .form-box.Register .animation {
+            transform: translateX(0%);
+            opacity: 1;
+            filter: blur(0px);
+            transition-delay: calc(.1s * var(--li));
+        }
+
+        /* ══════════════════════════════════════════════
+           FORM TITLES & SUBTITLE
+        ══════════════════════════════════════════════ */
+        .form-box h2 {
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 3px;
+        }
+
+        .form-subtitle {
+            font-size: 11px;
+            text-align: center;
+            color: rgba(255,255,255,0.45);
+            margin-bottom: 12px;
+        }
+
+        /* ══════════════════════════════════════════════
+           PIN DOTS
+        ══════════════════════════════════════════════ */
         .pin-display {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 16px;
             margin-bottom: 6px;
         }
 
         .pin-dot {
-            width: 18px;
-            height: 18px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
-            border: 2px solid var(--brd);
+            border: 2px solid rgba(255,255,255,0.3);
             background: transparent;
-            transition: all .15s;
+            transition: all .18s ease;
         }
 
         .pin-dot.filled {
-            background: var(--acc);
-            border-color: var(--acc);
-            box-shadow: 0 0 8px rgba(59,130,246,.5);
+            background: #e46033;
+            border-color: #e46033;
+            box-shadow: 0 0 10px rgba(228,96,51,0.65);
+            transform: scale(1.2);
         }
 
+        /* ══════════════════════════════════════════════
+           PIN ERROR
+        ══════════════════════════════════════════════ */
+        .pin-error {
+            font-size: 11px;
+            color: #ff7070;
+            text-align: center;
+            min-height: 15px;
+            margin-bottom: 6px;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+
+        .pin-error.show { opacity: 1; }
+
+        /* ══════════════════════════════════════════════
+           PIN KEYPAD
+        ══════════════════════════════════════════════ */
         .pin-keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            padding: 0 32px 32px;
+            gap: 7px;
+            width: 100%;
         }
 
         .pin-key {
-            padding: 16px;
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 12px;
-            color: var(--txt);
-            font-size: 20px;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
+            padding: 7px 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 17px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
             cursor: pointer;
-            transition: all .15s;
+            transition: all .14s;
             text-align: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .pin-key:hover {
-            background: rgba(59,130,246,.15);
-            border-color: var(--acc);
-            transform: scale(1.05);
+            background: rgba(228,96,51,0.15);
+            border-color: rgba(228,96,51,0.45);
+            color: #e46033;
         }
 
-        .pin-key:active { transform: scale(0.95); }
+        .pin-key:active { transform: scale(0.92); }
 
         .pin-key.wide {
             grid-column: span 2;
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
-            color: var(--txt2);
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.45);
         }
 
         .pin-key.confirm {
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-            border-color: transparent;
-            color: #fff;
-            font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
+            background: #e46033;
+            border-color: #e46033;
+            font-size: 12px;
+            font-weight: 700;
         }
 
         .pin-key.confirm:hover {
-            box-shadow: 0 4px 16px rgba(59,130,246,.4);
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-        }
-
-        .pin-hint {
-            text-align: center;
-            font-size: 13px;
-            color: var(--txt2);
-            padding: 0 32px 8px;
-        }
-
-        /* ── NEON ADMIN LOGIN BOX ── */
-        @keyframes adminNeonBorder {
-            0%, 100% { background-position: 0% 50%; }
-            50%       { background-position: 100% 50%; }
-        }
-
-        @keyframes adminBoxFloat {
-            0%, 100% { transform: translateY(0px); }
-            50%       { transform: translateY(-6px); }
-        }
-
-        .auth-box.admin-neon {
-            position: relative;
-            background: transparent;
-            border: none;
-            padding: 3px;
-            border-radius: 20px;
-            animation: adminBoxFloat 5s ease-in-out infinite;
-            box-shadow:
-                0 0 30px rgba(71, 243, 208, 0.2),
-                0 0 60px rgba(255, 39, 112, 0.15),
-                0 30px 80px rgba(0,0,0,.95);
-        }
-
-        .auth-box.admin-neon::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 22px;
-            background: linear-gradient(90deg, #47f3d0, #00aaff, #6600ff, #ff2770, #ff0055, #47f3d0);
-            background-size: 400% 400%;
-            animation: adminNeonBorder 3s ease infinite;
-            -webkit-mask: linear-gradient(#fff 0 0) content-box,
-                          linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box,
-                  linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            padding: 3px;
-        }
-
-        .admin-neon .neon-inner {
-            background: rgba(0, 4, 14, 0.97);
-            border-radius: 18px;
-            overflow: hidden;
-        }
-
-        .admin-neon .auth-header {
-            border-bottom: 1px solid rgba(71, 243, 208, 0.12);
-        }
-
-        .admin-login-title {
-            font-size: 30px;
-            font-weight: 900;
-            letter-spacing: 5px;
-            background: linear-gradient(135deg, #47f3d0 0%, #00aaff 45%, #ff2770 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 2px;
-        }
-
-        .admin-neon .pin-dot {
-            border-color: rgba(71, 243, 208, 0.25);
-        }
-
-        .admin-neon .pin-dot.filled {
-            background: #47f3d0;
-            border-color: #47f3d0;
-            box-shadow: 0 0 12px rgba(71, 243, 208, 0.75);
-        }
-
-        .admin-neon .pin-keypad {
-            background: rgba(0, 8, 20, 0.6);
-        }
-
-        .admin-neon .pin-key {
-            background: rgba(0, 15, 35, 0.9);
-            border-color: rgba(71, 243, 208, 0.15);
-            color: #e0fff8;
-        }
-
-        .admin-neon .pin-key:hover {
-            background: rgba(71, 243, 208, 0.08);
-            border-color: #47f3d0;
-            color: #47f3d0;
-            box-shadow: 0 0 14px rgba(71, 243, 208, 0.3);
-        }
-
-        .admin-neon .pin-key:active {
-            transform: scale(0.93);
-        }
-
-        .admin-neon .pin-key.wide {
-            color: rgba(255, 39, 112, 0.7);
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        .admin-neon .pin-key.wide:hover {
-            color: #ff2770;
-            border-color: rgba(255, 39, 112, 0.4);
-            background: rgba(255, 39, 112, 0.08);
-            box-shadow: 0 0 12px rgba(255, 39, 112, 0.25);
-        }
-
-        .admin-neon .pin-key.confirm {
-            background: linear-gradient(135deg, #cc0044, #ff2770);
-            border-color: transparent;
+            background: #c9502a;
             color: #fff;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            box-shadow: 0 4px 20px rgba(255, 39, 112, 0.4);
         }
 
-        .admin-neon .pin-key.confirm:hover {
-            box-shadow: 0 6px 28px rgba(255, 39, 112, 0.6);
-            background: linear-gradient(135deg, #cc0044, #ff2770);
-        }
-
-        .admin-neon .pin-hint {
-            color: rgba(71, 243, 208, 0.55);
-            letter-spacing: 0.3px;
-        }
-
-        /* ── MODAL GEÇİŞ LİNKLERİ ── */
-        .admin-switch-link, .cashier-switch-link {
-            text-align: center;
-            font-size: 13px;
-            color: var(--txt2);
-            padding: 14px 32px 24px;
-            margin-top: 4px;
-        }
-
-        .admin-switch-link {
-            border-top: 1px solid rgba(71, 243, 208, 0.1);
-        }
-
-        .cashier-switch-link {
-            border-top: 1px solid var(--brd);
-        }
-
-        .admin-switch-link span {
-            color: #47f3d0;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .cashier-switch-link span {
-            color: var(--acc);
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .admin-switch-link span:hover,
-        .cashier-switch-link span:hover { text-decoration: underline; }
-
-        /* ── FOOTER ── */
-        .login-footer {
-            margin-top: 40px;
-            text-align: center;
+        /* ══════════════════════════════════════════════
+           SWITCH LINK
+        ══════════════════════════════════════════════ */
+        .regi-link {
             font-size: 12px;
-            color: var(--txt2);
-            opacity: 0.6;
-            letter-spacing: 0.3px;
+            text-align: center;
+            margin-top: 10px;
+            color: rgba(255,255,255,0.45);
         }
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 720px) {
-            .cards-grid { grid-template-columns: 1fr; gap: 20px; }
-            .card-inner { min-height: 300px; padding: 36px 28px; }
-            .login-header h1 { font-size: 1.6rem; }
-            .card-electric:hover { transform: translateY(-8px); }
+        .regi-link a {
+            text-decoration: none;
+            color: #e46033;
+            font-weight: 600;
         }
 
-        @media (max-width: 480px) {
-            .cashier-grid { grid-template-columns: 1fr; }
-            .auth-box { border-radius: 20px; }
+        .regi-link a:hover { text-decoration: underline; }
+
+        /* ══════════════════════════════════════════════
+           INFO CONTENT PANELS
+        ══════════════════════════════════════════════ */
+        .info-content {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        .info-content.Login {
+            right: 0;
+            text-align: right;
+            padding: 0 32px 50px 120px;
+        }
+
+        .info-content.Login .animation {
+            transform: translateX(0);
+            transition: .7s ease;
+            transition-delay: calc(.1s * var(--S));
+            opacity: 1;
+            filter: blur(0px);
+        }
+
+        .container.active .info-content.Login .animation {
+            transform: translateX(120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(.1s * var(--D));
+        }
+
+        .info-content.Register {
+            left: 0;
+            text-align: left;
+            padding: 0 120px 50px 32px;
+        }
+
+        .info-content.Register .animation {
+            transform: translateX(-120%);
+            transition: .7s ease;
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(.1s * var(--S));
+        }
+
+        .container.active .info-content.Register .animation {
+            transform: translateX(0%);
+            opacity: 1;
+            filter: blur(0);
+            transition-delay: calc(.1s * var(--li));
+        }
+
+        .info-emoji {
+            font-size: 44px;
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .info-content h2 {
+            text-transform: uppercase;
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .info-content p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.7;
+        }
+
+        /* ══════════════════════════════════════════════
+           CURVED SHAPES (template orijinal — aynen korundu)
+        ══════════════════════════════════════════════ */
+        .container .curved-shape {
+            position: absolute;
+            right: 0;
+            top: -5px;
+            height: 600px;
+            width: 850px;
+            background: linear-gradient(45deg, #25252b, #e46033);
+            transform: rotate(10deg) skewY(40deg);
+            transform-origin: bottom right;
+            transition: 1.5s ease;
+            transition-delay: 1.6s;
+        }
+
+        .container.active .curved-shape {
+            transform: rotate(0deg) skewY(0deg);
+            transition-delay: .5s;
+        }
+
+        .container .curved-shape2 {
+            position: absolute;
+            left: 250px;
+            top: 100%;
+            height: 700px;
+            width: 850px;
+            background: #25252b;
+            border-top: 3px solid #e46033;
+            transform: rotate(0deg) skewY(0deg);
+            transform-origin: bottom left;
+            transition: 1.5s ease;
+            transition-delay: .5s;
+        }
+
+        .container.active .curved-shape2 {
+            transform: rotate(-11deg) skewY(-41deg);
+            transition-delay: 1.2s;
+        }
+
+        /* ══════════════════════════════════════════════
+           FOOTER
+        ══════════════════════════════════════════════ */
+        .login-footer {
+            font-size: 10px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 0.5px;
+        }
+
+        /* ══════════════════════════════════════════════
+           SHAKE ANİMASYON
+        ══════════════════════════════════════════════ */
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+        .shake { animation: shake .35s ease; }
+
+        /* ══════════════════════════════════════════════
+           RESPONSIVE — MOBİL PWA
+        ══════════════════════════════════════════════ */
+        @media (max-width: 680px) {
+            body { gap: 16px; padding: 12px; }
+            .brand-icon { font-size: 30px; }
+            .brand-title { font-size: 17px; }
+
+            /* Şekiller ve info gizle */
+            .curved-shape, .curved-shape2 { display: none; }
+            .info-content { display: none; }
+
+            /* Konteyner yüksekliğini serbest bırak */
+            .container {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+
+            /* Formlar dikey — yalnızca aktif görünür */
+            .container .form-box {
+                position: relative;
+                width: 100%;
+                padding: 32px 24px 24px;
+                height: auto;
+            }
+
+            .form-box.Register { display: none; }
+            .container.active .form-box.Login { display: none; }
+            .container.active .form-box.Register { display: flex; }
+
+            /* Animasyonları kapat (mobilde sade geçiş) */
+            .form-box.Login .animation,
+            .container.active .form-box.Login .animation,
+            .form-box.Register .animation,
+            .container.active .form-box.Register .animation {
+                transform: none !important;
+                opacity: 1 !important;
+                filter: none !important;
+                transition: none !important;
+                transition-delay: 0s !important;
+            }
+
+            .pin-key { padding: 10px 4px; font-size: 20px; }
+            .pin-key.wide, .pin-key.confirm { font-size: 13px; }
+            .pin-dot { width: 15px; height: 15px; }
+            .form-box h2 { font-size: 22px; }
+        }
+
+        @media (max-width: 400px) {
+            .pin-key { padding: 12px 4px; }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="bg-glow"></div>
-
-    <div class="login-container">
-        <div class="login-header">
-            <h1>
-                <span class="header-icon">🏢</span>
-                Rumeli İskelesi
-            </h1>
-            <p class="company-name">Mutlukent Esenlik Hizmetleri A.Ş</p>
-        </div>
-
-        <div class="cards-grid">
-            <!-- Yönetici Kartı -->
-            <div class="card-electric green" onclick="showAdminLogin()">
-                <div class="card-inner">
-                    <div class="card-badge">MANAGER</div>
-                    <div class="card-icon">👔</div>
-                    <div class="card-title">Yönetici Paneli</div>
-                    <div class="card-subtitle">Metehan Arslan</div>
-                    <div class="card-description">Mesul Müdür · Admin Dashboard</div>
-                    <div class="card-action">Giriş Yap →</div>
-                </div>
-            </div>
-
-            <!-- Kasiyer Kartı -->
-            <div class="card-electric blue" onclick="showCashierSelect()">
-                <div class="card-inner">
-                    <div class="card-badge">CASHIER</div>
-                    <div class="card-icon">👤</div>
-                    <div class="card-title">Kasiyer Paneli</div>
-                    <div class="card-subtitle">4 Kasiyer</div>
-                    <div class="card-description">Veri Giriş Sistemi</div>
-                    <div class="card-action">Giriş Yap →</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="login-footer">Rumeli İskelesi Yönetim Sistemi v2.0</div>
-    </div>
-
-    <!-- ── YÖNETİCİ GİRİŞ MODALI ── -->
-    <div class="auth-modal" id="adminModal" style="display:none;">
-        <div class="auth-box admin-neon">
-            <div class="neon-inner">
-                <div class="auth-header" style="padding:32px 32px 20px; text-align:center;">
-                    <div style="font-size:48px; margin-bottom:14px; filter: drop-shadow(0 0 18px rgba(71,243,208,0.5));">👔</div>
-                    <div class="admin-login-title">YÖNETİCİ</div>
-                    <p style="font-size:13px; color:#4a6a7a; margin-top:6px; letter-spacing:0.4px;">Hoş geldiniz · PIN ile giriş yapın</p>
-                </div>
-                <div class="auth-form" style="padding-bottom:8px;">
-                    <div class="auth-error" id="adminError"></div>
-                    <div class="pin-display">
-                        <div class="pin-dot" id="adot0"></div>
-                        <div class="pin-dot" id="adot1"></div>
-                        <div class="pin-dot" id="adot2"></div>
-                        <div class="pin-dot" id="adot3"></div>
-                    </div>
-                </div>
-                <p class="pin-hint">Yönetici PIN kodunuzu girin</p>
-                <div class="pin-keypad">
-                    <div class="pin-key" onclick="adminPinPress('1')">1</div>
-                    <div class="pin-key" onclick="adminPinPress('2')">2</div>
-                    <div class="pin-key" onclick="adminPinPress('3')">3</div>
-                    <div class="pin-key" onclick="adminPinPress('4')">4</div>
-                    <div class="pin-key" onclick="adminPinPress('5')">5</div>
-                    <div class="pin-key" onclick="adminPinPress('6')">6</div>
-                    <div class="pin-key" onclick="adminPinPress('7')">7</div>
-                    <div class="pin-key" onclick="adminPinPress('8')">8</div>
-                    <div class="pin-key" onclick="adminPinPress('9')">9</div>
-                    <div class="pin-key wide" onclick="adminPinCancel()">← İptal</div>
-                    <div class="pin-key" onclick="adminPinPress('0')">0</div>
-                    <div class="pin-key confirm" id="adminLoginBtn" onclick="verifyAdmin()">Giriş ✓</div>
-                </div>
-                <div class="admin-switch-link">
-                    Kasiyer misiniz? <span onclick="switchToKasiyer()">Kasiyer Giriş →</span>
-                </div>
-            </div>
+    <!-- ── MARKA BAŞLIĞI ── -->
+    <div class="brand-header">
+        <div class="brand-icon">🏢</div>
+        <div>
+            <div class="brand-title">Rumeli İskelesi</div>
+            <div class="brand-sub">Mutlukent Esenlik Hizmetleri A.Ş</div>
         </div>
     </div>
 
-    <!-- ── KASİYER PIN MODALI (direkt PIN ile giriş) ── -->
-    <div class="auth-modal" id="pinModal" style="display:none;">
-        <div class="auth-box">
-            <div class="auth-header">
-                <div class="cashier-avatar-mini" style="margin:0 auto 12px;width:56px;height:56px;font-size:26px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1d4ed8,#3b82f6);">👤</div>
-                <h2>Kasiyer Giriş</h2>
-                <p>PIN'inizi girerek kimliğiniz doğrulanır</p>
+    <!-- ── ANİMASYONLU KONTEYNER ── -->
+    <div class="container" id="mainContainer">
+        <div class="curved-shape"></div>
+        <div class="curved-shape2"></div>
+
+        <!-- ════ YÖNETİCİ GİRİŞİ (Login — Sol Panel) ════ -->
+        <div class="form-box Login">
+            <h2 class="animation" style="--D:0; --S:21">YÖNETİCİ</h2>
+            <p class="form-subtitle animation" style="--D:0; --S:21.5">PIN kodunuzu girin</p>
+
+            <div class="pin-display animation" style="--D:1; --S:22">
+                <div class="pin-dot" id="adot0"></div>
+                <div class="pin-dot" id="adot1"></div>
+                <div class="pin-dot" id="adot2"></div>
+                <div class="pin-dot" id="adot3"></div>
             </div>
-            <div class="auth-form" style="padding-bottom:8px;">
-                <div class="auth-error" id="pinError"></div>
-                <div class="pin-display">
-                    <div class="pin-dot" id="dot0"></div>
-                    <div class="pin-dot" id="dot1"></div>
-                    <div class="pin-dot" id="dot2"></div>
-                    <div class="pin-dot" id="dot3"></div>
-                </div>
+
+            <div class="pin-error animation" id="adminPinError" style="--D:1; --S:22"></div>
+
+            <div class="pin-keypad animation" style="--D:2; --S:23">
+                <div class="pin-key" onclick="adminPin('1')">1</div>
+                <div class="pin-key" onclick="adminPin('2')">2</div>
+                <div class="pin-key" onclick="adminPin('3')">3</div>
+                <div class="pin-key" onclick="adminPin('4')">4</div>
+                <div class="pin-key" onclick="adminPin('5')">5</div>
+                <div class="pin-key" onclick="adminPin('6')">6</div>
+                <div class="pin-key" onclick="adminPin('7')">7</div>
+                <div class="pin-key" onclick="adminPin('8')">8</div>
+                <div class="pin-key" onclick="adminPin('9')">9</div>
+                <div class="pin-key wide" onclick="adminDel()">⌫ Sil</div>
+                <div class="pin-key" onclick="adminPin('0')">0</div>
+                <div class="pin-key confirm" onclick="verifyAdmin()">Giriş</div>
             </div>
-            <p class="pin-hint">4 haneli PIN kodunuzu girin</p>
-            <div class="pin-keypad">
-                <div class="pin-key" onclick="pinKeyPress('1')">1</div>
-                <div class="pin-key" onclick="pinKeyPress('2')">2</div>
-                <div class="pin-key" onclick="pinKeyPress('3')">3</div>
-                <div class="pin-key" onclick="pinKeyPress('4')">4</div>
-                <div class="pin-key" onclick="pinKeyPress('5')">5</div>
-                <div class="pin-key" onclick="pinKeyPress('6')">6</div>
-                <div class="pin-key" onclick="pinKeyPress('7')">7</div>
-                <div class="pin-key" onclick="pinKeyPress('8')">8</div>
-                <div class="pin-key" onclick="pinKeyPress('9')">9</div>
-                <div class="pin-key wide" onclick="cancelPin()">← İptal</div>
-                <div class="pin-key" onclick="pinKeyPress('0')">0</div>
-                <div class="pin-key confirm" onclick="verifyCashier()">Giriş ✓</div>
-            </div>
-            <div class="cashier-switch-link">
-                Yönetici misiniz? <span onclick="switchToYonetici()">Yönetici Giriş →</span>
+
+            <div class="regi-link animation" style="--D:4; --S:25">
+                <p>Kasiyer misiniz? <a href="#" id="toKasiyer">Kasiyer Giriş</a></p>
             </div>
         </div>
+
+        <!-- ════ YÖNETİCİ INFO (Sağ — Login modunda) ════ -->
+        <div class="info-content Login">
+            <span class="info-emoji animation" style="--D:0; --S:19">👔</span>
+            <h2 class="animation" style="--D:0; --S:20">HOŞ<br>GELDİNİZ!</h2>
+            <p class="animation" style="--D:1; --S:21">Rumeli İskelesi Yönetim Sistemine hoş geldiniz. Giriş için PIN kodunuzu kullanın.</p>
+        </div>
+
+        <!-- ════ KASİYER GİRİŞİ (Register — Sağ Panel) ════ -->
+        <div class="form-box Register">
+            <h2 class="animation" style="--li:17; --S:0">KASİYER<br>GİRİŞİ</h2>
+            <p class="form-subtitle animation" style="--li:17.5; --S:0.5">PIN kodunuzu girin</p>
+
+            <div class="pin-display animation" style="--li:18; --S:1">
+                <div class="pin-dot" id="cdot0"></div>
+                <div class="pin-dot" id="cdot1"></div>
+                <div class="pin-dot" id="cdot2"></div>
+                <div class="pin-dot" id="cdot3"></div>
+            </div>
+
+            <div class="pin-error animation" id="cashierPinError" style="--li:18; --S:1"></div>
+
+            <div class="pin-keypad animation" style="--li:19; --S:2">
+                <div class="pin-key" onclick="cashierPin('1')">1</div>
+                <div class="pin-key" onclick="cashierPin('2')">2</div>
+                <div class="pin-key" onclick="cashierPin('3')">3</div>
+                <div class="pin-key" onclick="cashierPin('4')">4</div>
+                <div class="pin-key" onclick="cashierPin('5')">5</div>
+                <div class="pin-key" onclick="cashierPin('6')">6</div>
+                <div class="pin-key" onclick="cashierPin('7')">7</div>
+                <div class="pin-key" onclick="cashierPin('8')">8</div>
+                <div class="pin-key" onclick="cashierPin('9')">9</div>
+                <div class="pin-key wide" onclick="cashierDel()">⌫ Sil</div>
+                <div class="pin-key" onclick="cashierPin('0')">0</div>
+                <div class="pin-key confirm" onclick="verifyCashier()">Giriş</div>
+            </div>
+
+            <div class="regi-link animation" style="--li:21; --S:5">
+                <p>Yönetici misiniz? <a href="#" id="toYonetici">Yönetici Giriş</a></p>
+            </div>
+        </div>
+
+        <!-- ════ KASİYER INFO (Sol — Register modunda) ════ -->
+        <div class="info-content Register">
+            <span class="info-emoji animation" style="--li:16; --S:0">👤</span>
+            <h2 class="animation" style="--li:17; --S:0">KASİYER<br>PANELİ</h2>
+            <p class="animation" style="--li:18; --S:1">PIN'inizi girerek giriş yapın. Her kasiyerin kendine ait 4 haneli PIN kodu vardır.</p>
+        </div>
     </div>
+
+    <div class="login-footer">Rumeli İskelesi Yönetim Sistemi · v3.0</div>
 
     <script type="module">
         import { supabase } from './js/supabase-client.js'
 
+        const container = document.getElementById('mainContainer')
+
+        // ── ANİMASYON GEÇİŞİ ──
+        document.getElementById('toKasiyer').addEventListener('click', (e) => {
+            e.preventDefault()
+            container.classList.add('active')
+            resetAdmin()
+        })
+
+        document.getElementById('toYonetici').addEventListener('click', (e) => {
+            e.preventDefault()
+            container.classList.remove('active')
+            resetCashier()
+        })
+
         // ── STATE ──
-        let currentPin = ''
         let adminCurrentPin = ''
+        let cashierCurrentPin = ''
 
-        // ── MODAL HELPERS ──
-        window.closeModal = function(id) {
-            document.getElementById(id).style.display = 'none'
-            currentPin = ''
-            adminCurrentPin = ''
-            updatePinDots()
-            updateAdminDots()
-        }
-
-        // ── YÖNETİCİ GİRİŞİ ──
-        window.showAdminLogin = function() {
-            adminCurrentPin = ''
-            updateAdminDots()
-            document.getElementById('adminError').classList.remove('show')
-            document.getElementById('adminModal').style.display = 'flex'
-        }
-
-        window.adminPinPress = function(digit) {
+        // ════════════════════════════════
+        // YÖNETİCİ PIN
+        // ════════════════════════════════
+        window.adminPin = function(d) {
             if (adminCurrentPin.length >= 4) return
-            adminCurrentPin += digit
-            updateAdminDots()
-            if (adminCurrentPin.length === 4) {
-                setTimeout(() => window.verifyAdmin(), 120)
-            }
+            adminCurrentPin += d
+            updateDots('adot', adminCurrentPin)
+            if (adminCurrentPin.length === 4) setTimeout(verifyAdmin, 120)
         }
 
-        window.adminPinCancel = function() {
-            if (adminCurrentPin.length > 0) {
-                adminCurrentPin = adminCurrentPin.slice(0, -1)
-                updateAdminDots()
-            } else {
-                closeModal('adminModal')
-            }
-        }
-
-        function updateAdminDots() {
-            for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById('adot' + i)
-                if (dot) dot.classList.toggle('filled', i < adminCurrentPin.length)
-            }
+        window.adminDel = function() {
+            adminCurrentPin = adminCurrentPin.slice(0, -1)
+            updateDots('adot', adminCurrentPin)
         }
 
         window.verifyAdmin = async function() {
             if (adminCurrentPin.length !== 4) return
-
-            const btn = document.getElementById('adminLoginBtn')
-            const errorEl = document.getElementById('adminError')
-            errorEl.classList.remove('show')
-            btn.style.opacity = '0.6'
+            const err = document.getElementById('adminPinError')
+            clearErr(err)
 
             try {
                 const { data, error } = await supabase
@@ -962,142 +608,116 @@
                     .single()
 
                 if (data && !error) {
-                    btn.textContent = '✅ Giriş...'
-                    window.location.href = 'admin-dashboard.html'
+                    window.location.href = './admin-dashboard.html'
                 } else {
-                    showError(errorEl, '❌ PIN hatalı! Tekrar deneyin.')
-                    btn.style.opacity = '1'
-                    adminCurrentPin = ''
-                    updateAdminDots()
-                    const box = document.querySelector('#adminModal .neon-inner')
-                    box.style.animation = 'none'
-                    box.offsetHeight
-                    box.style.animation = 'shake .3s ease'
+                    showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
+                    shake('.form-box.Login .pin-keypad')
+                    resetAdmin()
                 }
-            } catch (err) {
-                showError(errorEl, '❌ Bağlantı hatası!')
-                btn.style.opacity = '1'
-                adminCurrentPin = ''
-                updateAdminDots()
+            } catch {
+                showErr(err, '❌ Bağlantı hatası!')
+                resetAdmin()
             }
         }
 
-        // ── KASİYER GİRİŞİ (direkt PIN - isim seçimi yok) ──
-        window.showCashierSelect = function() {
-            currentPin = ''
-            updatePinDots()
-            document.getElementById('pinError').classList.remove('show')
-            document.getElementById('pinModal').style.display = 'flex'
-        }
-
-        // ── MODAL SWITCH ──
-        window.switchToKasiyer = function() {
-            document.getElementById('adminModal').style.display = 'none'
+        function resetAdmin() {
             adminCurrentPin = ''
-            updateAdminDots()
-            currentPin = ''
-            updatePinDots()
-            document.getElementById('pinError').classList.remove('show')
-            document.getElementById('pinModal').style.display = 'flex'
+            updateDots('adot', '')
         }
 
-        window.switchToYonetici = function() {
-            document.getElementById('pinModal').style.display = 'none'
-            currentPin = ''
-            updatePinDots()
-            adminCurrentPin = ''
-            updateAdminDots()
-            document.getElementById('adminError').classList.remove('show')
-            document.getElementById('adminModal').style.display = 'flex'
+        // ════════════════════════════════
+        // KASİYER PIN
+        // ════════════════════════════════
+        window.cashierPin = function(d) {
+            if (cashierCurrentPin.length >= 4) return
+            cashierCurrentPin += d
+            updateDots('cdot', cashierCurrentPin)
+            if (cashierCurrentPin.length === 4) setTimeout(verifyCashier, 120)
         }
 
-        // ── PIN KEYPAD ──
-        window.pinKeyPress = function(digit) {
-            if (currentPin.length >= 4) return
-            currentPin += digit
-            updatePinDots()
-
-            if (currentPin.length === 4) {
-                setTimeout(() => window.verifyCashier(), 120)
-            }
+        window.cashierDel = function() {
+            cashierCurrentPin = cashierCurrentPin.slice(0, -1)
+            updateDots('cdot', cashierCurrentPin)
         }
 
-        window.cancelPin = function() {
-            if (currentPin.length > 0) {
-                currentPin = currentPin.slice(0, -1)
-                updatePinDots()
-            } else {
-                closeModal('pinModal')
-            }
-        }
-
-        function updatePinDots() {
-            for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById('dot' + i)
-                if (dot) dot.classList.toggle('filled', i < currentPin.length)
-            }
-        }
-
-        // ── KASİYER DOĞRULAMA (PIN ile - isim gerekmez) ──
         window.verifyCashier = async function() {
-            if (currentPin.length !== 4) return
-
-            const errorEl = document.getElementById('pinError')
-            errorEl.classList.remove('show')
+            if (cashierCurrentPin.length !== 4) return
+            const err = document.getElementById('cashierPinError')
+            clearErr(err)
 
             try {
                 const { data, error } = await supabase
                     .from('cashiers')
                     .select('*')
-                    .eq('pin', currentPin)
+                    .eq('pin', cashierCurrentPin)
                     .single()
 
                 if (data && !error) {
-                    window.location.href = `entry.html?cashier_id=${data.id}`
+                    window.location.href = `./entry.html?cashier_id=${data.id}`
                 } else {
-                    showError(errorEl, '❌ PIN hatalı! Tekrar deneyin.')
-                    currentPin = ''
-                    updatePinDots()
-                    const box = document.querySelector('#pinModal .auth-box')
-                    box.style.animation = 'none'
-                    box.offsetHeight
-                    box.style.animation = 'shake .3s ease'
+                    showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
+                    shake('.form-box.Register .pin-keypad')
+                    resetCashier()
                 }
-            } catch (err) {
-                showError(errorEl, '❌ Bağlantı hatası! Tekrar deneyin.')
-                currentPin = ''
-                updatePinDots()
+            } catch {
+                showErr(err, '❌ Bağlantı hatası!')
+                resetCashier()
             }
         }
 
-        // ── HELPERS ──
-        function showError(el, msg) {
+        function resetCashier() {
+            cashierCurrentPin = ''
+            updateDots('cdot', '')
+        }
+
+        // ════════════════════════════════
+        // YARDIMCI FONKSİYONLAR
+        // ════════════════════════════════
+        function updateDots(prefix, pin) {
+            for (let i = 0; i < 4; i++) {
+                const dot = document.getElementById(prefix + i)
+                if (dot) dot.classList.toggle('filled', i < pin.length)
+            }
+        }
+
+        function showErr(el, msg) {
             el.textContent = msg
             el.classList.add('show')
-            setTimeout(() => el.classList.remove('show'), 4000)
+            setTimeout(() => clearErr(el), 3500)
         }
 
-        // Close modal on backdrop click
-        document.querySelectorAll('.auth-modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.style.display = 'none'
-                    currentPin = ''
-                    updatePinDots()
-                }
-            })
+        function clearErr(el) {
+            el.textContent = ''
+            el.classList.remove('show')
+        }
+
+        function shake(sel) {
+            const el = document.querySelector(sel)
+            if (!el) return
+            el.classList.remove('shake')
+            void el.offsetWidth
+            el.classList.add('shake')
+            setTimeout(() => el.classList.remove('shake'), 400)
+        }
+
+        // ── Klavye desteği (masaüstü) ──
+        document.addEventListener('keydown', (e) => {
+            const isAdmin = !container.classList.contains('active')
+            if (e.key >= '0' && e.key <= '9') {
+                isAdmin ? adminPin(e.key) : cashierPin(e.key)
+            } else if (e.key === 'Backspace') {
+                isAdmin ? adminDel() : cashierDel()
+            } else if (e.key === 'Enter') {
+                isAdmin ? verifyAdmin() : verifyCashier()
+            }
         })
+
+        // ── Service Worker ──
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .catch(err => console.warn('SW kayıt hatası:', err))
+        }
     </script>
 
-    <style>
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%       { transform: translateX(-10px); }
-            40%       { transform: translateX(10px); }
-            60%       { transform: translateX(-8px); }
-            80%       { transform: translateX(8px); }
-        }
-    </style>
 </body>
-
 </html>
