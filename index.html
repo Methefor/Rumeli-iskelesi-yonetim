@@ -745,6 +745,39 @@
             letter-spacing: 0.3px;
         }
 
+        /* ── MODAL GEÇİŞ LİNKLERİ ── */
+
+        .admin-switch-link, .cashier-switch-link {
+            text-align: center;
+            font-size: 13px;
+            color: var(--txt2);
+            padding: 14px 32px 24px;
+            margin-top: 4px;
+        }
+
+        .admin-switch-link {
+            border-top: 1px solid rgba(71, 243, 208, 0.1);
+        }
+
+        .cashier-switch-link {
+            border-top: 1px solid var(--brd);
+        }
+
+        .admin-switch-link span {
+            color: #47f3d0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .cashier-switch-link span {
+            color: var(--acc);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .admin-switch-link span:hover,
+        .cashier-switch-link span:hover { text-decoration: underline; }
+
         /* ── FOOTER ── */
 
         .login-footer {
@@ -770,8 +803,8 @@
             .auth-box { border-radius: 20px; }
         }
     </style>
-  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-DaxsW9qz.js"></script>
-  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-DJwy2zW3.js">
+  <script type="module" crossorigin src="/Rumeli-iskelesi-yonetim/assets/main-CAcF5489.js"></script>
+  <link rel="modulepreload" crossorigin href="/Rumeli-iskelesi-yonetim/assets/supabase-client-u-_gnSZj.js">
 </head>
 
 <body>
@@ -816,14 +849,14 @@
         <div class="login-footer">Rumeli İskelesi Yönetim Sistemi v2.0</div>
     </div>
 
-    <!-- ── YÖNETİCİ GİRİŞ MODALI (NEON) ── -->
+    <!-- ── YÖNETİCİ GİRİŞ MODALI ── -->
     <div class="auth-modal" id="adminModal" style="display:none;">
         <div class="auth-box admin-neon">
             <div class="neon-inner">
                 <div class="auth-header" style="padding:32px 32px 20px; text-align:center;">
                     <div style="font-size:48px; margin-bottom:14px; filter: drop-shadow(0 0 18px rgba(71,243,208,0.5));">👔</div>
-                    <div class="admin-login-title">LOGIN</div>
-                    <p style="font-size:13px; color:#4a6a7a; margin-top:6px; letter-spacing:0.4px;">Metehan Arslan · Mesul Müdür</p>
+                    <div class="admin-login-title">YÖNETİCİ</div>
+                    <p style="font-size:13px; color:#4a6a7a; margin-top:6px; letter-spacing:0.4px;">Hoş geldiniz · PIN ile giriş yapın</p>
                 </div>
                 <div class="auth-form" style="padding-bottom:8px;">
                     <div class="auth-error" id="adminError"></div>
@@ -834,7 +867,7 @@
                         <div class="pin-dot" id="adot3"></div>
                     </div>
                 </div>
-                <p class="pin-hint">PIN kodunuzu girin</p>
+                <p class="pin-hint">Yönetici PIN kodunuzu girin</p>
                 <div class="pin-keypad">
                     <div class="pin-key" onclick="adminPinPress('1')">1</div>
                     <div class="pin-key" onclick="adminPinPress('2')">2</div>
@@ -849,48 +882,20 @@
                     <div class="pin-key" onclick="adminPinPress('0')">0</div>
                     <div class="pin-key confirm" id="adminLoginBtn" onclick="verifyAdmin()">Giriş ✓</div>
                 </div>
+                <div class="admin-switch-link">
+                    Kasiyer misiniz? <span onclick="switchToKasiyer()">Kasiyer Giriş →</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ── KASİYER SEÇİM MODALI ── -->
-    <div class="auth-modal" id="cashierModal" style="display:none;">
-        <div class="auth-box">
-            <div class="auth-header">
-                <h2>👤 Kasiyer Seçimi</h2>
-                <p>Devam etmek için adınızı seçin</p>
-            </div>
-            <div class="cashier-grid">
-                <div class="cashier-card" onclick="selectCashier('Tuba Bozaklı', 'av-t')">
-                    <div class="cashier-avatar-mini av-t">TB</div>
-                    <div class="cashier-name">Tuba Bozaklı</div>
-                </div>
-                <div class="cashier-card" onclick="selectCashier('Elif Yıldırım', 'av-e')">
-                    <div class="cashier-avatar-mini av-e">EY</div>
-                    <div class="cashier-name">Elif Yıldırım</div>
-                </div>
-                <div class="cashier-card" onclick="selectCashier('Ceren Erdem', 'av-c')">
-                    <div class="cashier-avatar-mini av-c">CE</div>
-                    <div class="cashier-name">Ceren Erdem</div>
-                </div>
-                <div class="cashier-card" onclick="selectCashier('Melda Yılmaz', 'av-m')">
-                    <div class="cashier-avatar-mini av-m">MY</div>
-                    <div class="cashier-name">Melda Yılmaz</div>
-                </div>
-            </div>
-            <div style="padding:0 32px 24px;">
-                <button class="auth-cancel" onclick="closeModal('cashierModal')">İptal</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── PIN GİRİŞ MODALI ── -->
+    <!-- ── KASİYER PIN MODALI (direkt PIN ile giriş) ── -->
     <div class="auth-modal" id="pinModal" style="display:none;">
         <div class="auth-box">
             <div class="auth-header">
-                <div id="pinCashierAvatar" class="cashier-avatar-mini" style="margin:0 auto 12px;width:56px;height:56px;font-size:22px;"></div>
-                <h2 id="pinCashierName">Kasiyer</h2>
-                <p>4 haneli PIN kodunuzu girin</p>
+                <div class="cashier-avatar-mini" style="margin:0 auto 12px;width:56px;height:56px;font-size:26px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1d4ed8,#3b82f6);">👤</div>
+                <h2>Kasiyer Giriş</h2>
+                <p>PIN'inizi girerek kimliğiniz doğrulanır</p>
             </div>
             <div class="auth-form" style="padding-bottom:8px;">
                 <div class="auth-error" id="pinError"></div>
@@ -901,7 +906,7 @@
                     <div class="pin-dot" id="dot3"></div>
                 </div>
             </div>
-            <p class="pin-hint">Giriş yapmak için PIN'inizi girin</p>
+            <p class="pin-hint">4 haneli PIN kodunuzu girin</p>
             <div class="pin-keypad">
                 <div class="pin-key" onclick="pinKeyPress('1')">1</div>
                 <div class="pin-key" onclick="pinKeyPress('2')">2</div>
@@ -914,7 +919,10 @@
                 <div class="pin-key" onclick="pinKeyPress('9')">9</div>
                 <div class="pin-key wide" onclick="cancelPin()">← İptal</div>
                 <div class="pin-key" onclick="pinKeyPress('0')">0</div>
-                <div class="pin-key confirm" id="pinConfirmBtn" onclick="verifyCashier()">Giriş ✓</div>
+                <div class="pin-key confirm" onclick="verifyCashier()">Giriş ✓</div>
+            </div>
+            <div class="cashier-switch-link">
+                Yönetici misiniz? <span onclick="switchToYonetici()">Yönetici Giriş →</span>
             </div>
         </div>
     </div>
