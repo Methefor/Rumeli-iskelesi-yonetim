@@ -1639,6 +1639,198 @@
             from { opacity: 0; transform: translateY(-20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes kasaPop {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── FLOATING TARGET CARD ── */
+        #floatingTarget {
+            position: fixed;
+            right: 16px;
+            bottom: 80px;
+            width: 220px;
+            background: linear-gradient(135deg, #0d1b2e, #111d32);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 14px 16px;
+            z-index: 400;
+            box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 20px rgba(59,130,246,.08);
+            transition: transform .2s, box-shadow .2s;
+            display: none;
+        }
+        #floatingTarget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.7), 0 0 30px rgba(59,130,246,.15);
+        }
+        .ft-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--txt2);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ft-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+        .ft-label { color: var(--txt2); }
+        .ft-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--txt);
+        }
+        .ft-bar-bg {
+            height: 5px;
+            background: rgba(255,255,255,.07);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0 6px;
+        }
+        .ft-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transition: width 1.2s cubic-bezier(.4,0,.2,1);
+            width: 0%;
+        }
+        .ft-bar-fill.done { background: linear-gradient(90deg, #22c55e, #10b981); }
+        .ft-bar-fill.near { background: linear-gradient(90deg, #f59e0b, #f97316); }
+        .ft-pct {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--acc);
+            text-align: center;
+            margin-bottom: 2px;
+        }
+        .ft-status {
+            font-size: 10px;
+            color: var(--txt2);
+            text-align: center;
+        }
+
+        /* ── VERİMLİLİK MODAL ── */
+        .verimlilik-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.75);
+            backdrop-filter: blur(8px);
+            z-index: 9000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .verimlilik-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            box-shadow: 0 30px 80px rgba(0,0,0,.8);
+            overflow: hidden;
+            animation: slideUp .3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity:0; transform: translateY(30px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+        .verimlilik-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--brd);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .verimlilik-header h2 {
+            font-size: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .verimlilik-body {
+            padding: 24px 28px;
+        }
+        .ver-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .ver-stat-card {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .ver-stat-label {
+            font-size: 11px;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .ver-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--txt);
+        }
+        .ver-stat-sub {
+            font-size: 11px;
+            color: var(--txt2);
+            margin-top: 4px;
+        }
+        .ver-chart-wrap {
+            position: relative;
+            height: 220px;
+            margin-bottom: 20px;
+        }
+        .ver-daily-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ver-daily-table th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--txt2);
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--brd);
+        }
+        .ver-daily-table td {
+            font-size: 13px;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(30,58,95,.5);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .ver-daily-table tr:last-child td { border-bottom: none; }
+        .ver-daily-table tr.top-row td { color: var(--orange); }
+        .ver-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--txt2);
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
 </head>
 
@@ -1655,8 +1847,9 @@
                     <div class="nsub">Metehan Arslan · Rumeli İskelesi</div>
                 </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <div id="lastUpdate" style="font-size:12px;color:var(--txt2)">Yükleniyor...</div>
+                <button class="nb" onclick="showVerimlilik()" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-color:#3b82f6;">📊 Operasyonel Verimlilik</button>
                 <button id="refreshBtn" class="nb">🔄 Yenile</button>
                 <a href="index.html" class="nb">← Çıkış</a>
             </div>
@@ -1668,6 +1861,37 @@
         <div class="loading">
             <div class="spinner"></div>
             <div>Veriler yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- FLOATING TARGET CARD -->
+    <div id="floatingTarget">
+        <div class="ft-title">🎯 Bugünkü Hedef</div>
+        <div class="ft-pct" id="ftPct">0%</div>
+        <div class="ft-bar-bg">
+            <div class="ft-bar-fill" id="ftBar"></div>
+        </div>
+        <div class="ft-row">
+            <span class="ft-label">Hedef</span>
+            <span class="ft-val" id="ftTarget">—</span>
+        </div>
+        <div class="ft-row">
+            <span class="ft-label">Gerçekleşen</span>
+            <span class="ft-val" id="ftCurrent">—</span>
+        </div>
+        <div class="ft-status" id="ftStatus">—</div>
+    </div>
+
+    <!-- VERİMLİLİK MODAL -->
+    <div class="verimlilik-overlay" id="verimlilikModal" style="display:none;">
+        <div class="verimlilik-box">
+            <div class="verimlilik-header">
+                <h2>📊 Operasyonel Verimlilik — Rumeli İskelesi</h2>
+                <button onclick="closeVerimlilik()" style="background:none;border:none;font-size:22px;color:var(--txt2);cursor:pointer;line-height:1;">✕</button>
+            </div>
+            <div class="verimlilik-body" id="verimlilikBody">
+                <div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Veriler hesaplanıyor...</div></div>
+            </div>
         </div>
     </div>
 
@@ -2170,98 +2394,17 @@
                 : 0
 
             document.getElementById('mainContent').innerHTML = `
-            <!-- HERO -->
-            <div id="heroSection" class="hero ${topCashier && topCashier.points > 0 ? 'gold' : 'blue'}">
-                <div class="hero-badge">🏆 AYIN ELEMANI</div>
-                <div class="hero-name">${topCashier ? topCashier.name : 'Henüz Veri Yok'}</div>
-                <div class="hero-amt">${topCashier ? topCashier.points : 0} Puan</div>
-                <div class="hero-sub">
-                    ${topCashier ? `${topCashier.entries} giriş · ${formatCurrency(topCashier.revenue)}` : 'İlk veriyi girin!'}
-                </div>
-            </div>
-
-            <!-- GÜNLÜK TOPLAM HERO KARTI -->
-            <div class="section-title">💰 Rumeli İskelesi Toplam Ciro</div>
-            <div class="total-hero-card">
-                <div class="total-hero-left">
-                    <div class="total-hero-label">Günlük Toplam Ciro</div>
-                    <div class="total-hero-amount" id="totalDailyCiro" data-value="${totalCiro}">0,00 ₺</div>
-                    <div class="total-hero-breakdown">
-                        <span class="breakdown-item">🍽️ <span id="breakdownRestoran">${formatCurrencyShort(kasaCiros.restoran)}</span></span>
-                        <span class="breakdown-item">☕ <span id="breakdownCafetarya">${formatCurrencyShort(kasaCiros.cafetarya)}</span></span>
-                        <span class="breakdown-item">🐟 <span id="breakdownBalik">${formatCurrencyShort(kasaCiros.balik)}</span></span>
-                        <span class="breakdown-item">🍦 <span id="breakdownDondurma">${formatCurrencyShort(kasaCiros.dondurma)}</span></span>
-                    </div>
-                </div>
-                <div class="total-hero-right">
-                    <div class="target-section">
-                        <div class="target-label">📊 Günlük Hedef</div>
-                        <div class="target-amount" id="targetAmount">${formatCurrency(dailyTarget)}</div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill" id="progressBarFill" style="width:0%" data-percent="${progressPercent}"></div>
-                        </div>
-                        <div class="progress-percent" id="progressPercent">${progressPercent}% Tamamlandı</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- GÜNLÜK HEDEF GÖSTERGESİ -->
-            <div class="daily-target-card">
-                <div class="target-header">
-                    <div class="target-title">🎯 Bugünkü Hedef</div>
-                    <div class="target-date">${new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                </div>
-                <div class="target-body">
-                    <div class="target-amount-section">
-                        <div class="target-label">Hedef</div>
-                        <div class="target-amount">${formatCurrency(dailyTarget)}</div>
-                    </div>
-                    <div class="target-current-section">
-                        <div class="target-label">Gerçekleşen</div>
-                        <div class="target-current">${formatCurrency(todayCiro)}</div>
-                    </div>
-                </div>
-                <div class="target-progress-section">
-                    <div class="progress-header">
-                        <span class="progress-label">İlerleme</span>
-                        <span class="progress-percent">${progressPercent}%</span>
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="dailyProgressBar" data-percent="${progressPercent}" style="width:0%"></div>
-                        </div>
-                    </div>
-                    <div class="progress-status">
-                        ${progressPercent >= 100 ? '🎉 Hedef Tamamlandı!' :
-                          progressPercent >= 80  ? '💪 Hedefe Yakın!' :
-                          progressPercent >= 50  ? '⏰ Yarı Yolda!' :
-                          '🚀 Devam Edelim!'}
-                    </div>
-                </div>
-            </div>
 
             <!-- TARİH FİLTRESİ -->
             <div class="date-filter-section">
                 <div class="filter-label">📅 Tarih Aralığı:</div>
                 <div class="filter-buttons">
-                    <button class="filter-btn ${currentDateRange === 'month' ? 'active' : ''}" data-range="month" onclick="setDateFilter('month')">
-                        Bu Ay
-                    </button>
-                    <button class="filter-btn ${currentDateRange === 'lastmonth' ? 'active' : ''}" data-range="lastmonth" onclick="setDateFilter('lastmonth')">
-                        Geçen Ay
-                    </button>
-                    <button class="filter-btn ${currentDateRange === 'week' ? 'active' : ''}" data-range="week" onclick="setDateFilter('week')">
-                        Bu Hafta
-                    </button>
-                    <button class="filter-btn ${currentDateRange === 'all' ? 'active' : ''}" data-range="all" onclick="setDateFilter('all')">
-                        Tümü
-                    </button>
-                    <button class="filter-btn ${currentDateRange === 'day' ? 'active' : ''}" data-range="day" onclick="showDayPicker()">
-                        📅 Belirli Gün
-                    </button>
-                    <button class="filter-btn ${currentDateRange === 'custom' ? 'active' : ''}" data-range="custom" onclick="showCustomDatePicker()">
-                        Özel Aralık ▼
-                    </button>
+                    <button class="filter-btn ${currentDateRange === 'month' ? 'active' : ''}" data-range="month" onclick="setDateFilter('month')">Bu Ay</button>
+                    <button class="filter-btn ${currentDateRange === 'lastmonth' ? 'active' : ''}" data-range="lastmonth" onclick="setDateFilter('lastmonth')">Geçen Ay</button>
+                    <button class="filter-btn ${currentDateRange === 'week' ? 'active' : ''}" data-range="week" onclick="setDateFilter('week')">Bu Hafta</button>
+                    <button class="filter-btn ${currentDateRange === 'all' ? 'active' : ''}" data-range="all" onclick="setDateFilter('all')">Tümü</button>
+                    <button class="filter-btn ${currentDateRange === 'day' ? 'active' : ''}" data-range="day" onclick="showDayPicker()">📅 Belirli Gün</button>
+                    <button class="filter-btn ${currentDateRange === 'custom' ? 'active' : ''}" data-range="custom" onclick="showCustomDatePicker()">Özel Aralık ▼</button>
                 </div>
                 <div class="filter-info" id="filterInfo">
                     ${currentDateRange === 'week' ? 'Son 7 gün' :
@@ -2274,60 +2417,64 @@
                 </div>
             </div>
 
-            <!-- KASİYER SIRALAMALARI -->
-            <div class="section-title">👥 Kasiyer Sıralaması <span style="font-size:13px;font-weight:500;color:var(--txt2);">(Bu Ay)</span></div>
-            <div id="rankGrid" class="rank-grid">
-                ${monthlySorted.map((c, i) => {
-                    const cashierObj = cashiers.find(x => (x.name || '') === c.name) || {}
-                    const cashierId  = cashierObj.id || ''
-                    const badge      = getBadgeLabel(cashierObj.badge_level)
-                    return `
-                    <div class="rank-card">
-                        <div class="rank-pos p${Math.min(i + 1, 4)}">#${i + 1}</div>
-                        <div class="rank-avatar av-${getAvatarClass(c.name)}">${getInitials(c.name)}</div>
-                        <div class="rank-info">
-                            <div class="rank-name">${c.name}</div>
-                            <div class="rank-meta">
-                                ${c.entries} giriş · ${formatCurrencyShort(c.revenue)} ciro
-                            </div>
+            <!-- GÜNLÜK TOPLAM HERO KARTI -->
+            <div class="section-title">💰 Rumeli İskelesi Toplam Ciro</div>
+            <div class="total-hero-card">
+                <div class="total-hero-left">
+                    <div class="total-hero-label">${
+                        currentDateRange === 'month' ? 'Bu Ay Toplam Ciro' :
+                        currentDateRange === 'week'  ? 'Bu Hafta Toplam Ciro' :
+                        currentDateRange === 'day'   ? 'Günlük Toplam Ciro' :
+                        'Dönem Toplam Ciro'
+                    }</div>
+                    <div class="total-hero-amount" id="totalDailyCiro" data-value="${totalCiro}">0,00 ₺</div>
+                    <div class="total-hero-breakdown">
+                        <span class="breakdown-item">🍽️ <span id="breakdownRestoran">${formatCurrency(kasaCiros.restoran)}</span></span>
+                        <span class="breakdown-item">☕ <span id="breakdownCafetarya">${formatCurrency(kasaCiros.cafetarya)}</span></span>
+                        <span class="breakdown-item">🐟 <span id="breakdownBalik">${formatCurrency(kasaCiros.balik)}</span></span>
+                        <span class="breakdown-item">🍦 <span id="breakdownDondurma">${formatCurrency(kasaCiros.dondurma)}</span></span>
+                    </div>
+                </div>
+                <div class="total-hero-right">
+                    <div class="target-section">
+                        <div class="target-label">📊 Rumeli İskelesi (Rest.+Cafe)</div>
+                        <div class="target-amount">${formatCurrency(kasaCiros.restoran + kasaCiros.cafetarya)}</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progressBarFill" style="width:0%" data-percent="${progressPercent}"></div>
                         </div>
-                        <div class="rank-right">
-                            <div class="rank-pts">${c.points} puan</div>
-                            <div class="rank-badge-pill">${badge}</div>
-                            ${cashierId ? `<button class="badge-assign-btn" onclick="assignBadge('${cashierId}','${c.name}')">🎖️ Rozet Ver</button>` : ''}
-                        </div>
-                    </div>`
-                }).join('')}
+                        <div class="progress-percent" id="progressPercent">Günlük Ort: ${formatCurrency(uniqueDays > 0 ? (kasaCiros.restoran + kasaCiros.cafetarya) / uniqueDays : 0)}</div>
+                    </div>
+                </div>
             </div>
 
             <!-- KASA BAZLI CİROLAR -->
             <div class="section-title">🏪 Kasa Bazlı Cirolar</div>
             <div class="kasa-grid">
-                <div class="kasa-card restoran">
+                <div class="kasa-card restoran" style="animation: kasaPop .5s ease .0s both;">
                     <div class="kasa-icon">🍽️</div>
                     <div class="kasa-label">Restoran</div>
-                    <div class="kasa-amount">${formatCurrency(kasaCiros.restoran)}</div>
+                    <div class="kasa-amount" data-target="${kasaCiros.restoran}">0,00 ₺</div>
                     <div class="kasa-sub">Rumeli Z2</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.restoran / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
-                <div class="kasa-card cafetarya">
+                <div class="kasa-card cafetarya" style="animation: kasaPop .5s ease .1s both;">
                     <div class="kasa-icon">☕</div>
                     <div class="kasa-label">Cafetarya</div>
-                    <div class="kasa-amount">${formatCurrency(kasaCiros.cafetarya)}</div>
+                    <div class="kasa-amount" data-target="${kasaCiros.cafetarya}">0,00 ₺</div>
                     <div class="kasa-sub">Rumeli Z1</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.cafetarya / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
-                <div class="kasa-card balik">
+                <div class="kasa-card balik" style="animation: kasaPop .5s ease .2s both;">
                     <div class="kasa-icon">🐟</div>
                     <div class="kasa-label">Balık Ekmek</div>
-                    <div class="kasa-amount">${formatCurrency(kasaCiros.balik)}</div>
+                    <div class="kasa-amount" data-target="${kasaCiros.balik}">0,00 ₺</div>
                     <div class="kasa-sub">Z Raporu</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.balik / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
-                <div class="kasa-card dondurma">
+                <div class="kasa-card dondurma" style="animation: kasaPop .5s ease .3s both;">
                     <div class="kasa-icon">🍦</div>
                     <div class="kasa-label">Dondurma</div>
-                    <div class="kasa-amount">${formatCurrency(kasaCiros.dondurma)}</div>
+                    <div class="kasa-amount" data-target="${kasaCiros.dondurma}">0,00 ₺</div>
                     <div class="kasa-sub">Z Raporu</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.dondurma / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
@@ -2337,14 +2484,28 @@
             <div class="section-title">📊 Özet İstatistikler</div>
             <div class="summary-grid">
                 <div class="sc blue">
-                    <div class="sc-l">Bu Hafta Toplam Ciro</div>
-                    <div class="sc-v">${formatCurrencyShort(kasaCiros.total)}</div>
+                    <div class="sc-l">${
+                        currentDateRange === 'month' ? 'Bu Ay Toplam Ciro' :
+                        currentDateRange === 'week'  ? 'Bu Hafta Toplam Ciro' :
+                        currentDateRange === 'day'   ? 'Günlük Toplam Ciro' : 'Dönem Toplam Ciro'
+                    }</div>
+                    <div class="sc-v">${formatCurrency(kasaCiros.total)}</div>
                     <div class="sc-s">${uniqueDays} günlük veri</div>
                 </div>
                 <div class="sc purple">
-                    <div class="sc-l">Günlük Ortalama</div>
-                    <div class="sc-v">${formatCurrencyShort(dailyAvg)}</div>
+                    <div class="sc-l">Günlük Ortalama (Tüm)</div>
+                    <div class="sc-v">${formatCurrency(dailyAvg)}</div>
                     <div class="sc-s">Son ${uniqueDays} gün</div>
+                </div>
+                <div class="sc emerald">
+                    <div class="sc-l">🏢 Rumeli İskelesi Toplam</div>
+                    <div class="sc-v">${formatCurrency(kasaCiros.restoran + kasaCiros.cafetarya)}</div>
+                    <div class="sc-s">Restoran + Cafetarya</div>
+                </div>
+                <div class="sc cyan">
+                    <div class="sc-l">🏢 Rumeli İskelesi Günlük Ort.</div>
+                    <div class="sc-v">${formatCurrency(uniqueDays > 0 ? (kasaCiros.restoran + kasaCiros.cafetarya) / uniqueDays : 0)}</div>
+                    <div class="sc-s">${uniqueDays} günlük ortalama</div>
                 </div>
                 <div class="sc orange">
                     <div class="sc-l">Zamanında Giriş</div>
@@ -2354,32 +2515,17 @@
                 <div class="sc green">
                     <div class="sc-l">Toplam Giriş Sayısı</div>
                     <div class="sc-v">${totalEntries}</div>
-                    <div class="sc-s">Son 7 gün</div>
+                    <div class="sc-s">${uniqueDays} günlük</div>
                 </div>
-
-                <!-- YENİ KARTLAR -->
-                <div class="sc cyan">
-                    <div class="sc-l">Ortalama İşlem Süresi</div>
-                    <div class="sc-v" id="avgEntryTime">${stats.avgEntryTime}</div>
-                    <div class="sc-s">Son 7 günlük ortalama</div>
-                </div>
-
                 <div class="sc pink">
                     <div class="sc-l">En Yüksek Günlük Ciro</div>
-                    <div class="sc-v" id="maxDailyCiro">${formatCurrencyShort(stats.maxDailyCiro)}</div>
-                    <div class="sc-s">Bu hafta rekor</div>
+                    <div class="sc-v" id="maxDailyCiro">${formatCurrency(stats.maxDailyCiro)}</div>
+                    <div class="sc-s">Dönem rekoru</div>
                 </div>
-
                 <div class="sc indigo">
                     <div class="sc-l">Aktif Kasiyer</div>
                     <div class="sc-v" id="activeCashiers">${stats.activeCashiers}/${cashiers.length}</div>
                     <div class="sc-s">Bugün giriş yapan</div>
-                </div>
-
-                <div class="sc emerald">
-                    <div class="sc-l">Haftalık Büyüme</div>
-                    <div class="sc-v" id="weeklyGrowth">${stats.weeklyGrowth}</div>
-                    <div class="sc-s">Önceki haftaya göre</div>
                 </div>
             </div>
 
@@ -2541,6 +2687,42 @@
                     </div>
                 </div>
             </div>
+
+            <!-- KASİYER SIRALAMALARI -->
+            <div class="section-title" style="margin-top:40px;">👥 Kasiyer Sıralaması <span style="font-size:13px;font-weight:500;color:var(--txt2);">(Bu Ay)</span></div>
+            <div id="rankGrid" class="rank-grid">
+                ${monthlySorted.map((c, i) => {
+                    const cashierObj = cashiers.find(x => (x.name || '') === c.name) || {}
+                    const cashierId  = cashierObj.id || ''
+                    const badge      = getBadgeLabel(cashierObj.badge_level)
+                    return `
+                    <div class="rank-card">
+                        <div class="rank-pos p${Math.min(i + 1, 4)}">#${i + 1}</div>
+                        <div class="rank-avatar av-${getAvatarClass(c.name)}">${getInitials(c.name)}</div>
+                        <div class="rank-info">
+                            <div class="rank-name">${c.name}</div>
+                            <div class="rank-meta">
+                                ${c.entries} giriş · ${formatCurrency(c.revenue)} ciro
+                            </div>
+                        </div>
+                        <div class="rank-right">
+                            <div class="rank-pts">${c.points} puan</div>
+                            <div class="rank-badge-pill">${badge}</div>
+                            ${cashierId ? `<button class="badge-assign-btn" onclick="assignBadge('${cashierId}','${c.name}')">🎖️ Rozet Ver</button>` : ''}
+                        </div>
+                    </div>`
+                }).join('')}
+            </div>
+
+            <!-- AYIN ELEMANI HERO -->
+            <div id="heroSection" class="hero ${topCashier && topCashier.points > 0 ? 'gold' : 'blue'}" style="margin-top:24px;">
+                <div class="hero-badge">🏆 AYIN ELEMANI</div>
+                <div class="hero-name">${topCashier ? topCashier.name : 'Henüz Veri Yok'}</div>
+                <div class="hero-amt">${topCashier ? topCashier.points : 0} Puan</div>
+                <div class="hero-sub">
+                    ${topCashier ? `${topCashier.entries} giriş · ${formatCurrency(topCashier.revenue)}` : 'İlk veriyi girin!'}
+                </div>
+            </div>
         `
 
             // Grafikleri çiz
@@ -2560,15 +2742,11 @@
             setTimeout(() => {
                 animateCards()
                 animateNumbers()
+                animateKasaAmounts()
             }, 100)
 
-            // Günlük hedef progress bar animasyonu
-            setTimeout(() => {
-                const dailyBar = document.getElementById('dailyProgressBar')
-                if (dailyBar) {
-                    dailyBar.style.width = Math.min(100, parseFloat(dailyBar.dataset.percent)) + '%'
-                }
-            }, 200)
+            // Floating target card güncelle
+            updateFloatingTarget(dailyTarget, todayCiro, progressPercent)
         }
 
         // ═══════════════════════════════════════
@@ -2834,10 +3012,204 @@
         }
 
         function formatCurrencyShort(val) {
-            if (val >= 1000000) return (val / 1000000).toFixed(1) + 'M ₺'
-            if (val >= 1000) return (val / 1000).toFixed(1) + 'K ₺'
             return formatCurrency(val)
         }
+
+        // ── KASA KARTLARI SAYAÇ ANİMASYONU ──────────────────────
+        function animateKasaAmounts() {
+            document.querySelectorAll('.kasa-amount[data-target]').forEach(el => {
+                const target = parseFloat(el.dataset.target) || 0
+                const duration = 1200
+                const start = performance.now()
+                function step(now) {
+                    const p = Math.min((now - start) / duration, 1)
+                    const ease = 1 - Math.pow(1 - p, 3)
+                    el.textContent = formatCurrency(target * ease)
+                    if (p < 1) requestAnimationFrame(step)
+                    else el.textContent = formatCurrency(target)
+                }
+                requestAnimationFrame(step)
+            })
+        }
+
+        // ── FLOATING TARGET CARD ─────────────────────────────────
+        function updateFloatingTarget(target, current, pct) {
+            const el = document.getElementById('floatingTarget')
+            if (!el) return
+            el.style.display = 'block'
+            document.getElementById('ftPct').textContent  = pct + '%'
+            document.getElementById('ftTarget').textContent  = formatCurrency(target)
+            document.getElementById('ftCurrent').textContent = formatCurrency(current)
+            const statusMap = [
+                [100, '🎉 Hedef Tamamlandı!'],
+                [80,  '💪 Hedefe Yakın!'],
+                [50,  '⏰ Yarı Yolda!'],
+                [0,   '🚀 Devam Edelim!']
+            ]
+            document.getElementById('ftStatus').textContent = (statusMap.find(([t]) => pct >= t) || statusMap[3])[1]
+            const bar = document.getElementById('ftBar')
+            bar.classList.toggle('done', pct >= 100)
+            bar.classList.toggle('near', pct >= 80 && pct < 100)
+            setTimeout(() => { bar.style.width = Math.min(100, pct) + '%' }, 200)
+        }
+
+        // ── OPERASYONEl VERİMLİLİK ───────────────────────────────
+        window.showVerimlilik = async function() {
+            document.getElementById('verimlilikModal').style.display = 'flex'
+            const body = document.getElementById('verimlilikBody')
+            body.innerHTML = '<div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Veriler hesaplanıyor...</div></div>'
+
+            try {
+                const now = new Date()
+                const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+                const lastDay    = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+                const monthEnd   = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${lastDay}`
+
+                const { data: rows } = await supabase
+                    .from('daily_reports')
+                    .select('date, kasa, shift, total_revenue')
+                    .in('kasa', ['restoran', 'cafetarya'])
+                    .gte('date', monthStart)
+                    .lte('date', monthEnd)
+                    .order('date', { ascending: true })
+
+                if (!rows || rows.length === 0) {
+                    body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--txt2);">Bu ay için veri bulunamadı.</div>'
+                    return
+                }
+
+                // Her gün için en son vardiya değerini al (aksam > sabah)
+                const dayMap = {}
+                rows.forEach(r => {
+                    if (!dayMap[r.date]) dayMap[r.date] = { restoran: 0, cafetarya: 0 }
+                    // kasa bazında son vardiyayı kullan
+                    dayMap[r.date][r.kasa] = Math.max(dayMap[r.date][r.kasa] || 0, parseFloat(r.total_revenue) || 0)
+                })
+
+                // Gerçekte kasa bazında son vardiyayı doğru hesapla
+                const kasaDayMap = {}
+                rows.forEach(r => {
+                    const key = `${r.date}-${r.kasa}`
+                    if (!kasaDayMap[key] || r.shift === 'aksam') kasaDayMap[key] = parseFloat(r.total_revenue) || 0
+                })
+                Object.keys(kasaDayMap).forEach(key => {
+                    const [date, kasa] = key.split('-')
+                    if (!dayMap[date]) dayMap[date] = { restoran: 0, cafetarya: 0 }
+                    dayMap[date][kasa] = kasaDayMap[key]
+                })
+
+                // Günlük toplam (restoran + cafetarya)
+                const dailyTotals = Object.entries(dayMap).map(([date, v]) => ({
+                    date,
+                    total: (v.restoran || 0) + (v.cafetarya || 0),
+                    restoran: v.restoran || 0,
+                    cafetarya: v.cafetarya || 0
+                })).sort((a, b) => a.date.localeCompare(b.date))
+
+                const grandTotal = dailyTotals.reduce((s, d) => s + d.total, 0)
+                const dayCount   = dailyTotals.length
+                const dailyAvgV  = dayCount > 0 ? grandTotal / dayCount : 0
+
+                // En çok para yapılan gün
+                const maxDay = dailyTotals.reduce((m, d) => d.total > m.total ? d : m, dailyTotals[0])
+
+                // Haftanın günlerine göre ortalama
+                const weekdayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']
+                const weekdaySum = {}
+                const weekdayCount = {}
+                dailyTotals.forEach(d => {
+                    const wd = new Date(d.date).getDay()
+                    weekdaySum[wd]   = (weekdaySum[wd]   || 0) + d.total
+                    weekdayCount[wd] = (weekdayCount[wd] || 0) + 1
+                })
+                const weekdayAvg = [0,1,2,3,4,5,6]
+                    .filter(i => weekdayCount[i])
+                    .map(i => ({ name: weekdayNames[i], avg: weekdaySum[i] / weekdayCount[i], idx: i }))
+                    .sort((a, b) => b.avg - a.avg)
+
+                const maxWdAvg = weekdayAvg.length > 0 ? weekdayAvg[0].avg : 1
+
+                const monthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+
+                body.innerHTML = `
+                    <div class="ver-stats-grid">
+                        <div class="ver-stat-card">
+                            <div class="ver-stat-label">🏢 Rumeli İskelesi Toplam</div>
+                            <div class="ver-stat-value">${formatCurrency(grandTotal)}</div>
+                            <div class="ver-stat-sub">${monthLabel}</div>
+                        </div>
+                        <div class="ver-stat-card">
+                            <div class="ver-stat-label">📅 Veri Günü</div>
+                            <div class="ver-stat-value">${dayCount} gün</div>
+                            <div class="ver-stat-sub">Girişi olan günler</div>
+                        </div>
+                        <div class="ver-stat-card">
+                            <div class="ver-stat-label">📊 Günlük Ortalama</div>
+                            <div class="ver-stat-value">${formatCurrency(dailyAvgV)}</div>
+                            <div class="ver-stat-sub">Rest.+Cafe ortalaması</div>
+                        </div>
+                        <div class="ver-stat-card" style="border-color:var(--orange);">
+                            <div class="ver-stat-label">🏆 En İyi Gün</div>
+                            <div class="ver-stat-value">${formatCurrency(maxDay?.total || 0)}</div>
+                            <div class="ver-stat-sub">${maxDay ? new Date(maxDay.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' }) : '-'}</div>
+                        </div>
+                    </div>
+
+                    <div class="ver-section-title">📈 Haftanın En İyi Günleri (Ortalamaya Göre)</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+                        ${weekdayAvg.map((w, i) => `
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div style="width:20px;text-align:right;font-size:12px;color:var(--txt2);">${i+1}.</div>
+                                <div style="width:90px;font-size:13px;font-weight:600;">${w.name}</div>
+                                <div style="flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;">
+                                    <div style="height:100%;width:${Math.round((w.avg / maxWdAvg) * 100)}%;background:linear-gradient(90deg,${i === 0 ? '#f59e0b,#f97316' : '#3b82f6,#06b6d4'});border-radius:4px;transition:width 1s ease;"></div>
+                                </div>
+                                <div style="width:130px;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px;color:${i === 0 ? 'var(--orange)' : 'var(--txt)'};">${formatCurrency(w.avg)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="ver-section-title">📋 Günlük Ciro Detayı — ${monthLabel}</div>
+                    <div style="max-height:320px;overflow-y:auto;border-radius:10px;border:1px solid var(--brd);">
+                        <table class="ver-daily-table">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Gün</th>
+                                    <th>Restoran</th>
+                                    <th>Cafetarya</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${dailyTotals.map(d => {
+                                    const isMax = d.date === maxDay?.date
+                                    const dayName = new Date(d.date).toLocaleDateString('tr-TR', { weekday: 'short' })
+                                    return `<tr${isMax ? ' class="top-row"' : ''}>
+                                        <td>${new Date(d.date).toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit' })}</td>
+                                        <td style="color:var(--txt2);font-family:sans-serif;font-size:12px;">${dayName}</td>
+                                        <td>${formatCurrency(d.restoran)}</td>
+                                        <td>${formatCurrency(d.cafetarya)}</td>
+                                        <td style="font-weight:700;${isMax ? 'color:var(--orange);' : ''}">${formatCurrency(d.total)}</td>
+                                    </tr>`
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `
+            } catch (e) {
+                body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);">⚠️ Veri yüklenirken hata: ${e.message}</div>`
+            }
+        }
+
+        window.closeVerimlilik = function() {
+            document.getElementById('verimlilikModal').style.display = 'none'
+        }
+
+        // Overlay tıklamasında kapat
+        document.getElementById('verimlilikModal').addEventListener('click', function(e) {
+            if (e.target === this) closeVerimlilik()
+        })
 
         function formatDateShort(dateStr) {
             if (!dateStr) return '-'
