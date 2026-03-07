@@ -1673,8 +1673,230 @@
             from { opacity: 0; transform: translateY(-20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
+
+        @keyframes kasaPop {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── FLOATING TARGET CARD ── */
+
+        #floatingTarget {
+            position: fixed;
+            right: 16px;
+            bottom: 80px;
+            width: 220px;
+            background: linear-gradient(135deg, #0d1b2e, #111d32);
+            border: 1px solid var(--brd);
+            border-radius: 14px;
+            padding: 14px 16px;
+            z-index: 400;
+            box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 20px rgba(59,130,246,.08);
+            transition: transform .2s, box-shadow .2s;
+            display: none;
+        }
+
+        #floatingTarget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.7), 0 0 30px rgba(59,130,246,.15);
+        }
+
+        .ft-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--txt2);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ft-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .ft-label { color: var(--txt2); }
+
+        .ft-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--txt);
+        }
+
+        .ft-bar-bg {
+            height: 5px;
+            background: rgba(255,255,255,.07);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0 6px;
+        }
+
+        .ft-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4);
+            transition: width 1.2s cubic-bezier(.4,0,.2,1);
+            width: 0%;
+        }
+
+        .ft-bar-fill.done { background: linear-gradient(90deg, #22c55e, #10b981); }
+
+        .ft-bar-fill.near { background: linear-gradient(90deg, #f59e0b, #f97316); }
+
+        .ft-pct {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--acc);
+            text-align: center;
+            margin-bottom: 2px;
+        }
+
+        .ft-status {
+            font-size: 10px;
+            color: var(--txt2);
+            text-align: center;
+        }
+
+        /* ── VERİMLİLİK MODAL ── */
+
+        .verimlilik-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.75);
+            backdrop-filter: blur(8px);
+            z-index: 9000;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .verimlilik-box {
+            background: var(--card);
+            border: 1px solid var(--brd);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin: auto;
+            box-shadow: 0 30px 80px rgba(0,0,0,.8);
+            overflow: hidden;
+            animation: slideUp .3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity:0; transform: translateY(30px); }
+            to   { opacity:1; transform: translateY(0); }
+        }
+
+        .verimlilik-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--brd);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .verimlilik-header h2 {
+            font-size: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verimlilik-body {
+            padding: 24px 28px;
+        }
+
+        .ver-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .ver-stat-card {
+            background: var(--input);
+            border: 1px solid var(--brd);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .ver-stat-label {
+            font-size: 11px;
+            color: var(--txt2);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+
+        .ver-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--txt);
+        }
+
+        .ver-stat-sub {
+            font-size: 11px;
+            color: var(--txt2);
+            margin-top: 4px;
+        }
+
+        .ver-chart-wrap {
+            position: relative;
+            height: 220px;
+            margin-bottom: 20px;
+        }
+
+        .ver-daily-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ver-daily-table th {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--txt2);
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--brd);
+        }
+
+        .ver-daily-table td {
+            font-size: 13px;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(30,58,95,.5);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .ver-daily-table tr:last-child td { border-bottom: none; }
+
+        .ver-daily-table tr.top-row td { color: var(--orange); }
+
+        .ver-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--txt2);
+            margin: 20px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
     </style>
-  <script type="module" crossorigin src="/assets/admin-C01szkSf.js"></script>
+  <script type="module" crossorigin src="/assets/admin-Z6PK3gbX.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
   <link rel="modulepreload" crossorigin href="/assets/supabase-client-CFSZQWn8.js">
 </head>
@@ -1692,8 +1914,9 @@
                     <div class="nsub">Metehan Arslan · Rumeli İskelesi</div>
                 </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <div id="lastUpdate" style="font-size:12px;color:var(--txt2)">Yükleniyor...</div>
+                <button class="nb" onclick="showVerimlilik()" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-color:#3b82f6;">📊 Operasyonel Verimlilik</button>
                 <button id="refreshBtn" class="nb">🔄 Yenile</button>
                 <a href="index.html" class="nb">← Çıkış</a>
             </div>
@@ -1705,6 +1928,37 @@
         <div class="loading">
             <div class="spinner"></div>
             <div>Veriler yükleniyor...</div>
+        </div>
+    </div>
+
+    <!-- FLOATING TARGET CARD -->
+    <div id="floatingTarget">
+        <div class="ft-title">🎯 Bugünkü Hedef</div>
+        <div class="ft-pct" id="ftPct">0%</div>
+        <div class="ft-bar-bg">
+            <div class="ft-bar-fill" id="ftBar"></div>
+        </div>
+        <div class="ft-row">
+            <span class="ft-label">Hedef</span>
+            <span class="ft-val" id="ftTarget">—</span>
+        </div>
+        <div class="ft-row">
+            <span class="ft-label">Gerçekleşen</span>
+            <span class="ft-val" id="ftCurrent">—</span>
+        </div>
+        <div class="ft-status" id="ftStatus">—</div>
+    </div>
+
+    <!-- VERİMLİLİK MODAL -->
+    <div class="verimlilik-overlay" id="verimlilikModal" style="display:none;">
+        <div class="verimlilik-box">
+            <div class="verimlilik-header">
+                <h2>📊 Operasyonel Verimlilik — Rumeli İskelesi</h2>
+                <button onclick="closeVerimlilik()" style="background:none;border:none;font-size:22px;color:var(--txt2);cursor:pointer;line-height:1;">✕</button>
+            </div>
+            <div class="verimlilik-body" id="verimlilikBody">
+                <div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Veriler hesaplanıyor...</div></div>
+            </div>
         </div>
     </div>
 
