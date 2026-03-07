@@ -94,6 +94,7 @@
             display: flex;
             justify-content: center;
             flex-direction: column;
+            z-index: 1;
         }
 
         /* ── Login (sol) ── */
@@ -355,6 +356,8 @@
             transform-origin: bottom right;
             transition: 1.5s ease;
             transition-delay: 1.6s;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container.active .curved-shape {
@@ -374,6 +377,8 @@
             transform-origin: bottom left;
             transition: 1.5s ease;
             transition-delay: .5s;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container.active .curved-shape2 {
@@ -558,164 +563,215 @@
 
     <div class="login-footer">Rumeli İskelesi Yönetim Sistemi · v3.0</div>
 
-    <script type="module">
-        import { supabase } from './js/supabase-client.js'
+    <!-- ── Supabase UMD (modül gerektirmez, her ortamda çalışır) ── -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        const container = document.getElementById('mainContainer')
+    <script>
+        /* ═══════════════════════════════════════════════════════
+           SUPABASE BAŞLAT
+           Vite build sırasında %VITE_SUPABASE_ANON_KEY% gerçek
+           değerle değiştirilir. Değiştirilmemişse module fallback
+           devreye girer.
+        ═══════════════════════════════════════════════════════ */
+        (function () {
+            var url = 'https://iwikwbjsznjuefvuemdb.supabase.co'
+            // Vite build: %VITE_SUPABASE_ANON_KEY% env ile değiştirilir; değilse hardcoded fallback
+            var key = '%VITE_SUPABASE_ANON_KEY%'
+            if (!key || key.indexOf('%VITE_') !== -1) {
+                key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3aWt3Ympzem5qdWVmdnVlbWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyNzkwNzEsImV4cCI6MjA4NTg1NTA3MX0.JLTiyDsrzcyEQEf_yS0cwUwtR3H1FaPl4mRFBRk142Q'
+            }
+            if (window.supabase) {
+                try { window._sb = window.supabase.createClient(url, key) } catch (e) { console.warn('Supabase init:', e) }
+            }
+        })()
 
-        // ── ANİMASYON GEÇİŞİ ──
-        document.getElementById('toKasiyer').addEventListener('click', (e) => {
-            e.preventDefault()
-            container.classList.add('active')
-            resetAdmin()
+        /* ═══════════════════════════════════════════════════════
+           STATE
+        ═══════════════════════════════════════════════════════ */
+        var adminCurrentPin   = ''
+        var cashierCurrentPin = ''
+
+        /* ═══════════════════════════════════════════════════════
+           PANEL GEÇİŞ ANİMASYONU
+        ═══════════════════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', function () {
+            var container = document.getElementById('mainContainer')
+
+            document.getElementById('toKasiyer').addEventListener('click', function (e) {
+                e.preventDefault()
+                container.classList.add('active')
+                resetAdmin()
+            })
+
+            document.getElementById('toYonetici').addEventListener('click', function (e) {
+                e.preventDefault()
+                container.classList.remove('active')
+                resetCashier()
+            })
+
+            // Klavye desteği (masaüstü)
+            document.addEventListener('keydown', function (e) {
+                var isAdmin = !container.classList.contains('active')
+                if (e.key >= '0' && e.key <= '9') {
+                    isAdmin ? adminPin(e.key) : cashierPin(e.key)
+                } else if (e.key === 'Backspace') {
+                    isAdmin ? adminDel() : cashierDel()
+                } else if (e.key === 'Enter') {
+                    isAdmin ? verifyAdmin() : verifyCashier()
+                }
+            })
         })
 
-        document.getElementById('toYonetici').addEventListener('click', (e) => {
-            e.preventDefault()
-            container.classList.remove('active')
-            resetCashier()
-        })
-
-        // ── STATE ──
-        let adminCurrentPin = ''
-        let cashierCurrentPin = ''
-
-        // ════════════════════════════════
-        // YÖNETİCİ PIN
-        // ════════════════════════════════
-        window.adminPin = function(d) {
+        /* ═══════════════════════════════════════════════════════
+           YÖNETİCİ PIN
+        ═══════════════════════════════════════════════════════ */
+        function adminPin(d) {
             if (adminCurrentPin.length >= 4) return
             adminCurrentPin += d
             updateDots('adot', adminCurrentPin)
             if (adminCurrentPin.length === 4) setTimeout(verifyAdmin, 120)
         }
 
-        window.adminDel = function() {
+        function adminDel() {
             adminCurrentPin = adminCurrentPin.slice(0, -1)
             updateDots('adot', adminCurrentPin)
         }
 
-        window.verifyAdmin = async function() {
+        function resetAdmin() {
+            adminCurrentPin = ''
+            updateDots('adot', '')
+            clearErr(document.getElementById('adminPinError'))
+        }
+
+        async function verifyAdmin() {
             if (adminCurrentPin.length !== 4) return
-            const err = document.getElementById('adminPinError')
+            var err = document.getElementById('adminPinError')
             clearErr(err)
 
+            if (!window._sb) {
+                showErr(err, '⚠️ Bağlantı kuruluyor, lütfen bekleyin...')
+                setTimeout(verifyAdmin, 1500)
+                return
+            }
+
             try {
-                const { data, error } = await supabase
+                var result = await window._sb
                     .from('admins')
                     .select('*')
                     .eq('pin', adminCurrentPin)
                     .single()
 
-                if (data && !error) {
+                if (result.data && !result.error) {
                     window.location.href = './admin-dashboard.html'
                 } else {
                     showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
                     shake('.form-box.Login .pin-keypad')
                     resetAdmin()
                 }
-            } catch {
+            } catch (e) {
                 showErr(err, '❌ Bağlantı hatası!')
                 resetAdmin()
             }
         }
 
-        function resetAdmin() {
-            adminCurrentPin = ''
-            updateDots('adot', '')
-        }
-
-        // ════════════════════════════════
-        // KASİYER PIN
-        // ════════════════════════════════
-        window.cashierPin = function(d) {
+        /* ═══════════════════════════════════════════════════════
+           KASİYER PIN
+        ═══════════════════════════════════════════════════════ */
+        function cashierPin(d) {
             if (cashierCurrentPin.length >= 4) return
             cashierCurrentPin += d
             updateDots('cdot', cashierCurrentPin)
             if (cashierCurrentPin.length === 4) setTimeout(verifyCashier, 120)
         }
 
-        window.cashierDel = function() {
+        function cashierDel() {
             cashierCurrentPin = cashierCurrentPin.slice(0, -1)
             updateDots('cdot', cashierCurrentPin)
-        }
-
-        window.verifyCashier = async function() {
-            if (cashierCurrentPin.length !== 4) return
-            const err = document.getElementById('cashierPinError')
-            clearErr(err)
-
-            try {
-                const { data, error } = await supabase
-                    .from('cashiers')
-                    .select('*')
-                    .eq('pin', cashierCurrentPin)
-                    .single()
-
-                if (data && !error) {
-                    window.location.href = `./entry.html?cashier_id=${data.id}`
-                } else {
-                    showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
-                    shake('.form-box.Register .pin-keypad')
-                    resetCashier()
-                }
-            } catch {
-                showErr(err, '❌ Bağlantı hatası!')
-                resetCashier()
-            }
         }
 
         function resetCashier() {
             cashierCurrentPin = ''
             updateDots('cdot', '')
+            clearErr(document.getElementById('cashierPinError'))
         }
 
-        // ════════════════════════════════
-        // YARDIMCI FONKSİYONLAR
-        // ════════════════════════════════
+        async function verifyCashier() {
+            if (cashierCurrentPin.length !== 4) return
+            var err = document.getElementById('cashierPinError')
+            clearErr(err)
+
+            if (!window._sb) {
+                showErr(err, '⚠️ Bağlantı kuruluyor, lütfen bekleyin...')
+                setTimeout(verifyCashier, 1500)
+                return
+            }
+
+            try {
+                var result = await window._sb
+                    .from('cashiers')
+                    .select('*')
+                    .eq('pin', cashierCurrentPin)
+                    .single()
+
+                if (result.data && !result.error) {
+                    window.location.href = './entry.html?cashier_id=' + result.data.id
+                } else {
+                    showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
+                    shake('.form-box.Register .pin-keypad')
+                    resetCashier()
+                }
+            } catch (e) {
+                showErr(err, '❌ Bağlantı hatası!')
+                resetCashier()
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           YARDIMCI FONKSİYONLAR
+        ═══════════════════════════════════════════════════════ */
         function updateDots(prefix, pin) {
-            for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById(prefix + i)
+            for (var i = 0; i < 4; i++) {
+                var dot = document.getElementById(prefix + i)
                 if (dot) dot.classList.toggle('filled', i < pin.length)
             }
         }
 
         function showErr(el, msg) {
+            if (!el) return
             el.textContent = msg
             el.classList.add('show')
-            setTimeout(() => clearErr(el), 3500)
+            setTimeout(function () { clearErr(el) }, 3500)
         }
 
         function clearErr(el) {
+            if (!el) return
             el.textContent = ''
             el.classList.remove('show')
         }
 
         function shake(sel) {
-            const el = document.querySelector(sel)
+            var el = document.querySelector(sel)
             if (!el) return
             el.classList.remove('shake')
             void el.offsetWidth
             el.classList.add('shake')
-            setTimeout(() => el.classList.remove('shake'), 400)
+            setTimeout(function () { el.classList.remove('shake') }, 400)
+        }
+    </script>
+
+    <!-- ── Module: Supabase fallback (Vite build ile key inject edilmemişse) + SW ── -->
+    <script type="module">
+        // Supabase module fallback — UMD başlatılamadıysa dene
+        if (!window._sb) {
+            import('./js/supabase-client.js')
+                .then(function (m) { window._sb = m.supabase })
+                .catch(function (e) { console.warn('Supabase module fallback başarısız:', e) })
         }
 
-        // ── Klavye desteği (masaüstü) ──
-        document.addEventListener('keydown', (e) => {
-            const isAdmin = !container.classList.contains('active')
-            if (e.key >= '0' && e.key <= '9') {
-                isAdmin ? adminPin(e.key) : cashierPin(e.key)
-            } else if (e.key === 'Backspace') {
-                isAdmin ? adminDel() : cashierDel()
-            } else if (e.key === 'Enter') {
-                isAdmin ? verifyAdmin() : verifyCashier()
-            }
-        })
-
-        // ── Service Worker ──
+        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./service-worker.js')
-                .catch(err => console.warn('SW kayıt hatası:', err))
+                .catch(function (err) { console.warn('SW kayıt hatası:', err) })
         }
     </script>
 
