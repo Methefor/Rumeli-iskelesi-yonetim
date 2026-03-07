@@ -932,10 +932,13 @@
         }
 
         // toISOString() UTC'ye çevirdiği için UTC+3'te gece yarısı yanlış gün verir.
-        const localDateStr = d =>
-            d.getFullYear() + '-' +
-            String(d.getMonth() + 1).padStart(2, '0') + '-' +
-            String(d.getDate()).padStart(2, '0')
+        // function declaration kullanılıyor — const değil; hoisting sayesinde üstteki
+        // loadDashboard() çağrısından önce tanımlı sayılır.
+        function localDateStr(d) {
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0')
+        }
 
         async function loadDashboard() {
             try {

@@ -809,6 +809,25 @@
                 'Ceren Erdem': 'av-c'
             }
             document.getElementById('kasaCashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
+
+            // TARİH INPUT BAŞLATMA — showShiftScreen'den buraya taşındı.
+            // Kullanıcının geçmiş tarih seçimi showShiftScreen'de ezilmesin diye
+            // init yalnızca bir kez burada yapılıyor.
+            const dateInput = document.getElementById('entryDate')
+            if (!dateInput._initialized) {
+                const localStr = d =>
+                    d.getFullYear() + '-' +
+                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(d.getDate()).padStart(2, '0')
+                const today = new Date()
+                const todayStr = localStr(today)
+                dateInput.value = todayStr
+                dateInput.max = todayStr
+                const minDate = new Date(today)
+                minDate.setDate(minDate.getDate() - 30)
+                dateInput.min = localStr(minDate)
+                dateInput._initialized = true
+            }
         }
 
         const kasaOptions = document.querySelectorAll('.kasa-option')
@@ -851,29 +870,8 @@
             document.getElementById('cashierAvatar').textContent = initials
             document.getElementById('cashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
 
-            // TARİH INPUT'UNU BAŞLAT (YENİ)
-            // Not: toISOString() UTC kullandığı için UTC+3'te yanlış tarih verebilir.
-            // Yerel tarih string'i oluşturmak için getFullYear/getMonth/getDate kullanılıyor.
-            const dateInput = document.getElementById('entryDate')
-            const today = new Date()
-            const localStr = d =>
-                d.getFullYear() + '-' +
-                String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                String(d.getDate()).padStart(2, '0')
-
-            // Bugünün tarihini default olarak set et
-            const todayStr = localStr(today)
-            dateInput.value = todayStr
-            dateInput.max = todayStr
-
-            // Min tarih = 30 gün önce
-            const minDate = new Date(today)
-            minDate.setDate(minDate.getDate() - 30)
-            dateInput.min = localStr(minDate)
-
-            // Reset note
-            const dateNote = document.querySelector('.date-note')
-            dateNote.innerHTML = 'Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.'
+            // NOT: Tarih init showKasaScreen()'de yapılıyor. Burada tarih sıfırlanmıyor
+            // çünkü kullanıcı kasa ekranında geçmiş tarih seçmiş olabilir.
         }
 
         // Tarih seçici event listener
@@ -937,7 +935,10 @@
             const shiftLabel = selectedShift === 'sabah' ? 'Sabah Vardiyası' : 'Akşam Vardiyası'
             const kasaLabel = selectedKasa === 'restoran' ? 'Restoran' : 'Cafetarya'
             const selectedDate = document.getElementById('entryDate').value
-            const dateLabel = new Date(selectedDate).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+            // new Date('YYYY-MM-DD') UTC midnight parse eder; UTC+3'te toLocaleDateString
+            // bir gün ileri gösterebilir. Parçalara ayırarak yerel tarih üretiyoruz.
+            const [sy, sm, sd] = selectedDate.split('-')
+            const dateLabel = sd + '/' + sm
             document.getElementById('navInfo').textContent = `${currentCashier.name} - ${kasaLabel} - ${shiftLabel} (${dateLabel})`
 
             // ÖNEMLİ: Form alanlarını güncelle
