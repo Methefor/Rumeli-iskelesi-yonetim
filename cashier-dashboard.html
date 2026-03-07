@@ -931,10 +931,16 @@
             loadDashboard()
         }
 
+        // toISOString() UTC'ye çevirdiği için UTC+3'te gece yarısı yanlış gün verir.
+        const localDateStr = d =>
+            d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0')
+
         async function loadDashboard() {
             try {
                 const today = new Date()
-                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+                const monthStart = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
 
                 // Tüm verileri paralel çek
                 const [cashierRes, monthlyRes, allMonthlyRes, historyRes] = await Promise.all([
@@ -1175,10 +1181,10 @@
 
         async function fetchMyEntries(id) {
             try {
-                const today = new Date().toISOString().split('T')[0]
+                const today = localDateStr(new Date())
                 const sevenDaysAgo = new Date()
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-                const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
+                const sevenDaysAgoStr = localDateStr(sevenDaysAgo)
 
                 const { data, error } = await supabase
                     .from('daily_reports')

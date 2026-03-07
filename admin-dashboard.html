@@ -1714,6 +1714,14 @@
         // VERİ ÇEKME FONKSİYONLARI
         // ═══════════════════════════════════════
 
+        // toISOString() UTC'ye çevirdiği için UTC+3'te gece yarısı yanlış gün verir.
+        // Bu fonksiyon tarayıcının yerel saatini kullanarak doğru tarih string'i üretir.
+        function localDateStr(d) {
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0')
+        }
+
         async function fetchAllData() {
             let startDate
             let endDate = null
@@ -1731,20 +1739,22 @@
                     case 'week':
                         const weekAgo = new Date()
                         weekAgo.setDate(weekAgo.getDate() - 7)
-                        startDate = weekAgo.toISOString().split('T')[0]
+                        startDate = localDateStr(weekAgo)
                         break
                     case 'month':
-                        startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+                        startDate = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
+                        endDate   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
                         break
                     case 'lastmonth':
-                        startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0]
-                        endDate = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0]
+                        startDate = localDateStr(new Date(today.getFullYear(), today.getMonth() - 1, 1))
+                        endDate   = localDateStr(new Date(today.getFullYear(), today.getMonth(), 0))
                         break
                     case 'all':
                         startDate = '2020-01-01'
                         break
                     default:
-                        startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
+                        startDate = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
+                        endDate   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
                 }
             }
 

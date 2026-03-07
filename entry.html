@@ -852,18 +852,24 @@
             document.getElementById('cashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
 
             // TARİH INPUT'UNU BAŞLAT (YENİ)
+            // Not: toISOString() UTC kullandığı için UTC+3'te yanlış tarih verebilir.
+            // Yerel tarih string'i oluşturmak için getFullYear/getMonth/getDate kullanılıyor.
             const dateInput = document.getElementById('entryDate')
             const today = new Date()
+            const localStr = d =>
+                d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0')
 
             // Bugünün tarihini default olarak set et
-            const todayStr = today.toISOString().split('T')[0]
+            const todayStr = localStr(today)
             dateInput.value = todayStr
             dateInput.max = todayStr
 
             // Min tarih = 30 gün önce
             const minDate = new Date(today)
             minDate.setDate(minDate.getDate() - 30)
-            dateInput.min = minDate.toISOString().split('T')[0]
+            dateInput.min = localStr(minDate)
 
             // Reset note
             const dateNote = document.querySelector('.date-note')

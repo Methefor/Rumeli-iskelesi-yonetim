@@ -6,6 +6,14 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ||
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// toISOString() UTC'ye çevirdiği için UTC+3'te gece yarısı yanlış gün verir.
+// Bu fonksiyon yerel saati kullanarak doğru YYYY-MM-DD string'i üretir.
+function localDateStr(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0')
+}
+
 // ============================================
 // KASİYER FONKSİYONLARI (YENİ)
 // ============================================
@@ -118,8 +126,8 @@ export async function insertShiftEntry(data) {
   async function checkConsecutiveDays(cashierId) {
     try {
       const today = new Date()
-      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0]
-      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0]
+      const monthStart = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
+      const monthEnd   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
 
       const { data: monthReports, error } = await supabase
         .from('daily_reports')
@@ -315,8 +323,8 @@ export async function insertShiftEntry(data) {
 
   // Kasiyer aylık puanını bu ayın raporlarından hesapla (ay başında kendiliğinden sıfırlanır)
   try {
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    const monthEnd   = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+    const monthStart = localDateStr(new Date(now.getFullYear(), now.getMonth(), 1))
+    const monthEnd   = localDateStr(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
     const { data: monthReports } = await supabase
       .from('daily_reports')
