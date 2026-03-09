@@ -2057,21 +2057,12 @@
         }
 
         function calcShiftCiros(reports) {
-            // Her gün+kasa için sadece akşam vardiyasını al (yoksa sabah)
-            const dailyReports = {}
-            reports.forEach(r => {
-                const key = `${r.date}-${r.kasa}`
-                if (!dailyReports[key] || r.shift === 'aksam') {
-                    dailyReports[key] = r
-                }
-            })
-
+            // Vardiya bazında individual_revenue kullan (toplam değil, sadece o vardiyaya ait gelir)
             const shifts = { sabah: 0, aksam: 0 }
-            Object.values(dailyReports).forEach(r => {
-                const ciro = parseFloat(r.rumeli_z2 || 0) + parseFloat(r.rumeli_z1 || 0) +
-                    parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
-                if (r.shift === 'sabah') shifts.sabah += ciro
-                else if (r.shift === 'aksam') shifts.aksam += ciro
+            reports.forEach(r => {
+                const revenue = parseFloat(r.individual_revenue || 0)
+                if (r.shift === 'sabah') shifts.sabah += revenue
+                else if (r.shift === 'aksam') shifts.aksam += revenue
             })
             return shifts
         }
@@ -2393,6 +2384,14 @@
                 ? Math.min(100, Math.round((todayCiro / dailyTarget) * 100))
                 : 0
 
+            const periodLabel = currentDateRange === 'week' ? 'Bu Hafta' :
+                currentDateRange === 'month' ? `Bu Ay (${new Date().toLocaleDateString('tr-TR', { month: 'long' })})` :
+                currentDateRange === 'lastmonth' ? `Geçen Ay (${new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toLocaleDateString('tr-TR', { month: 'long' })})` :
+                currentDateRange === 'all' ? 'Tüm Veriler' :
+                currentDateRange === 'day' && selectedSingleDay ? new Date(selectedSingleDay).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }) :
+                customStartDate ? `${new Date(customStartDate).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })} - ${new Date(customEndDate).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}` :
+                'Bu Ay'
+
             document.getElementById('mainContent').innerHTML = `
 
             <!-- TARİH FİLTRESİ -->
@@ -2567,13 +2566,13 @@
                     </div>
                 </div>
                 <div class="chart-card">
-                    <div class="chart-title">⚖️ Vardiya Karşılaştırması</div>
+                    <div class="chart-title">⚖️ Vardiya Karşılaştırması — ${periodLabel}</div>
                     <div class="chart-wrap">
                         <canvas id="shiftChart"></canvas>
                     </div>
                 </div>
                 <div class="chart-card">
-                    <div class="chart-title">👥 Kasiyer Ciro Performansı</div>
+                    <div class="chart-title">👥 Kasiyer Ciro Performansı — ${periodLabel}</div>
                     <div class="chart-wrap">
                         <canvas id="cashierChart"></canvas>
                     </div>
@@ -3090,12 +3089,11 @@
                 const kasaDayMap = {}
                 rows.forEach(r => {
                     const key = `${r.date}-${r.kasa}`
-                    if (!kasaDayMap[key] || r.shift === 'aksam') kasaDayMap[key] = parseFloat(r.total_revenue) || 0
+                    if (!kasaDayMap[key] || r.shift === 'aksam') kasaDayMap[key] = { date: r.date, kasa: r.kasa, val: parseFloat(r.total_revenue) || 0 }
                 })
-                Object.keys(kasaDayMap).forEach(key => {
-                    const [date, kasa] = key.split('-')
+                Object.values(kasaDayMap).forEach(({ date, kasa, val }) => {
                     if (!dayMap[date]) dayMap[date] = { restoran: 0, cafetarya: 0 }
-                    dayMap[date][kasa] = kasaDayMap[key]
+                    dayMap[date][kasa] = val
                 })
 
                 // Günlük toplam (restoran + cafetarya)
@@ -3118,7 +3116,8 @@
                 const weekdaySum = {}
                 const weekdayCount = {}
                 dailyTotals.forEach(d => {
-                    const wd = new Date(d.date).getDay()
+                    const [dy, dm, dd] = d.date.split('-').map(Number)
+                    const wd = new Date(dy, dm - 1, dd).getDay()
                     weekdaySum[wd]   = (weekdaySum[wd]   || 0) + d.total
                     weekdayCount[wd] = (weekdayCount[wd] || 0) + 1
                 })
@@ -3151,7 +3150,7 @@
                         <div class="ver-stat-card" style="border-color:var(--orange);">
                             <div class="ver-stat-label">🏆 En İyi Gün</div>
                             <div class="ver-stat-value">${formatCurrency(maxDay?.total || 0)}</div>
-                            <div class="ver-stat-sub">${maxDay ? new Date(maxDay.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' }) : '-'}</div>
+                            <div class="ver-stat-sub">${maxDay ? (() => { const [my,mm,md] = maxDay.date.split('-').map(Number); return new Date(my,mm-1,md).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'short' }) })() : '-'}</div>
                         </div>
                     </div>
 
@@ -3184,9 +3183,10 @@
                             <tbody>
                                 ${dailyTotals.map(d => {
                                     const isMax = d.date === maxDay?.date
-                                    const dayName = new Date(d.date).toLocaleDateString('tr-TR', { weekday: 'short' })
+                                    const [_y,_m,_d] = d.date.split('-').map(Number)
+                                    const dayName = new Date(_y,_m-1,_d).toLocaleDateString('tr-TR', { weekday: 'short' })
                                     return `<tr${isMax ? ' class="top-row"' : ''}>
-                                        <td>${new Date(d.date).toLocaleDateString('tr-TR', { day:'2-digit', month:'2-digit' })}</td>
+                                        <td>${String(_d).padStart(2,'0')+'/'+String(_m).padStart(2,'0')}</td>
                                         <td style="color:var(--txt2);font-family:sans-serif;font-size:12px;">${dayName}</td>
                                         <td>${formatCurrency(d.restoran)}</td>
                                         <td>${formatCurrency(d.cafetarya)}</td>
