@@ -2079,7 +2079,7 @@
         }
 
         function calcAlerts(reports, cashiers) {
-            const today = new Date().toISOString().split('T')[0]
+            const today = localDateStr(new Date())
 
             // Bugün giriş yapmayanlar
             const todayReports = reports.filter(r => r.date === today)
@@ -2102,7 +2102,7 @@
             const maxDailyCiro = Math.max(...dailyCirosArr.data, 0)
 
             // Aktif kasiyer (bugün giriş yapan)
-            const today = new Date().toISOString().split('T')[0]
+            const today = localDateStr(new Date())
             const todayReports = reports.filter(r => r.date === today)
             const uniqueCashiers = [...new Set(todayReports.map(r => r.cashier_id))]
             const activeCashiers = uniqueCashiers.length
@@ -2129,7 +2129,7 @@
                 '2026-10-29', // 29 Ekim
             ]
 
-            const todayStr = today.toISOString().split('T')[0]
+            const todayStr = localDateStr(today)
 
             if (specialDays.includes(todayStr)) {
                 return 'special'
@@ -2371,7 +2371,7 @@
             // Günlük hedef için bugün/seçili günün cirosunu hesapla
             const targetDay = (currentDateRange === 'day' && selectedSingleDay)
                 ? selectedSingleDay
-                : new Date().toISOString().split('T')[0]
+                : localDateStr(new Date())
             const targetDayMap = {}
             reports.filter(r => r.date === targetDay).forEach(r => {
                 const key = `${r.date}-${r.kasa}`
@@ -3213,13 +3213,15 @@
 
         function formatDateShort(dateStr) {
             if (!dateStr) return '-'
-            const d = new Date(dateStr)
-            return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })
+            // 'YYYY-MM-DD' string'ini UTC parse etmeden doğrudan böl
+            const parts = dateStr.split('T')[0].split('-')
+            if (parts.length === 3) return parts[2] + '.' + parts[1]
+            return dateStr
         }
 
         function formatTime(dt) {
             if (!dt) return '-'
-            return new Date(dt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+            return new Date(dt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
         }
 
         function getInitials(name) {
@@ -3397,7 +3399,7 @@
                     <div class="custom-date-content">
                         <div class="date-input-group">
                             <label>Tarih Seçin</label>
-                            <input type="date" id="singleDayPicker" max="${new Date().toISOString().split('T')[0]}" />
+                            <input type="date" id="singleDayPicker" max="${localDateStr(new Date())}" />
                         </div>
                         <div style="margin-top:12px;padding:12px;background:rgba(59,130,246,.1);border-radius:8px;font-size:13px;color:var(--txt2);">
                             💡 Yalnızca seçilen günün verileri gösterilir.
@@ -3415,7 +3417,7 @@
             `
             document.body.appendChild(modal)
             document.getElementById('singleDayPicker').value =
-                selectedSingleDay || new Date().toISOString().split('T')[0]
+                selectedSingleDay || localDateStr(new Date())
         }
 
         window.applyDayFilter = function () {
@@ -3446,7 +3448,7 @@
 
         window.showCustomDatePicker = function () {
             const modal = document.getElementById('customDateModal')
-            const today = new Date().toISOString().split('T')[0]
+            const today = localDateStr(new Date())
 
             document.getElementById('customStartDate').max = today
             document.getElementById('customEndDate').max = today
@@ -3454,7 +3456,7 @@
             if (!customStartDate) {
                 const weekAgo = new Date()
                 weekAgo.setDate(weekAgo.getDate() - 7)
-                document.getElementById('customStartDate').value = weekAgo.toISOString().split('T')[0]
+                document.getElementById('customStartDate').value = localDateStr(weekAgo)
             } else {
                 document.getElementById('customStartDate').value = customStartDate
             }

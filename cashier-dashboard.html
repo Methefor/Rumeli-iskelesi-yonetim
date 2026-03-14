@@ -1122,8 +1122,8 @@
             history.forEach(entry => {
                 const tr = document.createElement('tr')
                 const date = new Date(entry.entry_time)
-                const dateStr = date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
-                const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                const dateStr = date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Europe/Istanbul' })
+                const timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
 
                 const shiftLabel = entry.shift === 'sabah' ? 'Sabah' : 'Akşam'
                 const shiftClass = entry.shift === 'sabah' ? 'shift-sabah' : 'shift-aksam'
@@ -1239,7 +1239,7 @@
                   + (parseFloat(entry.dondurma) || 0))
 
             const timeStr = new Date(entry.entry_time)
-                .toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                .toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
 
             const actionsHtml = isToday
                 ? `<div class="entry-actions">
