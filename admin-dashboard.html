@@ -3098,7 +3098,8 @@
                 // Günlük toplam (restoran + cafetarya + balık + dondurma)
                 const dailyTotals = Object.entries(dayMap).map(([date, v]) => ({
                     date,
-                    total:     (v.restoran || 0) + (v.cafetarya || 0) + (v.balik || 0) + (v.dondurma || 0),
+                    // Toplam = sadece Restoran + Cafetarya (balık ayrı panel)
+                    total:     (v.restoran || 0) + (v.cafetarya || 0),
                     restoran:  v.restoran  || 0,
                     cafetarya: v.cafetarya || 0,
                     balik:     v.balik     || 0,
@@ -3109,10 +3110,10 @@
                 const dayCount   = dailyTotals.length
                 const dailyAvgV  = dayCount > 0 ? grandTotal / dayCount : 0
 
-                // En çok para yapılan gün
+                // En çok para yapılan gün (Restoran+Cafetarya bazlı)
                 const maxDay = dailyTotals.reduce((m, d) => d.total > m.total ? d : m, dailyTotals[0])
 
-                // Haftanın günlerine göre ortalama
+                // Haftanın günlerine göre ortalama (Restoran+Cafetarya bazlı)
                 const weekdayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']
                 const weekdaySum = {}
                 const weekdayCount = {}
@@ -3122,6 +3123,9 @@
                     weekdaySum[wd]   = (weekdaySum[wd]   || 0) + d.total
                     weekdayCount[wd] = (weekdayCount[wd] || 0) + 1
                 })
+
+                // Balık ekmek günlük özeti (sadece veri olan günler)
+                const balikDetay = dailyTotals.filter(d => d.balik > 0)
                 const weekdayAvg = [0,1,2,3,4,5,6]
                     .filter(i => weekdayCount[i])
                     .map(i => ({ name: weekdayNames[i], avg: weekdaySum[i] / weekdayCount[i], idx: i }))
@@ -3146,7 +3150,7 @@
                         <div class="ver-stat-card">
                             <div class="ver-stat-label">📊 Günlük Ortalama</div>
                             <div class="ver-stat-value">${formatCurrency(dailyAvgV)}</div>
-                            <div class="ver-stat-sub">Rest.+Cafe+Balık ortalaması</div>
+                            <div class="ver-stat-sub">Restoran + Cafetarya ortalaması</div>
                         </div>
                         <div class="ver-stat-card" style="border-color:var(--orange);">
                             <div class="ver-stat-label">🏆 En İyi Gün</div>
@@ -3178,7 +3182,6 @@
                                     <th>Gün</th>
                                     <th>Restoran</th>
                                     <th>Cafetarya</th>
-                                    <th>🐟 Balık</th>
                                     <th>Toplam</th>
                                 </tr>
                             </thead>
@@ -3192,13 +3195,46 @@
                                         <td style="color:var(--txt2);font-family:sans-serif;font-size:12px;">${dayName}</td>
                                         <td>${formatCurrency(d.restoran)}</td>
                                         <td>${formatCurrency(d.cafetarya)}</td>
-                                        <td style="color:var(--cyan);">${d.balik > 0 ? formatCurrency(d.balik) : '-'}</td>
                                         <td style="font-weight:700;${isMax ? 'color:var(--orange);' : ''}">${formatCurrency(d.total)}</td>
                                     </tr>`
                                 }).join('')}
                             </tbody>
                         </table>
                     </div>
+
+                    ${balikDetay.length > 0 ? `
+                    <div style="margin-top:16px;">
+                        <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▶')?'▼ Balık Ekmek Detayını Gizle':'▶ Balık Ekmek Günlük Detayını Gör'"
+                            style="background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);color:var(--cyan);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;width:100%;text-align:left;">
+                            ▶ Balık Ekmek Günlük Detayını Gör
+                        </button>
+                        <div style="display:none;margin-top:8px;border-radius:10px;border:1px solid rgba(6,182,212,.2);overflow:hidden;">
+                            <table class="ver-daily-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Gün</th>
+                                        <th style="color:var(--cyan);">🐟 Balık Ekmek</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${balikDetay.map(d => {
+                                        const [_y,_m,_d] = d.date.split('-').map(Number)
+                                        const dayName = new Date(_y,_m-1,_d).toLocaleDateString('tr-TR', { weekday: 'short' })
+                                        return `<tr>
+                                            <td>${String(_d).padStart(2,'0')+'/'+String(_m).padStart(2,'0')}</td>
+                                            <td style="color:var(--txt2);font-size:12px;">${dayName}</td>
+                                            <td style="font-weight:700;color:var(--cyan);">${formatCurrency(d.balik)}</td>
+                                        </tr>`
+                                    }).join('')}
+                                    <tr style="border-top:2px solid rgba(6,182,212,.3);">
+                                        <td colspan="2" style="font-weight:600;color:var(--txt2);">Aylık Toplam</td>
+                                        <td style="font-weight:700;color:var(--cyan);">${formatCurrency(balikDetay.reduce((s,d)=>s+d.balik,0))}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>` : ''}
                 `
             } catch (e) {
                 body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red);">⚠️ Veri yüklenirken hata: ${e.message}</div>`
