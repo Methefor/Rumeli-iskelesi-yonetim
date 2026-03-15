@@ -3153,11 +3153,28 @@
                     return
                 }
 
-                // Kasa+gün bazında son vardiyayı al (aksam > sabah)
+                // Kasa+gün bazında doğru satırı seç:
+                //  - aksam, sabaha tercih edilir
+                //  - İki aksam varsa (çift giriş), Z değeri yüksek olan seçilir
+                //    (Z kümülatif olduğundan yüksek = gerçek gün sonu okuması)
                 const kasaDayMap = {}
                 rows.forEach(r => {
                     const key = `${r.date}-${r.kasa}`
-                    if (!kasaDayMap[key] || r.shift === 'aksam') kasaDayMap[key] = r
+                    if (!kasaDayMap[key]) {
+                        kasaDayMap[key] = r
+                    } else {
+                        const cur = kasaDayMap[key]
+                        const rZ   = r.kasa === 'restoran'   ? parseFloat(r.rumeli_z2)   : parseFloat(r.rumeli_z1)
+                        const curZ = cur.kasa === 'restoran' ? parseFloat(cur.rumeli_z2) : parseFloat(cur.rumeli_z1)
+                        // Aksam her zaman sabahın önüne geçer
+                        if (cur.shift !== 'aksam' && r.shift === 'aksam') {
+                            kasaDayMap[key] = r
+                        } else if (cur.shift === 'aksam' && r.shift === 'aksam') {
+                            // İki aksam satırı → en yüksek Z (gerçek gün sonu)
+                            if (rZ > curZ) kasaDayMap[key] = r
+                        }
+                        // Yeni satır sabah, mevcut aksam → dokunma
+                    }
                 })
 
                 // Günlük kasa bazlı toplamlar: restoran=z2, cafetarya=z1, balık+dondurma ayrı
@@ -3733,19 +3750,41 @@
             // Düzenleme modalı
             const modal = document.createElement('div')
             modal.className = 'modal-overlay'
+            const isCafe = entry.kasa === 'cafetarya'
+            const isRest = entry.kasa === 'restoran'
             modal.innerHTML = `
                 <div class="modal-box" style="max-width:600px;">
                     <div class="modal-title">✏️ Kaydı Düzenle</div>
                     <div class="modal-content">
                         <div style="display:grid;gap:12px;">
+                            <div style="background:var(--input);border-radius:8px;padding:10px;font-size:12px;color:var(--txt2);">
+                                📅 ${entry.date} · ${entry.kasa} · ${entry.shift === 'sabah' ? '🌅 Sabah' : '🌙 Akşam'}
+                            </div>
+                            ${isRest ? `
                             <div>
-                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Z Ciro</label>
-                                <input type="number" id="editZCiro" value="${parseFloat(entry.rumeli_z1 || 0) + parseFloat(entry.rumeli_z2 || 0) + parseFloat(entry.balik_ekmek || 0) + parseFloat(entry.dondurma || 0)}" 
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">🍽️ Rumeli Z2 (Restoran)</label>
+                                <input type="number" id="editZ2" step="0.01" value="${parseFloat(entry.rumeli_z2 || 0)}"
+                                    style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                            </div>` : ''}
+                            ${isCafe ? `
+                            <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">☕ Rumeli Z1 (Cafetarya)</label>
+                                <input type="number" id="editZ1" step="0.01" value="${parseFloat(entry.rumeli_z1 || 0)}"
                                     style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
                             </div>
                             <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">🐟 Balık Ekmek</label>
+                                <input type="number" id="editBalik" step="0.01" value="${parseFloat(entry.balik_ekmek || 0)}"
+                                    style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                            </div>
+                            <div>
+                                <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">🍦 Dondurma</label>
+                                <input type="number" id="editDondurma" step="0.01" value="${parseFloat(entry.dondurma || 0)}"
+                                    style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
+                            </div>` : ''}
+                            <div>
                                 <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Puan</label>
-                                <input type="number" id="editPuan" value="${entry.points_earned || 0}" 
+                                <input type="number" id="editPuan" value="${entry.points_earned || 0}"
                                     style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--input);color:var(--txt);">
                             </div>
                             <div>
@@ -3761,7 +3800,7 @@
                         <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">
                             İptal
                         </button>
-                        <button class="modal-btn confirm" style="background:var(--acc);" onclick="confirmEdit('${entryId}')">
+                        <button class="modal-btn confirm" style="background:var(--acc);" onclick="confirmEdit('${entryId}', '${entry.kasa}')">
                             Kaydet
                         </button>
                     </div>
@@ -3770,24 +3809,43 @@
             document.body.appendChild(modal)
         }
 
-        window.confirmEdit = async function (entryId) {
+        window.confirmEdit = async function (entryId, kasa) {
             const modal = document.querySelector('.modal-overlay')
 
             try {
-                const newZCiro = parseFloat(document.getElementById('editZCiro').value) || 0
-                const newPuan = parseInt(document.getElementById('editPuan').value) || 0
+                const newPuan  = parseInt(document.getElementById('editPuan').value) || 0
                 const newDurum = document.getElementById('editDurum').value === 'true'
 
-                console.log('Güncelleniyor:', { entryId, newZCiro, newPuan, newDurum })
+                // Kasa tipine göre Z değerlerini al
+                const z1El     = document.getElementById('editZ1')
+                const z2El     = document.getElementById('editZ2')
+                const balikEl  = document.getElementById('editBalik')
+                const dondEl   = document.getElementById('editDondurma')
+
+                const newZ1    = z1El    ? (parseFloat(z1El.value)    || 0) : null
+                const newZ2    = z2El    ? (parseFloat(z2El.value)    || 0) : null
+                const newBalik = balikEl ? (parseFloat(balikEl.value) || 0) : null
+                const newDond  = dondEl  ? (parseFloat(dondEl.value)  || 0) : null
+
+                // total_revenue yeniden hesapla
+                const newTotal = (newZ1 ?? 0) + (newZ2 ?? 0) + (newBalik ?? 0) + (newDond ?? 0)
+
+                const updatePayload = {
+                    points_earned: newPuan,
+                    is_on_time: newDurum,
+                    total_revenue: newTotal
+                }
+                if (newZ1    !== null) updatePayload.rumeli_z1    = newZ1
+                if (newZ2    !== null) updatePayload.rumeli_z2    = newZ2
+                if (newBalik !== null) updatePayload.balik_ekmek  = newBalik
+                if (newDond  !== null) updatePayload.dondurma     = newDond
+
+                console.log('Güncelleniyor:', { entryId, kasa, updatePayload })
 
                 // 1. daily_reports'u güncelle
                 const { error: reportError } = await supabase
                     .from('daily_reports')
-                    .update({
-                        total_revenue: newZCiro,
-                        points_earned: newPuan,
-                        is_on_time: newDurum
-                    })
+                    .update(updatePayload)
                     .eq('id', entryId)
 
                 if (reportError) throw reportError
