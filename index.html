@@ -25,6 +25,11 @@
         /* ══════════════════════════════════════════════
            RESET & BODY
         ══════════════════════════════════════════════ */
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -38,6 +43,10 @@
             touch-action: manipulation;
         }
 
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -46,6 +55,8 @@
             min-height: 100vh;
             background: #25252b;
             -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+            max-width: 100vw;
             gap: 22px;
             padding: 16px;
         }

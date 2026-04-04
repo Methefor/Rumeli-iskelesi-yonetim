@@ -38,6 +38,11 @@
             --cyan: #06b6d4;
         }
 
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -49,12 +54,18 @@
             touch-action: manipulation;
         }
 
+        /* iOS 16px altı inputlarda otomatik zoom yapar — engelle */
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--bg);
             color: var(--txt);
             min-height: 100vh;
             overflow-x: hidden;
+            max-width: 100vw;
             -webkit-text-size-adjust: 100%;
         }
 
