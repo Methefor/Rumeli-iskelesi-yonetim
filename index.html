@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#25252b">
     <meta name="description" content="Rumeli İskelesi Yönetim Sistemi - Günlük veri giriş ve analiz">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Rumeli">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="./manifest.json">
@@ -31,6 +31,11 @@
             box-sizing: border-box;
             font-family: 'Poppins', sans-serif;
             color: #fff;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, a, input, select, [role="button"] {
+            touch-action: manipulation;
         }
 
         body {
@@ -40,6 +45,7 @@
             align-items: center;
             min-height: 100vh;
             background: #25252b;
+            -webkit-text-size-adjust: 100%;
             gap: 22px;
             padding: 16px;
         }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rumeli-v4';
+const CACHE_NAME = 'rumeli-v5';
 
 // Statik sayfalar önbelleğe alınır (JS/CSS Vite tarafından hash'li üretilir, dinamik olarak cache'lenir)
 const STATIC_ASSETS = [
