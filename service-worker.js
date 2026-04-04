@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rumeli-v5';
+const CACHE_NAME = 'rumeli-v6';
 
 // Statik sayfalar önbelleğe alınır (JS/CSS Vite tarafından hash'li üretilir, dinamik olarak cache'lenir)
 const STATIC_ASSETS = [
@@ -12,13 +12,19 @@ const STATIC_ASSETS = [
     '/icon-512.png'
 ];
 
-// Install — statik varlıkları önbelleğe al
+// Install — statik varlıkları önbelleğe al (skipWaiting YOK — kullanıcı onayı beklenir)
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(STATIC_ASSETS))
-            .then(() => self.skipWaiting())
     );
+});
+
+// Güncelleme mesajı: sayfa "SKIP_WAITING" gönderince devreye gir
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });
 
 // Activate — eski önbellekleri temizle
