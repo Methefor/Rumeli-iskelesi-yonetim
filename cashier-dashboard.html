@@ -3,7 +3,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a1628">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rumeli">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/assets/manifest-C8HLbndM.json">
+    <link rel="apple-touch-icon" href="/assets/icon-192-CikMRvJb.png">
     <title>Kasiyer Dashboard - Rumeli İskelesi</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -27,10 +34,24 @@
             --bronze: #d97706;
         }
 
+        html {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, a, input, select, [role="button"] {
+            touch-action: manipulation;
+        }
+
+        input, select, textarea {
+            font-size: 16px !important;
         }
 
         body {
@@ -39,6 +60,9 @@
             color: var(--txt);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
+            -webkit-text-size-adjust: 100%;
+            overflow-x: hidden;
+            max-width: 100vw;
             padding: 20px
         }
 
@@ -624,6 +648,16 @@
         @media (max-width: 768px) {
             .my-entries-section { grid-template-columns: 1fr; }
             .edit-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .header { padding: 20px 16px; }
+            .profile { gap: 14px; }
+            .avatar { width: 72px; height: 72px; font-size: 28px; border-radius: 16px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-card { padding: 14px 12px; }
+            .back-btn { font-size: 13px; padding: 8px 14px; }
         }
 
         /* ── PUANLAMA BİLGİ MODALI ── */
