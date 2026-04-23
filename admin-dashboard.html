@@ -2109,30 +2109,34 @@
         // ═══════════════════════════════════════
 
         function calcKasaCiros(reports) {
-            // Tek kasa: her gün için sadece akşam vardiyasını al (yoksa sabah)
-            const dailyReports = {}
+            // tek_kasa: günde en fazla 2 vardiya — akşam toplam girdiği için akşamı al
+            // Eski veri (restoran/cafetarya): aynı gün 2 ayrı kasa, her ikisini topla
+            const tekKasaDaily = {}
+            let oldZ = 0, oldBalik = 0, oldDond = 0
+
             reports.forEach(r => {
-                const key = r.date
-                if (!dailyReports[key] || r.shift === 'aksam') {
-                    dailyReports[key] = r
+                if (r.kasa === 'tek_kasa') {
+                    const key = r.date
+                    if (!tekKasaDaily[key] || r.shift === 'aksam') tekKasaDaily[key] = r
+                } else {
+                    // restoran: z2 ana Z alanı; cafetarya: z1 ana Z alanı
+                    oldZ     += parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0)
+                    oldBalik += parseFloat(r.balik_ekmek || 0)
+                    oldDond  += parseFloat(r.dondurma || 0)
                 }
             })
 
-            return Object.values(dailyReports).reduce((acc, r) => {
-                const z      = parseFloat(r.rumeli_z1 || 0)
-                const balik  = parseFloat(r.balik_ekmek || 0)
-                const dond   = parseFloat(r.dondurma || 0)
-                // Eski veriler için rumeli_z2 de topla (geriye dönük uyumluluk)
-                const z2     = parseFloat(r.rumeli_z2 || 0)
-                acc.zRaporu  += z + z2
-                acc.balik    += balik
-                acc.dondurma += dond
-                acc.total    += z + z2 + balik + dond
-                // Eski alanlar — sıfır (kasa chart uyumluluğu)
-                acc.restoran  = 0
-                acc.cafetarya = 0
+            const tek = Object.values(tekKasaDaily).reduce((acc, r) => {
+                acc.z     += parseFloat(r.rumeli_z1 || 0)
+                acc.balik += parseFloat(r.balik_ekmek || 0)
+                acc.dond  += parseFloat(r.dondurma || 0)
                 return acc
-            }, { zRaporu: 0, balik: 0, dondurma: 0, total: 0, restoran: 0, cafetarya: 0 })
+            }, { z: 0, balik: 0, dond: 0 })
+
+            const zRaporu  = tek.z     + oldZ
+            const balik    = tek.balik + oldBalik
+            const dondurma = tek.dond  + oldDond
+            return { zRaporu, balik, dondurma, total: zRaporu + balik + dondurma, restoran: 0, cafetarya: 0 }
         }
 
         // Adil liderboard: puan toplamı değil, performans oranı (%) bazlı sıralama
@@ -2563,14 +2567,14 @@
                     }</div>
                     <div class="total-hero-amount" id="totalDailyCiro" data-value="${totalCiro}">0,00 ₺</div>
                     <div class="total-hero-breakdown">
-                        <span class="breakdown-item">📊 <span id="breakdownZ">${formatCurrency(kasaCiros.zRaporu)}</span></span>
+                        <span class="breakdown-item">🏪 <span id="breakdownZ">${formatCurrency(kasaCiros.zRaporu)}</span></span>
                         <span class="breakdown-item">🐟 <span id="breakdownBalik">${formatCurrency(kasaCiros.balik)}</span></span>
                         <span class="breakdown-item">🍦 <span id="breakdownDondurma">${formatCurrency(kasaCiros.dondurma)}</span></span>
                     </div>
                 </div>
                 <div class="total-hero-right">
                     <div class="target-section">
-                        <div class="target-label">📊 Rumeli İskelesi Z Raporu</div>
+                        <div class="target-label">🏪 Rumeli İskelesi</div>
                         <div class="target-amount">${formatCurrency(kasaCiros.zRaporu)}</div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill" id="progressBarFill" style="width:0%" data-percent="${progressPercent}"></div>
@@ -2584,24 +2588,24 @@
             <div class="section-title">🏪 Ciro Dağılımı</div>
             <div class="kasa-grid">
                 <div class="kasa-card restoran" style="animation: kasaPop .5s ease .0s both;">
-                    <div class="kasa-icon">📊</div>
-                    <div class="kasa-label">Z Raporu</div>
+                    <div class="kasa-icon">🏪</div>
+                    <div class="kasa-label">Rumeli İskelesi</div>
                     <div class="kasa-amount" data-target="${kasaCiros.zRaporu}">0,00 ₺</div>
-                    <div class="kasa-sub">Tek Kasa</div>
+                    <div class="kasa-sub">Kasa Toplamı</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.zRaporu / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
                 <div class="kasa-card balik" style="animation: kasaPop .5s ease .1s both;">
                     <div class="kasa-icon">🐟</div>
                     <div class="kasa-label">Balık Ekmek</div>
                     <div class="kasa-amount" data-target="${kasaCiros.balik}">0,00 ₺</div>
-                    <div class="kasa-sub">Z Raporu</div>
+                    <div class="kasa-sub">Ayrı Satış</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.balik / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
                 <div class="kasa-card dondurma" style="animation: kasaPop .5s ease .2s both;">
                     <div class="kasa-icon">🍦</div>
                     <div class="kasa-label">Dondurma</div>
                     <div class="kasa-amount" data-target="${kasaCiros.dondurma}">0,00 ₺</div>
-                    <div class="kasa-sub">Z Raporu</div>
+                    <div class="kasa-sub">Ayrı Satış</div>
                     <div class="kasa-percent up">%${kasaCiros.total > 1 ? Math.round((kasaCiros.dondurma / kasaCiros.total) * 100) : 0} toplam</div>
                 </div>
             </div>
@@ -2624,12 +2628,12 @@
                     <div class="sc-s">Son ${uniqueDays} gün</div>
                 </div>
                 <div class="sc emerald">
-                    <div class="sc-l">📊 Z Raporu Toplam</div>
+                    <div class="sc-l">🏪 Rumeli İskelesi Toplam</div>
                     <div class="sc-v">${formatCurrency(kasaCiros.zRaporu)}</div>
-                    <div class="sc-s">Tek Kasa</div>
+                    <div class="sc-s">Kasa toplamı</div>
                 </div>
                 <div class="sc cyan">
-                    <div class="sc-l">📊 Z Raporu Günlük Ort.</div>
+                    <div class="sc-l">🏪 Rumeli İskelesi Günlük Ort.</div>
                     <div class="sc-v">${formatCurrency(uniqueDays > 0 ? kasaCiros.zRaporu / uniqueDays : 0)}</div>
                     <div class="sc-s">${uniqueDays} günlük ortalama</div>
                 </div>
@@ -2950,7 +2954,7 @@
                 charts.kasa = new Chart(kasaCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Z Raporu', 'Balık Ekmek', 'Dondurma'],
+                        labels: ['Rumeli İskelesi', 'Balık Ekmek', 'Dondurma'],
                         datasets: [{
                             data: displayData,
                             backgroundColor: [
