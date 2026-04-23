@@ -17,40 +17,31 @@
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
         :root {
-            --bg: #0a1628;
-            --card: #111d32;
-            --input: #162340;
-            --brd: #1e3a5f;
-            --txt: #e8edf5;
-            --txt2: #7a8ba8;
-            --txt3: #4a5d7a;
-            --acc: #3b82f6;
-            --glow: rgba(59, 130, 246, .15);
-            --green: #22c55e;
+            --bg:     #0a1628;
+            --card:   #111d32;
+            --input:  #162340;
+            --brd:    #1e3a5f;
+            --txt:    #e8edf5;
+            --txt2:   #7a8ba8;
+            --txt3:   #4a5d7a;
+            --acc:    #3b82f6;
+            --glow:   rgba(59,130,246,.15);
+            --green:  #22c55e;
             --orange: #f59e0b;
-            --red: #ef4444;
+            --red:    #ef4444;
             --purple: #8b5cf6;
         }
 
-        html {
-            overflow-x: hidden;
-            width: 100%;
-        }
+        html { overflow-x: hidden; width: 100%; }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
-        button, a, input, select, [role="button"] {
-            touch-action: manipulation;
-        }
+        button, a, input, select, [role="button"] { touch-action: manipulation; }
 
-        input, select, textarea {
-            font-size: 16px !important;
-        }
+        input, select, textarea { font-size: 16px !important; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -61,606 +52,393 @@
             -webkit-text-size-adjust: 100%;
             overflow-x: hidden;
             max-width: 100vw;
-            padding: 20px
-        }
-
-        /* PIN EKRANI */
-
-        .pin-screen {
-            max-width: 400px;
-            margin: 60px auto;
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
-        }
-
-        .pin-screen h1 {
-            font-size: 24px;
-            margin-bottom: 10px
-        }
-
-        .pin-screen .subtitle {
-            font-size: 14px;
-            color: var(--txt2);
-            margin-bottom: 30px
-        }
-
-        .pin-input {
-            width: 100%;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 20px;
             padding: 20px;
-            background: var(--input);
-            border: 2px solid var(--brd);
-            border-radius: 12px;
-            color: var(--txt);
-            outline: none;
-            margin-bottom: 20px
         }
 
-        .pin-input:focus {
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px var(--glow)
-        }
-
-        .pin-error {
-            background: #7f1d1d;
-            color: #fca5a5;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none
-        }
-
-        .pin-error.show {
-            display: block
-        }
-
-        .pin-btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            color: #fff;
-            cursor: pointer;
-            transition: all .2s
-        }
-
-        .pin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
-        }
-
-        .pin-btn:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-            transform: none
-        }
-
-        /* VARDİYA SEÇİMİ */
+        /* ── VARDİYA SEÇİM EKRANI ─────────────────────────────── */
 
         .shift-screen {
-            max-width: 500px;
-            margin: 40px auto;
+            max-width: 520px;
+            margin: 30px auto;
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
         }
 
-        .shift-screen h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            text-align: center
+        .screen-title {
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 6px;
         }
 
-        .shift-subtitle {
-            font-size: 14px;
+        .screen-subtitle {
+            font-size: 13px;
             color: var(--txt2);
-            margin-bottom: 30px;
-            text-align: center
+            text-align: center;
+            margin-bottom: 28px;
         }
+
+        /* Kasiyer bilgi kartı */
 
         .cashier-info {
             background: var(--input);
             border: 1px solid var(--brd);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
-            gap: 16px
+            gap: 16px;
         }
 
         .cashier-avatar {
-            width: 60px;
-            height: 60px;
+            width: 56px; height: 56px;
             border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700; color: #fff;
+            flex-shrink: 0;
         }
 
-        .av-t {
-            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        .av-t { background: linear-gradient(135deg,#7c3aed,#8b5cf6) }
+
+        .av-e { background: linear-gradient(135deg,#c2410c,#f59e0b) }
+
+        .av-m { background: linear-gradient(135deg,#be185d,#ec4899) }
+
+        .av-c { background: linear-gradient(135deg,#059669,#22c55e) }
+
+        .cashier-name { font-size: 17px; font-weight: 700; }
+
+        .cashier-role { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+
+        /* Tarih seçici */
+
+        .date-block { margin-bottom: 22px; }
+
+        .date-block label {
+            display: block;
+            font-size: 12px; font-weight: 600; color: var(--txt2);
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;
         }
 
-        .av-e {
-            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        .date-input {
+            width: 100%; padding: 12px 14px;
+            border-radius: 10px; border: 1.5px solid var(--brd);
+            background: var(--input); color: var(--txt);
+            font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: border-color .2s;
         }
 
-        .av-m {
-            background: linear-gradient(135deg, #be185d, #ec4899)
-        }
+        .date-input:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
 
-        .av-c {
-            background: linear-gradient(135deg, #059669, #22c55e)
-        }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .7; cursor: pointer; }
 
-        .cashier-details {
-            flex: 1
-        }
+        .date-note { font-size: 11px; color: var(--txt3); margin-top: 7px; font-style: italic; }
 
-        .cashier-name {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px
-        }
-
-        .cashier-role {
-            font-size: 13px;
-            color: var(--txt2)
-        }
+        /* Vardiya seçenekleri */
 
         .shift-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            margin-bottom: 22px;
         }
 
         .shift-option {
-            padding: 24px;
+            padding: 20px 16px;
             border: 2px solid var(--brd);
             border-radius: 14px;
             cursor: pointer;
             transition: all .2s;
-            text-align: center
+            text-align: center;
+            position: relative;
         }
 
-        .shift-option:hover {
+        .shift-option:hover:not(.taken) {
             border-color: var(--acc);
-            background: var(--glow)
+            background: var(--glow);
         }
 
         .shift-option.selected {
             border-color: var(--acc);
             background: var(--glow);
-            box-shadow: 0 0 20px rgba(59, 130, 246, .2)
+            box-shadow: 0 0 20px rgba(59,130,246,.2);
         }
 
-        .shift-icon {
-            font-size: 40px;
-            margin-bottom: 12px
+        .shift-option.mine {
+            border-color: var(--orange);
+            background: rgba(245,158,11,.08);
         }
 
-        .shift-label {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 6px
+        .shift-option.mine.selected {
+            border-color: var(--orange);
+            background: rgba(245,158,11,.14);
+            box-shadow: 0 0 20px rgba(245,158,11,.25);
         }
 
-        .shift-time {
-            font-size: 12px;
-            color: var(--txt2)
+        .shift-option.taken {
+            opacity: .55;
+            cursor: not-allowed;
+            border-color: rgba(239,68,68,.4);
+            background: rgba(239,68,68,.04);
         }
+
+        .shift-icon  { font-size: 36px; margin-bottom: 10px; }
+
+        .shift-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+
+        .shift-time  { font-size: 12px; color: var(--txt2); margin-bottom: 10px; }
+
+        /* Vardiya durum göstergesi */
+
+        .shift-status { min-height: 22px; }
+
+        .status-loading  { font-size: 11px; color: var(--txt3); }
+
+        .status-available{ font-size: 11px; font-weight: 600; color: var(--green); }
+
+        .status-mine     { font-size: 11px; font-weight: 600; color: var(--orange); }
+
+        .status-taken    { font-size: 11px; font-weight: 600; color: var(--red); }
+
+        /* Butonlar */
 
         .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            display: flex; gap: 12px;
         }
 
         .btn-back {
-            flex: 0 0 120px;
-            padding: 14px 20px;
-            background: var(--input);
-            border: 1px solid var(--brd);
-            color: var(--txt);
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s;
+            flex: 0 0 110px; padding: 14px;
+            background: var(--input); border: 1px solid var(--brd);
+            color: var(--txt); border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s;
         }
 
-        .btn-back:hover {
-            background: var(--card);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
+        .btn-back:hover { border-color: var(--acc); background: var(--glow); }
 
         .btn-continue {
-            flex: 1;
-            padding: 14px 24px;
-            background: linear-gradient(135deg, var(--acc), #4f46e5);
-            border: none;
-            color: #fff;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s;
+            flex: 1; padding: 14px 20px;
+            background: linear-gradient(135deg,var(--acc),#4f46e5);
+            border: none; color: #fff; border-radius: 12px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s;
         }
 
-        .btn-continue:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(59,130,246,.4);
-        }
+        .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,.4); }
 
-        .btn-continue:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-continue:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-        @media (max-width: 768px) {
-            .btn-group {
-                flex-direction: column;
-            }
-            .btn-back {
-                flex: 1;
-            }
-        }
+        /* ── VERİ GİRİŞ EKRANI ─────────────────────────────────── */
 
-        @media (max-width: 480px) {
-            body { padding: 12px; }
-            .pin-screen { padding: 24px 16px; margin: 20px auto; }
-            .shift-options { grid-template-columns: 1fr; gap: 10px; }
-            .shift-option { padding: 16px; }
-            .fg { grid-template-columns: 1fr; }
-            .date-input { font-size: 16px; }
-        }
+        .main { max-width: 900px; margin: 0 auto; display: none; }
 
-        /* Kasa ve Vardiya notları için stil */
-
-        .shift-note {
-            font-size: 11px;
-            color: var(--txt3);
-            margin-top: 4px;
-            font-style: italic;
-        }
-
-        /* Form alanı wrapper */
-
-        .field-wrapper {
-            transition: all 0.3s;
-        }
-
-        /* VERİ GİRİŞ EKRANI (MEVCUT) */
-
-        .main {
-            max-width: 900px;
-            margin: 0 auto;
-            display: none
-        }
-
-        .main.active {
-            display: block
-        }
+        .main.active { display: block; }
 
         .nav {
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center
+            background: var(--card); border: 1px solid var(--brd);
+            border-radius: 14px; padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
         }
 
-        .nav-title {
-            font-size: 18px;
-            font-weight: 700
+        .nav-title { font-size: 17px; font-weight: 700; }
+
+        .nav-info  { font-size: 12px; color: var(--txt2); margin-top: 2px; }
+
+        .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+        .nbtn {
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            border: 1px solid var(--brd); background: var(--input); color: var(--txt);
+            cursor: pointer; transition: all .2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
         }
 
-        .nav-info {
-            font-size: 13px;
-            color: var(--txt2)
-        }
+        .nbtn:hover { border-color: var(--acc); background: var(--glow); }
 
         .points-badge {
-            background: linear-gradient(135deg, #f59e0b, #f97316);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 6px
+            background: linear-gradient(135deg,#f59e0b,#f97316);
+            padding: 8px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; color: #fff;
+            display: flex; align-items: center; gap: 5px;
         }
+
+        /* Düzenleme modu banner */
+
+        .edit-banner {
+            background: linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
+            border: 1px solid rgba(245,158,11,.4);
+            border-radius: 14px; padding: 16px 20px;
+            margin-bottom: 18px;
+            display: flex; align-items: flex-start; gap: 14px;
+        }
+
+        .edit-banner-icon { font-size: 28px; flex-shrink: 0; }
+
+        .edit-banner-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+
+        .edit-banner-desc  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+
+        /* Kart */
 
         .card {
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px
+            background: var(--card); border: 1px solid var(--brd);
+            border-radius: 16px; padding: 22px; margin-bottom: 18px;
         }
 
-        .card-t {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 20px
-        }
+        .card-t { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
 
         .fg {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px
+            gap: 14px;
         }
 
         .fg label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--txt2);
-            margin-bottom: 6px
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--txt2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px;
         }
 
-        .iw {
-            position: relative
-        }
+        .iw { position: relative; }
 
         .iw input {
-            width: 100%;
-            background: var(--input);
-            border: 1.5px solid var(--brd);
-            color: var(--txt);
-            padding: 12px 36px 12px 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            outline: none
+            width: 100%; background: var(--input); border: 1.5px solid var(--brd);
+            color: var(--txt); padding: 12px 36px 12px 14px;
+            border-radius: 10px; font-size: 16px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace; outline: none;
+            transition: border-color .2s;
         }
 
-        .iw input:focus {
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px var(--glow)
-        }
+        .iw input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
 
         .iw .sfx {
-            position: absolute;
-            right: 12px;
-            top: 50%;
+            position: absolute; right: 12px; top: 50%;
             transform: translateY(-50%);
-            font-size: 13px;
-            color: var(--txt3);
-            font-weight: 600
+            font-size: 13px; color: var(--txt3); font-weight: 600;
         }
 
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            color: #fff
+        /* Notlar */
+
+        .notes-area {
+            width: 100%; background: var(--input); border: 1.5px solid var(--brd);
+            color: var(--txt); padding: 12px 14px; border-radius: 10px;
+            font-size: 14px; font-family: 'DM Sans', sans-serif;
+            resize: vertical; min-height: 80px; outline: none;
+            transition: border-color .2s;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+        .notes-area:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
+
+        /* Gönder butonu */
+
+        .btn-submit {
+            width: 100%; padding: 16px; border-radius: 12px;
+            font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+            background: linear-gradient(135deg,#1e40af,#3b82f6); color: #fff;
+            transition: all .2s;
         }
+
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(59,130,246,.4); }
+
+        .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+        .btn-submit.edit-mode { background: linear-gradient(135deg,#92400e,#f59e0b); }
+
+        /* Toast */
 
         .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 1000;
-            opacity: 0;
-            transition: all .3s;
-            pointer-events: none
+            position: fixed; top: 20px; right: 20px;
+            padding: 14px 22px; border-radius: 12px;
+            font-weight: 600; font-size: 14px;
+            z-index: 1000; opacity: 0; transition: all .3s; pointer-events: none;
         }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0)
+        .toast.show { opacity: 1; }
+
+        .toast.success { background: #064e3b; color: #6ee7b7; border: 1px solid #065f46; }
+
+        .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+
+        .hidden { display: none !important; }
+
+        /* Sabah/Akşam info banner */
+
+        .shift-info-banner {
+            border-radius: 12px; padding: 14px 18px;
+            margin-bottom: 18px; font-size: 13px; color: var(--txt2); line-height: 1.6;
         }
 
-        .toast.success {
-            background: #064e3b;
-            color: #6ee7b7;
-            border: 1px solid #065f46
+        .shift-info-banner.sabah {
+            background: rgba(245,158,11,.08);
+            border: 1px solid rgba(245,158,11,.25);
         }
 
-        .toast.error {
-            background: #7f1d1d;
-            color: #fca5a5;
-            border: 1px solid #991b1b
+        .shift-info-banner.aksam {
+            background: rgba(139,92,246,.08);
+            border: 1px solid rgba(139,92,246,.25);
         }
 
-        .nbtn {
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid var(--brd);
-            background: var(--input);
-            color: var(--txt);
-            cursor: pointer;
-            transition: all .2s;
-        }
+        /* Responsive */
 
-        .nbtn:hover {
-            border-color: var(--acc);
-            background: var(--glow);
-        }
-
-        .hidden {
-            display: none !important
-        }
-
-        .date-selector-card {
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .date-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--txt);
-            margin-bottom: 8px;
-        }
-
-        .date-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--brd);
-            background: var(--bg);
-            color: var(--txt);
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .date-input:focus {
-            outline: none;
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
-        }
-
-        .date-input::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(1);
-            opacity: 0.7;
-        }
-
-        .date-input::-webkit-calendar-picker-indicator:hover {
-            opacity: 1;
-        }
-
-        .date-note {
-            font-size: 11px;
-            color: var(--txt3);
-            margin-top: 8px;
-            font-style: italic;
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .shift-screen { padding: 24px 16px; margin: 12px auto; }
+            .shift-options { grid-template-columns: 1fr; gap: 10px; }
+            .fg { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .btn-back { flex: 1; }
         }
     </style>
-  <script type="module" crossorigin src="/assets/entry-Cc3BbgZQ.js"></script>
+  <script type="module" crossorigin src="/assets/entry-KL8VkU_a.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-CFSZQWn8.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-9tBk9xhh.js">
 </head>
 
 <body>
-    <!-- KASA SEÇİM EKRANI -->
-    <div id="kasaScreen" class="shift-screen hidden">
-        <h1>🏪 Kasa Seçimi</h1>
-        <p class="shift-subtitle">Hangi kasada çalışıyorsunuz?</p>
-
-        <div class="cashier-info">
-            <div id="kasaCashierAvatar" class="cashier-avatar av-t">TB</div>
-            <div class="cashier-details">
-                <div id="kasaCashierName" class="cashier-name">Tuba Bozaklı</div>
-                <div id="kasaCashierRole" class="cashier-role">Kasiyer</div>
-            </div>
-        </div>
-
-        <div class="shift-options">
-            <div class="shift-option kasa-option" data-kasa="restoran">
-                <div class="shift-icon">🍽️</div>
-                <div class="shift-label">Restoran</div>
-                <div class="shift-time">Rumeli Z2</div>
-            </div>
-            <div class="shift-option kasa-option" data-kasa="cafetarya">
-                <div class="shift-icon">☕</div>
-                <div class="shift-label">Cafetarya</div>
-                <div class="shift-time">Rumeli Z1</div>
-            </div>
-        </div>
-
-        <!-- TARİH SEÇİCİ (YENİ) -->
-        <div class="date-selector-card">
-            <label for="entryDate" class="date-label">
-                📅 Giriş Tarihi
-            </label>
-            <input type="date" id="entryDate" class="date-input" max="">
-            <div class="date-note">
-                Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.
-            </div>
-        </div>
-
-        <div class="btn-group">
-            <button id="kasaBackButton" class="btn-back">← Geri</button>
-            <button id="kasaButton" class="btn-continue" disabled>Devam Et →</button>
-        </div>
-    </div>
 
     <!-- VARDİYA SEÇİM EKRANI -->
     <div id="shiftScreen" class="shift-screen hidden">
-        <h1>📅 Vardiya Seçimi</h1>
-        <p class="shift-subtitle">Hangi vardiyada çalışıyorsunuz?</p>
+        <div class="screen-title">📅 Vardiya Seçimi</div>
+        <p class="screen-subtitle">Bugün hangi vardiyada çalışıyorsunuz?</p>
 
         <div class="cashier-info">
             <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
-            <div class="cashier-details">
-                <div id="cashierName" class="cashier-name">Tuba Bozaklı</div>
-                <div id="cashierRole" class="cashier-role">Kasiyer - Cafetarya Z1</div>
+            <div>
+                <div id="cashierName" class="cashier-name">Yükleniyor...</div>
+                <div class="cashier-role">Rumeli İskelesi Kasiyer</div>
             </div>
         </div>
 
+        <!-- Tarih seçici -->
+        <div class="date-block">
+            <label>Giriş Tarihi</label>
+            <input type="date" id="entryDate" class="date-input">
+            <div id="dateNote" class="date-note">Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.</div>
+        </div>
+
+        <!-- Vardiya seçenekleri -->
         <div class="shift-options">
-            <div class="shift-option" data-shift="sabah">
+            <div class="shift-option" id="option-sabah" data-shift="sabah">
                 <div class="shift-icon">🌅</div>
                 <div class="shift-label">Sabah Vardiyası</div>
-                <div class="shift-time">09:00 - 16:00</div>
-                <div class="shift-note">
-                    Kendi vardiyandaki değerleri gir<br>
-                    ⏰ 16:30'a kadar zamanında
+                <div class="shift-time">09:00 — 17:30</div>
+                <div class="shift-status" id="status-sabah">
+                    <span class="status-loading">⏳ Kontrol...</span>
                 </div>
             </div>
-            <div class="shift-option" data-shift="aksam">
+            <div class="shift-option" id="option-aksam" data-shift="aksam">
                 <div class="shift-icon">🌙</div>
                 <div class="shift-label">Akşam Vardiyası</div>
-                <div class="shift-time">16:00 - 00:00</div>
-                <div class="shift-note">
-                    ⚠️ Gün sonu TOPLAM değerlerini gir<br>
-                    ⏰ 00:30'a kadar zamanında
+                <div class="shift-time">16:00 — 01:00</div>
+                <div class="shift-status" id="status-aksam">
+                    <span class="status-loading">⏳ Kontrol...</span>
                 </div>
             </div>
         </div>
 
         <div class="btn-group">
-            <button id="shiftBackButton" class="btn-back">← Geri</button>
+            <button id="shiftBackButton" class="btn-back">← Çıkış</button>
             <button id="shiftButton" class="btn-continue" disabled>Devam Et →</button>
         </div>
     </div>
@@ -669,11 +447,14 @@
     <div id="mainScreen" class="main">
         <div class="nav">
             <div>
-                <div class="nav-title" id="navTitle">Veri Girişi</div>
+                <div class="nav-title">Veri Girişi</div>
                 <div class="nav-info" id="navInfo">...</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-                <a id="ozetimBtn" href="cashier-dashboard.html" class="nbtn" style="text-decoration:none;background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;">📊 Özetim</a>
+            <div class="nav-actions">
+                <a id="ozetimBtn" href="cashier-dashboard.html" class="nbtn"
+                   style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;border-color:transparent;">
+                    📊 Özetim
+                </a>
                 <button id="mainBackButton" class="nbtn">← Geri</button>
                 <div class="points-badge">
                     <span>⭐</span>
@@ -682,31 +463,40 @@
             </div>
         </div>
 
+        <!-- Düzenleme modu uyarısı (gizli, edit modda görünür) -->
+        <div id="editBanner" class="edit-banner hidden">
+            <div class="edit-banner-icon">✏️</div>
+            <div>
+                <div class="edit-banner-title">DÜZENLEME MODU</div>
+                <div class="edit-banner-desc">
+                    Bu girişi düzenliyorsunuz. Her kaydetme işlemi <strong style="color:var(--red);">-5 puan</strong> cezası uygular.
+                    Mevcut puanınız: <span id="currentPoints">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vardiya bilgi banneri -->
+        <div id="shiftInfoBanner" class="shift-info-banner sabah"></div>
+
+        <!-- Z Raporu Değerleri -->
         <div class="card">
             <div class="card-t">💰 Z Raporu Değerleri</div>
             <div class="fg">
-                <div id="rumeliZ1Field" style="display:none;">
-                    <label>Rumeli Z1 (Cafetarya)</label>
+                <div>
+                    <label>Z Raporu <span style="color:var(--red);">*</span></label>
                     <div class="iw">
-                        <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00">
+                        <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00" required>
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="rumeliZ2Field" style="display:none;">
-                    <label>Rumeli Z2 (Restoran)</label>
-                    <div class="iw">
-                        <input type="number" id="rumeliZ2" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="balikEkmekField" style="display:none;">
+                <div>
                     <label>Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="dondurmaZField" style="display:none;">
+                <div>
                     <label>Dondurma</label>
                     <div class="iw">
                         <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
@@ -716,86 +506,58 @@
             </div>
         </div>
 
+        <!-- Kategori Satışları -->
         <div class="card">
             <div class="card-t">🍽️ Kategori Satışları</div>
             <div class="fg">
-                <div id="gidaField" style="display:none;">
-                    <label>Gıda</label>
-                    <div class="iw">
-                        <input type="number" id="gida" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="kahvaltiField" style="display:none;">
-                    <label>Kahvaltı</label>
-                    <div class="iw">
-                        <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="kahveField" style="display:none;">
+                <div>
                     <label>Kahve</label>
                     <div class="iw">
                         <input type="number" id="kahve" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="meyveSuyuField" style="display:none;">
+                <div>
                     <label>Meyve Suyu</label>
                     <div class="iw">
                         <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-
-                <!-- Salata (sadece Restoran için) -->
-                <div id="salataField" style="display:none;">
-                    <label>Salata</label>
-                    <div class="iw">
-                        <input type="number" id="salata" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-
-                <div id="sicakIcecekField" style="display:none;">
+                <div>
                     <label>Sıcak İçecek</label>
                     <div class="iw">
                         <input type="number" id="sicakIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="sogukIcecekField" style="display:none;">
+                <div>
                     <label>Soğuk İçecek</label>
                     <div class="iw">
                         <input type="number" id="sogukIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="tatliField" style="display:none;">
+                <div>
                     <label>Tatlı</label>
                     <div class="iw">
                         <input type="number" id="tatli" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-
-                <!-- Dondurma (sadece Cafetarya için) -->
-                <div id="dondurmaKategoriField" style="display:none;">
-                    <label>Dondurma</label>
-                    <div class="iw">
-                        <input type="number" id="dondurmaKategori" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <button id="submitButton" class="btn">💾 Kaydet ve Puan Kazan!</button>
+        <!-- Notlar -->
+        <div class="card">
+            <div class="card-t">📝 Notlar <span style="font-size:13px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
+            <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
+        </div>
+
+        <button id="submitButton" class="btn-submit">💾 Kaydet ve Puan Kazan!</button>
     </div>
 
-    <!-- TOAST -->
     <div id="toast" class="toast"></div>
 
 </body>
-
 </html>

@@ -860,9 +860,9 @@
             .badge-levels { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
-  <script type="module" crossorigin src="/assets/cashier-DN05U4RN.js"></script>
+  <script type="module" crossorigin src="/assets/cashier-IuvO7jYs.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-CFSZQWn8.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-9tBk9xhh.js">
 </head>
 
 <body>
@@ -986,29 +986,18 @@
             </div>
             <div class="scoring-content">
                 <div class="scoring-section">
-                    <div class="scoring-section-title">⭐ Temel Puanlar</div>
-                    <div class="scoring-item">
-                        <div class="scoring-item-label"><span>✓</span><span>Giriş Yaptı</span></div>
-                        <div class="scoring-item-points positive">+10</div>
-                    </div>
+                    <div class="scoring-section-title">⭐ Giriş Başına Puan (max 100)</div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>⏰</span><span>Zamanında Giriş</span></div>
-                        <div class="scoring-item-points positive">+10</div>
-                    </div>
-                    <div class="scoring-item">
-                        <div class="scoring-item-label"><span>⚠️</span><span>Geç Giriş</span></div>
-                        <div class="scoring-item-points negative">-5</div>
+                        <div class="scoring-item-points positive">+50</div>
                     </div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>📝</span><span>Eksiksiz Veri</span></div>
-                        <div class="scoring-item-points positive">+10</div>
+                        <div class="scoring-item-points positive">+50</div>
                     </div>
-                </div>
-                <div class="scoring-section">
-                    <div class="scoring-section-title">🔥 Bonus Puanlar</div>
                     <div class="scoring-item">
-                        <div class="scoring-item-label"><span>🔥</span><span>7 Gün Üst Üste Giriş</span></div>
-                        <div class="scoring-item-points special">+25</div>
+                        <div class="scoring-item-label"><span>✏️</span><span>Düzenleme Cezası</span></div>
+                        <div class="scoring-item-points negative">-5</div>
                     </div>
                 </div>
                 <div class="scoring-section">
@@ -1019,35 +1008,48 @@
                     </div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>🌙</span><span>Akşam Vardiyası</span></div>
-                        <div style="font-size:13px;color:var(--txt2);">01:00'a kadar</div>
+                        <div style="font-size:13px;color:var(--txt2);">16:00 — 01:00 arası</div>
+                    </div>
+                </div>
+                <div class="scoring-section">
+                    <div class="scoring-section-title">📊 Eksiksiz Veri Kriteri</div>
+                    <div style="font-size:13px;color:var(--txt2);line-height:1.6;padding:4px 0;">
+                        Z Raporu tutarı girilmiş <strong>ve</strong> en az 2 kategori alanı (balık ekmek, dondurma, kahve vb.) doldurulmuş olmalı.
                     </div>
                 </div>
                 <div class="scoring-example">
                     <div class="scoring-example-title">💡 Puan Örnekleri</div>
                     <div style="margin-bottom:16px;">
                         <strong style="display:block;margin-bottom:8px;color:#22c55e;">Mükemmel Giriş:</strong>
-                        <div class="scoring-example-item"><span>Giriş yaptı</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Zamanında</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>7 gün üst üste</span><span>+25</span></div>
-                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#22c55e;">55 Puan</span></div>
+                        <div class="scoring-example-item"><span>Zamanında</span><span>+50</span></div>
+                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+50</span></div>
+                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#22c55e;">100 Puan</span></div>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <strong style="display:block;margin-bottom:8px;color:#f59e0b;">Geç Giriş:</strong>
+                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+50</span></div>
+                        <div class="scoring-example-item"><span>Zamanında değil</span><span style="color:#ef4444;">0</span></div>
+                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#f59e0b;">50 Puan</span></div>
                     </div>
                     <div>
-                        <strong style="display:block;margin-bottom:8px;color:#ef4444;">Geç Giriş:</strong>
-                        <div class="scoring-example-item"><span>Giriş yaptı</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Geç kaldı</span><span style="color:#ef4444;">-5</span></div>
-                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#ef4444;">5 Puan</span></div>
+                        <strong style="display:block;margin-bottom:8px;color:#8b5cf6;">Sıralama Nasıl Hesaplanır?</strong>
+                        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+                            Aylık sıralama toplam puana göre değil <strong>performans oranına (%)</strong> göre belirlenir.<br>
+                            <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">% = toplam puan / (giriş sayısı × 100) × 100</code><br>
+                            Bu sayede az vardiya alan kasiyerler dezavantajlı olmaz.
+                        </div>
                     </div>
                 </div>
                 <div class="scoring-section" style="margin-top:24px;">
-                    <div class="scoring-section-title">🏅 Rozet Seviyeleri</div>
+                    <div class="scoring-section-title">🏅 Rozet Seviyeleri (Performans %)</div>
                     <div class="badge-levels">
-                        <div class="badge-level-item"><div class="badge-level-icon">🆕</div><div class="badge-level-name">Yeni</div><div class="badge-level-points">0-49 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥉</div><div class="badge-level-name">Bronz</div><div class="badge-level-points">50-149 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥈</div><div class="badge-level-name">Gümüş</div><div class="badge-level-points">150-299 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥇</div><div class="badge-level-name">Altın</div><div class="badge-level-points">300-499 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">💎</div><div class="badge-level-name">Elmas</div><div class="badge-level-points">500-999 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">👑</div><div class="badge-level-name">Efsane</div><div class="badge-level-points">1000+ puan</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🆕</div><div class="badge-level-name">Yeni</div><div class="badge-level-points">%0-29</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥉</div><div class="badge-level-name">Bronz</div><div class="badge-level-points">%30-49</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥈</div><div class="badge-level-name">Gümüş</div><div class="badge-level-points">%50-64</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥇</div><div class="badge-level-name">Altın</div><div class="badge-level-points">%65-74</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">💎</div><div class="badge-level-name">Elmas</div><div class="badge-level-points">%75-84</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">👑</div><div class="badge-level-name">Efsane</div><div class="badge-level-points">%85-94</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🌟</div><div class="badge-level-name">Süper Efsane</div><div class="badge-level-points">%95+</div></div>
                     </div>
                 </div>
             </div>
