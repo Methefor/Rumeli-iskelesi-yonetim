@@ -427,23 +427,24 @@
         /* ══════════════════════════════════════════════
            RESPONSIVE — MOBİL PWA
         ══════════════════════════════════════════════ */
+
+        /* Desktop'ta sweep gizli */
+        .mobile-sweep { display: none; }
+
         @media (max-width: 680px) {
             body { gap: 16px; padding: 12px; }
             .brand-icon { font-size: 30px; }
             .brand-title { font-size: 17px; }
 
-            /* Şekiller ve info gizle */
             .curved-shape, .curved-shape2 { display: none; }
             .info-content { display: none; }
 
-            /* Konteyner yüksekliğini serbest bırak */
             .container {
                 width: 100%;
                 height: auto;
                 overflow: visible;
             }
 
-            /* Formlar dikey — yalnızca aktif görünür */
             .container .form-box {
                 position: relative;
                 width: 100%;
@@ -455,7 +456,7 @@
             .container.active .form-box.Login { display: none; }
             .container.active .form-box.Register { display: flex; }
 
-            /* Animasyonları kapat (mobilde sade geçiş) */
+            /* Desktop element animasyonlarını sıfırla — geçişi parent yönetir */
             .form-box.Login .animation,
             .container.active .form-box.Login .animation,
             .form-box.Register .animation,
@@ -467,10 +468,43 @@
                 transition-delay: 0s !important;
             }
 
+            /* Panel giriş animasyonu */
+            .form-box.panel-entering {
+                animation: mobileEnter 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            }
+
+            /* Turuncu sweep overlay */
+            .mobile-sweep {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: linear-gradient(135deg, #c9502a 0%, #e46033 50%, #f07040 100%);
+                z-index: 9999;
+                transform: translateX(-105%);
+                pointer-events: none;
+                will-change: transform;
+            }
+
+            .mobile-sweep.go {
+                animation: mobileSweep 0.55s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            }
+
             .pin-key { padding: 10px 4px; font-size: 20px; }
             .pin-key.wide, .pin-key.confirm { font-size: 13px; }
             .pin-dot { width: 15px; height: 15px; }
             .form-box h2 { font-size: 22px; }
+        }
+
+        @keyframes mobileSweep {
+            0%   { transform: translateX(-105%); }
+            38%  { transform: translateX(0%); }
+            62%  { transform: translateX(0%); }
+            100% { transform: translateX(105%); }
+        }
+
+        @keyframes mobileEnter {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 400px) {
@@ -754,6 +788,9 @@
         </div>
     </div>
 
+    <!-- ── MOBİL SWEEP OVERLAY ── -->
+    <div class="mobile-sweep" id="mobileSweep"></div>
+
     <!-- ── GÜNCELLEMEYİ NOTLARI ── -->
     <div class="update-notes">
         <button class="update-notes-toggle" onclick="toggleNotes(this)" aria-expanded="false">
@@ -853,14 +890,20 @@
 
             document.getElementById('toKasiyer').addEventListener('click', function (e) {
                 e.preventDefault()
-                container.classList.add('active')
-                resetAdmin()
+                mobileSweepTransition(function () {
+                    container.classList.add('active')
+                    resetAdmin()
+                    triggerMobileEnter(container.querySelector('.form-box.Register'))
+                })
             })
 
             document.getElementById('toYonetici').addEventListener('click', function (e) {
                 e.preventDefault()
-                container.classList.remove('active')
-                resetCashier()
+                mobileSweepTransition(function () {
+                    container.classList.remove('active')
+                    resetCashier()
+                    triggerMobileEnter(container.querySelector('.form-box.Login'))
+                })
             })
 
             // Klavye desteği (masaüstü)
@@ -875,6 +918,24 @@
                 }
             })
         })
+
+        function mobileSweepTransition(callback) {
+            var sweep = document.getElementById('mobileSweep')
+            if (!sweep || window.innerWidth > 680) { callback(); return }
+            sweep.classList.remove('go')
+            void sweep.offsetWidth
+            sweep.classList.add('go')
+            setTimeout(callback, 210)
+            setTimeout(function () { sweep.classList.remove('go') }, 570)
+        }
+
+        function triggerMobileEnter(panel) {
+            if (!panel || window.innerWidth > 680) return
+            panel.classList.remove('panel-entering')
+            void panel.offsetWidth
+            panel.classList.add('panel-entering')
+            setTimeout(function () { panel.classList.remove('panel-entering') }, 500)
+        }
 
         /* ═══════════════════════════════════════════════════════
            YÖNETİCİ PIN
