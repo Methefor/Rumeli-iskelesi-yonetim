@@ -17,40 +17,30 @@
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
         :root {
-            --bg: #0a1628;
-            --card: #111d32;
-            --input: #162340;
-            --brd: #1e3a5f;
-            --txt: #e8edf5;
-            --txt2: #7a8ba8;
-            --txt3: #4a5d7a;
-            --acc: #3b82f6;
-            --glow: rgba(59, 130, 246, .15);
-            --green: #22c55e;
+            --bg:     #0a1628;
+            --card:   #111d32;
+            --input:  #162340;
+            --brd:    #1e3a5f;
+            --txt:    #e8edf5;
+            --txt2:   #7a8ba8;
+            --txt3:   #4a5d7a;
+            --acc:    #3b82f6;
+            --glow:   rgba(59,130,246,.15);
+            --green:  #22c55e;
             --orange: #f59e0b;
-            --red: #ef4444;
+            --red:    #ef4444;
             --purple: #8b5cf6;
         }
 
-        html {
-            overflow-x: hidden;
-            width: 100%;
-        }
+        html { overflow-x: hidden; width: 100%; }
 
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
-        button, a, input, select, [role="button"] {
-            touch-action: manipulation;
-        }
-
-        input, select, textarea {
-            font-size: 16px !important;
-        }
+        button, a, input, select, [role="button"] { touch-action: manipulation; }
+        input, select, textarea { font-size: 16px !important; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -61,598 +51,355 @@
             -webkit-text-size-adjust: 100%;
             overflow-x: hidden;
             max-width: 100vw;
-            padding: 20px
-        }
-
-        /* PIN EKRANI */
-        .pin-screen {
-            max-width: 400px;
-            margin: 60px auto;
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
-        }
-
-        .pin-screen h1 {
-            font-size: 24px;
-            margin-bottom: 10px
-        }
-
-        .pin-screen .subtitle {
-            font-size: 14px;
-            color: var(--txt2);
-            margin-bottom: 30px
-        }
-
-        .pin-input {
-            width: 100%;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 20px;
             padding: 20px;
-            background: var(--input);
-            border: 2px solid var(--brd);
-            border-radius: 12px;
-            color: var(--txt);
-            outline: none;
-            margin-bottom: 20px
         }
 
-        .pin-input:focus {
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px var(--glow)
-        }
-
-        .pin-error {
-            background: #7f1d1d;
-            color: #fca5a5;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none
-        }
-
-        .pin-error.show {
-            display: block
-        }
-
-        .pin-btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            color: #fff;
-            cursor: pointer;
-            transition: all .2s
-        }
-
-        .pin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
-        }
-
-        .pin-btn:disabled {
-            opacity: .5;
-            cursor: not-allowed;
-            transform: none
-        }
-
-        /* VARDİYA SEÇİMİ */
+        /* ── VARDİYA SEÇİM EKRANI ─────────────────────────────── */
         .shift-screen {
-            max-width: 500px;
-            margin: 40px auto;
+            max-width: 520px;
+            margin: 30px auto;
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+            padding: 36px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.3);
         }
 
-        .shift-screen h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            text-align: center
+        .screen-title {
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 6px;
         }
 
-        .shift-subtitle {
-            font-size: 14px;
+        .screen-subtitle {
+            font-size: 13px;
             color: var(--txt2);
-            margin-bottom: 30px;
-            text-align: center
+            text-align: center;
+            margin-bottom: 28px;
         }
 
+        /* Kasiyer bilgi kartı */
         .cashier-info {
             background: var(--input);
             border: 1px solid var(--brd);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 30px;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
-            gap: 16px
+            gap: 16px;
         }
 
         .cashier-avatar {
-            width: 60px;
-            height: 60px;
+            width: 56px; height: 56px;
             border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: 700;
-            color: #fff
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700; color: #fff;
+            flex-shrink: 0;
         }
 
-        .av-t {
-            background: linear-gradient(135deg, #7c3aed, #8b5cf6)
+        .av-t { background: linear-gradient(135deg,#7c3aed,#8b5cf6) }
+        .av-e { background: linear-gradient(135deg,#c2410c,#f59e0b) }
+        .av-m { background: linear-gradient(135deg,#be185d,#ec4899) }
+        .av-c { background: linear-gradient(135deg,#059669,#22c55e) }
+
+        .cashier-name { font-size: 17px; font-weight: 700; }
+        .cashier-role { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+
+        /* Tarih seçici */
+        .date-block { margin-bottom: 22px; }
+        .date-block label {
+            display: block;
+            font-size: 12px; font-weight: 600; color: var(--txt2);
+            margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;
         }
 
-        .av-e {
-            background: linear-gradient(135deg, #c2410c, #f59e0b)
+        .date-input {
+            width: 100%; padding: 12px 14px;
+            border-radius: 10px; border: 1.5px solid var(--brd);
+            background: var(--input); color: var(--txt);
+            font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: border-color .2s;
         }
 
-        .av-m {
-            background: linear-gradient(135deg, #be185d, #ec4899)
-        }
+        .date-input:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .7; cursor: pointer; }
 
-        .av-c {
-            background: linear-gradient(135deg, #059669, #22c55e)
-        }
+        .date-note { font-size: 11px; color: var(--txt3); margin-top: 7px; font-style: italic; }
 
-        .cashier-details {
-            flex: 1
-        }
-
-        .cashier-name {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 4px
-        }
-
-        .cashier-role {
-            font-size: 13px;
-            color: var(--txt2)
-        }
-
+        /* Vardiya seçenekleri */
         .shift-options {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+            margin-bottom: 22px;
         }
 
         .shift-option {
-            padding: 24px;
+            padding: 20px 16px;
             border: 2px solid var(--brd);
             border-radius: 14px;
             cursor: pointer;
             transition: all .2s;
-            text-align: center
+            text-align: center;
+            position: relative;
         }
 
-        .shift-option:hover {
+        .shift-option:hover:not(.taken) {
             border-color: var(--acc);
-            background: var(--glow)
+            background: var(--glow);
         }
 
         .shift-option.selected {
             border-color: var(--acc);
             background: var(--glow);
-            box-shadow: 0 0 20px rgba(59, 130, 246, .2)
+            box-shadow: 0 0 20px rgba(59,130,246,.2);
         }
 
-        .shift-icon {
-            font-size: 40px;
-            margin-bottom: 12px
+        .shift-option.mine {
+            border-color: var(--orange);
+            background: rgba(245,158,11,.08);
         }
 
-        .shift-label {
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 6px
+        .shift-option.mine.selected {
+            border-color: var(--orange);
+            background: rgba(245,158,11,.14);
+            box-shadow: 0 0 20px rgba(245,158,11,.25);
         }
 
-        .shift-time {
-            font-size: 12px;
-            color: var(--txt2)
+        .shift-option.taken {
+            opacity: .55;
+            cursor: not-allowed;
+            border-color: rgba(239,68,68,.4);
+            background: rgba(239,68,68,.04);
         }
 
+        .shift-icon  { font-size: 36px; margin-bottom: 10px; }
+        .shift-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .shift-time  { font-size: 12px; color: var(--txt2); margin-bottom: 10px; }
+
+        /* Vardiya durum göstergesi */
+        .shift-status { min-height: 22px; }
+        .status-loading  { font-size: 11px; color: var(--txt3); }
+        .status-available{ font-size: 11px; font-weight: 600; color: var(--green); }
+        .status-mine     { font-size: 11px; font-weight: 600; color: var(--orange); }
+        .status-taken    { font-size: 11px; font-weight: 600; color: var(--red); }
+
+        /* Butonlar */
         .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            display: flex; gap: 12px;
         }
 
         .btn-back {
-            flex: 0 0 120px;
-            padding: 14px 20px;
-            background: var(--input);
-            border: 1px solid var(--brd);
-            color: var(--txt);
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all .2s;
+            flex: 0 0 110px; padding: 14px;
+            background: var(--input); border: 1px solid var(--brd);
+            color: var(--txt); border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s;
         }
 
-        .btn-back:hover {
-            background: var(--card);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
+        .btn-back:hover { border-color: var(--acc); background: var(--glow); }
 
         .btn-continue {
-            flex: 1;
-            padding: 14px 24px;
-            background: linear-gradient(135deg, var(--acc), #4f46e5);
-            border: none;
-            color: #fff;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .2s;
+            flex: 1; padding: 14px 20px;
+            background: linear-gradient(135deg,var(--acc),#4f46e5);
+            border: none; color: #fff; border-radius: 12px;
+            font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s;
         }
 
-        .btn-continue:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(59,130,246,.4);
-        }
+        .btn-continue:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,.4); }
+        .btn-continue:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
-        .btn-continue:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        @media (max-width: 768px) {
-            .btn-group {
-                flex-direction: column;
-            }
-            .btn-back {
-                flex: 1;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 12px; }
-            .pin-screen { padding: 24px 16px; margin: 20px auto; }
-            .shift-options { grid-template-columns: 1fr; gap: 10px; }
-            .shift-option { padding: 16px; }
-            .fg { grid-template-columns: 1fr; }
-            .date-input { font-size: 16px; }
-        }
-
-        /* Kasa ve Vardiya notları için stil */
-        .shift-note {
-            font-size: 11px;
-            color: var(--txt3);
-            margin-top: 4px;
-            font-style: italic;
-        }
-
-        /* Form alanı wrapper */
-        .field-wrapper {
-            transition: all 0.3s;
-        }
-
-        /* VERİ GİRİŞ EKRANI (MEVCUT) */
-        .main {
-            max-width: 900px;
-            margin: 0 auto;
-            display: none
-        }
-
-        .main.active {
-            display: block
-        }
+        /* ── VERİ GİRİŞ EKRANI ─────────────────────────────────── */
+        .main { max-width: 900px; margin: 0 auto; display: none; }
+        .main.active { display: block; }
 
         .nav {
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center
+            background: var(--card); border: 1px solid var(--brd);
+            border-radius: 14px; padding: 14px 18px;
+            margin-bottom: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
         }
 
-        .nav-title {
-            font-size: 18px;
-            font-weight: 700
+        .nav-title { font-size: 17px; font-weight: 700; }
+        .nav-info  { font-size: 12px; color: var(--txt2); margin-top: 2px; }
+
+        .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+        .nbtn {
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            border: 1px solid var(--brd); background: var(--input); color: var(--txt);
+            cursor: pointer; transition: all .2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
         }
 
-        .nav-info {
-            font-size: 13px;
-            color: var(--txt2)
-        }
+        .nbtn:hover { border-color: var(--acc); background: var(--glow); }
 
         .points-badge {
-            background: linear-gradient(135deg, #f59e0b, #f97316);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            gap: 6px
+            background: linear-gradient(135deg,#f59e0b,#f97316);
+            padding: 8px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; color: #fff;
+            display: flex; align-items: center; gap: 5px;
         }
 
+        /* Düzenleme modu banner */
+        .edit-banner {
+            background: linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
+            border: 1px solid rgba(245,158,11,.4);
+            border-radius: 14px; padding: 16px 20px;
+            margin-bottom: 18px;
+            display: flex; align-items: flex-start; gap: 14px;
+        }
+
+        .edit-banner-icon { font-size: 28px; flex-shrink: 0; }
+        .edit-banner-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+        .edit-banner-desc  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+
+        /* Kart */
         .card {
-            background: var(--card);
-            border: 1px solid var(--brd);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px
+            background: var(--card); border: 1px solid var(--brd);
+            border-radius: 16px; padding: 22px; margin-bottom: 18px;
         }
 
-        .card-t {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 20px
-        }
+        .card-t { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
 
         .fg {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 14px
+            gap: 14px;
         }
 
         .fg label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--txt2);
-            margin-bottom: 6px
+            display: block; font-size: 12px; font-weight: 600;
+            color: var(--txt2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px;
         }
 
-        .iw {
-            position: relative
-        }
+        .iw { position: relative; }
 
         .iw input {
-            width: 100%;
-            background: var(--input);
-            border: 1.5px solid var(--brd);
-            color: var(--txt);
-            padding: 12px 36px 12px 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            outline: none
+            width: 100%; background: var(--input); border: 1.5px solid var(--brd);
+            color: var(--txt); padding: 12px 36px 12px 14px;
+            border-radius: 10px; font-size: 16px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace; outline: none;
+            transition: border-color .2s;
         }
 
-        .iw input:focus {
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px var(--glow)
-        }
+        .iw input:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
 
         .iw .sfx {
-            position: absolute;
-            right: 12px;
-            top: 50%;
+            position: absolute; right: 12px; top: 50%;
             transform: translateY(-50%);
-            font-size: 13px;
-            color: var(--txt3);
-            font-weight: 600
+            font-size: 13px; color: var(--txt3); font-weight: 600;
         }
 
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            background: linear-gradient(135deg, #1e40af, #3b82f6);
-            color: #fff
+        /* Notlar */
+        .notes-area {
+            width: 100%; background: var(--input); border: 1.5px solid var(--brd);
+            color: var(--txt); padding: 12px 14px; border-radius: 10px;
+            font-size: 14px; font-family: 'DM Sans', sans-serif;
+            resize: vertical; min-height: 80px; outline: none;
+            transition: border-color .2s;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(59, 130, 246, .4)
+        .notes-area:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
+
+        /* Gönder butonu */
+        .btn-submit {
+            width: 100%; padding: 16px; border-radius: 12px;
+            font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+            background: linear-gradient(135deg,#1e40af,#3b82f6); color: #fff;
+            transition: all .2s;
         }
 
+        .btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(59,130,246,.4); }
+        .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+        .btn-submit.edit-mode { background: linear-gradient(135deg,#92400e,#f59e0b); }
+
+        /* Toast */
         .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 24px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 1000;
-            opacity: 0;
-            transition: all .3s;
-            pointer-events: none
+            position: fixed; top: 20px; right: 20px;
+            padding: 14px 22px; border-radius: 12px;
+            font-weight: 600; font-size: 14px;
+            z-index: 1000; opacity: 0; transition: all .3s; pointer-events: none;
         }
 
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0)
+        .toast.show { opacity: 1; }
+        .toast.success { background: #064e3b; color: #6ee7b7; border: 1px solid #065f46; }
+        .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
+
+        .hidden { display: none !important; }
+
+        /* Sabah/Akşam info banner */
+        .shift-info-banner {
+            border-radius: 12px; padding: 14px 18px;
+            margin-bottom: 18px; font-size: 13px; color: var(--txt2); line-height: 1.6;
         }
 
-        .toast.success {
-            background: #064e3b;
-            color: #6ee7b7;
-            border: 1px solid #065f46
+        .shift-info-banner.sabah {
+            background: rgba(245,158,11,.08);
+            border: 1px solid rgba(245,158,11,.25);
         }
 
-        .toast.error {
-            background: #7f1d1d;
-            color: #fca5a5;
-            border: 1px solid #991b1b
+        .shift-info-banner.aksam {
+            background: rgba(139,92,246,.08);
+            border: 1px solid rgba(139,92,246,.25);
         }
 
-        .nbtn {
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            border: 1px solid var(--brd);
-            background: var(--input);
-            color: var(--txt);
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .nbtn:hover {
-            border-color: var(--acc);
-            background: var(--glow);
-        }
-
-        .hidden {
-            display: none !important
-        }
-
-        .date-selector-card {
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .date-label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--txt);
-            margin-bottom: 8px;
-        }
-
-        .date-input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--brd);
-            background: var(--bg);
-            color: var(--txt);
-            font-size: 15px;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .date-input:focus {
-            outline: none;
-            border-color: var(--acc);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
-        }
-
-        .date-input::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(1);
-            opacity: 0.7;
-        }
-
-        .date-input::-webkit-calendar-picker-indicator:hover {
-            opacity: 1;
-        }
-
-        .date-note {
-            font-size: 11px;
-            color: var(--txt3);
-            margin-top: 8px;
-            font-style: italic;
+        /* Responsive */
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .shift-screen { padding: 24px 16px; margin: 12px auto; }
+            .shift-options { grid-template-columns: 1fr; gap: 10px; }
+            .fg { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .btn-back { flex: 1; }
         }
     </style>
 </head>
 
 <body>
-    <!-- KASA SEÇİM EKRANI -->
-    <div id="kasaScreen" class="shift-screen hidden">
-        <h1>🏪 Kasa Seçimi</h1>
-        <p class="shift-subtitle">Hangi kasada çalışıyorsunuz?</p>
-
-        <div class="cashier-info">
-            <div id="kasaCashierAvatar" class="cashier-avatar av-t">TB</div>
-            <div class="cashier-details">
-                <div id="kasaCashierName" class="cashier-name">Tuba Bozaklı</div>
-                <div id="kasaCashierRole" class="cashier-role">Kasiyer</div>
-            </div>
-        </div>
-
-        <div class="shift-options">
-            <div class="shift-option kasa-option" data-kasa="restoran">
-                <div class="shift-icon">🍽️</div>
-                <div class="shift-label">Restoran</div>
-                <div class="shift-time">Rumeli Z2</div>
-            </div>
-            <div class="shift-option kasa-option" data-kasa="cafetarya">
-                <div class="shift-icon">☕</div>
-                <div class="shift-label">Cafetarya</div>
-                <div class="shift-time">Rumeli Z1</div>
-            </div>
-        </div>
-
-        <!-- TARİH SEÇİCİ (YENİ) -->
-        <div class="date-selector-card">
-            <label for="entryDate" class="date-label">
-                📅 Giriş Tarihi
-            </label>
-            <input type="date" id="entryDate" class="date-input" max="">
-            <div class="date-note">
-                Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.
-            </div>
-        </div>
-
-        <div class="btn-group">
-            <button id="kasaBackButton" class="btn-back">← Geri</button>
-            <button id="kasaButton" class="btn-continue" disabled>Devam Et →</button>
-        </div>
-    </div>
 
     <!-- VARDİYA SEÇİM EKRANI -->
     <div id="shiftScreen" class="shift-screen hidden">
-        <h1>📅 Vardiya Seçimi</h1>
-        <p class="shift-subtitle">Hangi vardiyada çalışıyorsunuz?</p>
+        <div class="screen-title">📅 Vardiya Seçimi</div>
+        <p class="screen-subtitle">Bugün hangi vardiyada çalışıyorsunuz?</p>
 
         <div class="cashier-info">
             <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
-            <div class="cashier-details">
-                <div id="cashierName" class="cashier-name">Tuba Bozaklı</div>
-                <div id="cashierRole" class="cashier-role">Kasiyer - Cafetarya Z1</div>
+            <div>
+                <div id="cashierName" class="cashier-name">Yükleniyor...</div>
+                <div class="cashier-role">Rumeli İskelesi Kasiyer</div>
             </div>
         </div>
 
+        <!-- Tarih seçici -->
+        <div class="date-block">
+            <label>Giriş Tarihi</label>
+            <input type="date" id="entryDate" class="date-input">
+            <div id="dateNote" class="date-note">Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.</div>
+        </div>
+
+        <!-- Vardiya seçenekleri -->
         <div class="shift-options">
-            <div class="shift-option" data-shift="sabah">
+            <div class="shift-option" id="option-sabah" data-shift="sabah">
                 <div class="shift-icon">🌅</div>
                 <div class="shift-label">Sabah Vardiyası</div>
-                <div class="shift-time">09:00 - 16:00</div>
-                <div class="shift-note">
-                    Kendi vardiyandaki değerleri gir<br>
-                    ⏰ 16:30'a kadar zamanında
+                <div class="shift-time">09:00 — 17:30</div>
+                <div class="shift-status" id="status-sabah">
+                    <span class="status-loading">⏳ Kontrol...</span>
                 </div>
             </div>
-            <div class="shift-option" data-shift="aksam">
+            <div class="shift-option" id="option-aksam" data-shift="aksam">
                 <div class="shift-icon">🌙</div>
                 <div class="shift-label">Akşam Vardiyası</div>
-                <div class="shift-time">16:00 - 00:00</div>
-                <div class="shift-note">
-                    ⚠️ Gün sonu TOPLAM değerlerini gir<br>
-                    ⏰ 00:30'a kadar zamanında
+                <div class="shift-time">16:00 — 01:00</div>
+                <div class="shift-status" id="status-aksam">
+                    <span class="status-loading">⏳ Kontrol...</span>
                 </div>
             </div>
         </div>
 
         <div class="btn-group">
-            <button id="shiftBackButton" class="btn-back">← Geri</button>
+            <button id="shiftBackButton" class="btn-back">← Çıkış</button>
             <button id="shiftButton" class="btn-continue" disabled>Devam Et →</button>
         </div>
     </div>
@@ -661,11 +408,14 @@
     <div id="mainScreen" class="main">
         <div class="nav">
             <div>
-                <div class="nav-title" id="navTitle">Veri Girişi</div>
+                <div class="nav-title">Veri Girişi</div>
                 <div class="nav-info" id="navInfo">...</div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-                <a id="ozetimBtn" href="cashier-dashboard.html" class="nbtn" style="text-decoration:none;background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;">📊 Özetim</a>
+            <div class="nav-actions">
+                <a id="ozetimBtn" href="cashier-dashboard.html" class="nbtn"
+                   style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:#fff;border-color:transparent;">
+                    📊 Özetim
+                </a>
                 <button id="mainBackButton" class="nbtn">← Geri</button>
                 <div class="points-badge">
                     <span>⭐</span>
@@ -674,31 +424,40 @@
             </div>
         </div>
 
+        <!-- Düzenleme modu uyarısı (gizli, edit modda görünür) -->
+        <div id="editBanner" class="edit-banner hidden">
+            <div class="edit-banner-icon">✏️</div>
+            <div>
+                <div class="edit-banner-title">DÜZENLEME MODU</div>
+                <div class="edit-banner-desc">
+                    Bu girişi düzenliyorsunuz. Her kaydetme işlemi <strong style="color:var(--red);">-5 puan</strong> cezası uygular.
+                    Mevcut puanınız: <span id="currentPoints">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vardiya bilgi banneri -->
+        <div id="shiftInfoBanner" class="shift-info-banner sabah"></div>
+
+        <!-- Z Raporu Değerleri -->
         <div class="card">
             <div class="card-t">💰 Z Raporu Değerleri</div>
             <div class="fg">
-                <div id="rumeliZ1Field" style="display:none;">
-                    <label>Rumeli Z1 (Cafetarya)</label>
+                <div>
+                    <label>Z Raporu <span style="color:var(--red);">*</span></label>
                     <div class="iw">
-                        <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00">
+                        <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00" required>
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="rumeliZ2Field" style="display:none;">
-                    <label>Rumeli Z2 (Restoran)</label>
-                    <div class="iw">
-                        <input type="number" id="rumeliZ2" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="balikEkmekField" style="display:none;">
+                <div>
                     <label>Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="dondurmaZField" style="display:none;">
+                <div>
                     <label>Dondurma</label>
                     <div class="iw">
                         <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
@@ -708,552 +467,416 @@
             </div>
         </div>
 
+        <!-- Kategori Satışları -->
         <div class="card">
             <div class="card-t">🍽️ Kategori Satışları</div>
             <div class="fg">
-                <div id="gidaField" style="display:none;">
-                    <label>Gıda</label>
-                    <div class="iw">
-                        <input type="number" id="gida" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="kahvaltiField" style="display:none;">
-                    <label>Kahvaltı</label>
-                    <div class="iw">
-                        <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <div id="kahveField" style="display:none;">
+                <div>
                     <label>Kahve</label>
                     <div class="iw">
                         <input type="number" id="kahve" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="meyveSuyuField" style="display:none;">
+                <div>
                     <label>Meyve Suyu</label>
                     <div class="iw">
                         <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-
-                <!-- Salata (sadece Restoran için) -->
-                <div id="salataField" style="display:none;">
-                    <label>Salata</label>
-                    <div class="iw">
-                        <input type="number" id="salata" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-
-                <div id="sicakIcecekField" style="display:none;">
+                <div>
                     <label>Sıcak İçecek</label>
                     <div class="iw">
                         <input type="number" id="sicakIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="sogukIcecekField" style="display:none;">
+                <div>
                     <label>Soğuk İçecek</label>
                     <div class="iw">
                         <input type="number" id="sogukIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div id="tatliField" style="display:none;">
+                <div>
                     <label>Tatlı</label>
                     <div class="iw">
                         <input type="number" id="tatli" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-
-                <!-- Dondurma (sadece Cafetarya için) -->
-                <div id="dondurmaKategoriField" style="display:none;">
-                    <label>Dondurma</label>
-                    <div class="iw">
-                        <input type="number" id="dondurmaKategori" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
             </div>
         </div>
 
-        <button id="submitButton" class="btn">💾 Kaydet ve Puan Kazan!</button>
+        <!-- Notlar -->
+        <div class="card">
+            <div class="card-t">📝 Notlar <span style="font-size:13px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
+            <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
+        </div>
+
+        <button id="submitButton" class="btn-submit">💾 Kaydet ve Puan Kazan!</button>
     </div>
 
-    <!-- TOAST -->
     <div id="toast" class="toast"></div>
 
     <script type="module">
-        import { supabase, insertShiftEntry } from './js/supabase-client.js'
+        import { supabase, checkShiftExists, insertShiftEntry, updateShiftEntry } from './js/supabase-client.js'
 
-        // GLOBAL STATE
-        let currentCashier = null
-        let selectedKasa = null
-        let selectedShift = null
+        // ── DURUM ──────────────────────────────────────────────────
+        let currentCashier   = null
+        let selectedShift    = null
+        let isEditMode       = false
+        let editModeReportId = null
+        let editCurrentPoints = 0
 
-        // EKRANLAR
-        const kasaScreen = document.getElementById('kasaScreen')
-        const shiftScreen = document.getElementById('shiftScreen')
-        const mainScreen = document.getElementById('mainScreen')
+        const AVATAR_CLASSES = {
+            'Tuba Bozaklı': 'av-t',
+            'Elif Yıldırım': 'av-e',
+            'Melda Yılmaz':  'av-m',
+            'Ceren Erdem':   'av-c',
+        }
 
-        // URL'den cashier_id al ve kasiyeri yükle
-        const urlParams = new URLSearchParams(window.location.search)
-        const cashierId = urlParams.get('cashier_id')
+        // ── BAŞLATMA ───────────────────────────────────────────────
+        const urlParams  = new URLSearchParams(window.location.search)
+        const cashierId  = urlParams.get('cashier_id')
 
         if (!cashierId) {
             window.location.href = 'index.html'
         } else {
             ;(async () => {
                 const { data, error } = await supabase
-                    .from('cashiers')
-                    .select('*')
-                    .eq('id', cashierId)
-                    .single()
+                    .from('cashiers').select('*').eq('id', cashierId).single()
 
                 if (data && !error) {
                     currentCashier = data
-                    // Özetim butonuna cashier_id ekle
-                    const ozetimBtn = document.getElementById('ozetimBtn')
-                    if (ozetimBtn) ozetimBtn.href = `cashier-dashboard.html?cashier_id=${data.id}`
-                    showKasaScreen()
+                    initShiftScreen()
                 } else {
                     window.location.href = 'index.html'
                 }
             })()
         }
 
-        // KASA SEÇİMİ
-        function showKasaScreen() {
-            kasaScreen.classList.remove('hidden')
-
-            document.getElementById('kasaCashierName').textContent = currentCashier.name
+        // ── VARDİYA SEÇİM EKRANI BAŞLATMA ─────────────────────────
+        function initShiftScreen() {
             const initials = currentCashier.name.split(' ').map(n => n[0]).join('')
-            document.getElementById('kasaCashierAvatar').textContent = initials
+            document.getElementById('cashierName').textContent = currentCashier.name
+            document.getElementById('cashierAvatar').textContent = initials
+            document.getElementById('cashierAvatar').className =
+                'cashier-avatar ' + (AVATAR_CLASSES[currentCashier.name] || 'av-t')
 
-            const avatarClasses = {
-                'Tuba Bozaklı': 'av-t',
-                'Elif Yıldırım': 'av-e',
-                'Melda Yılmaz': 'av-m',
-                'Ceren Erdem': 'av-c'
-            }
-            document.getElementById('kasaCashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
+            // Özetim butonuna cashier_id ekle
+            document.getElementById('ozetimBtn').href =
+                `cashier-dashboard.html?cashier_id=${currentCashier.id}`
 
-            // TARİH INPUT BAŞLATMA — showShiftScreen'den buraya taşındı.
-            // Kullanıcının geçmiş tarih seçimi showShiftScreen'de ezilmesin diye
-            // init yalnızca bir kez burada yapılıyor.
+            // Tarih başlat
             const dateInput = document.getElementById('entryDate')
-            if (!dateInput._initialized) {
-                const localStr = d =>
-                    d.getFullYear() + '-' +
-                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                    String(d.getDate()).padStart(2, '0')
-                const today = new Date()
-                const todayStr = localStr(today)
-                dateInput.value = todayStr
-                dateInput.max = todayStr
-                const minDate = new Date(today)
-                minDate.setDate(minDate.getDate() - 30)
-                dateInput.min = localStr(minDate)
-                dateInput._initialized = true
+            const todayStr  = localDateStr(new Date())
+            dateInput.value = todayStr
+            dateInput.max   = todayStr
+            const minDate   = new Date()
+            minDate.setDate(minDate.getDate() - 30)
+            dateInput.min   = localDateStr(minDate)
+
+            document.getElementById('shiftScreen').classList.remove('hidden')
+
+            // Shift durumlarını kontrol et
+            checkShiftStatuses(todayStr)
+        }
+
+        // ── TARİH DEĞİŞTİ ──────────────────────────────────────────
+        document.getElementById('entryDate').addEventListener('change', e => {
+            const val     = e.target.value
+            const today   = localDateStr(new Date())
+            const dateNote = document.getElementById('dateNote')
+
+            if (val < today) {
+                dateNote.innerHTML =
+                    '<span style="color:var(--orange);">⚠️ Geçmiş tarih.</span> Giriş otomatik "Geç" sayılır.'
+            } else {
+                dateNote.textContent = 'Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.'
+            }
+
+            // Seçimi sıfırla ve yeniden kontrol et
+            resetShiftSelection()
+            checkShiftStatuses(val)
+        })
+
+        // ── VARDİYA DURUMLARI KONTROLÜ ─────────────────────────────
+        async function checkShiftStatuses(date) {
+            setStatusLoading()
+            try {
+                const [sabahRes, aksamRes] = await Promise.all([
+                    checkShiftExists(date, 'sabah'),
+                    checkShiftExists(date, 'aksam'),
+                ])
+                applyShiftStatus('sabah', sabahRes.data)
+                applyShiftStatus('aksam', aksamRes.data)
+            } catch {
+                // Hata durumunda "kullanılabilir" göster
+                applyShiftStatus('sabah', null)
+                applyShiftStatus('aksam', null)
             }
         }
 
-        const kasaOptions = document.querySelectorAll('.kasa-option')
-        const kasaButton = document.getElementById('kasaButton')
-        const kasaBackButton = document.getElementById('kasaBackButton')
+        function setStatusLoading() {
+            ;['sabah', 'aksam'].forEach(s => {
+                document.getElementById(`status-${s}`).innerHTML =
+                    '<span class="status-loading">⏳ Kontrol...</span>'
+                const opt = document.getElementById(`option-${s}`)
+                opt.classList.remove('taken', 'mine', 'selected')
+            })
+        }
 
-        kasaOptions.forEach(option => {
+        function applyShiftStatus(shift, existing) {
+            const opt    = document.getElementById(`option-${shift}`)
+            const status = document.getElementById(`status-${shift}`)
+            opt.dataset.existing = existing ? JSON.stringify(existing) : ''
+
+            if (!existing) {
+                opt.classList.remove('taken', 'mine')
+                status.innerHTML = '<span class="status-available">✅ Giriş Yapılabilir</span>'
+            } else if (existing.cashier_id === currentCashier.id) {
+                opt.classList.remove('taken')
+                opt.classList.add('mine')
+                const t = new Date(existing.entry_time).toLocaleTimeString(
+                    'tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
+                status.innerHTML = `<span class="status-mine">✏️ Senin girişin · ${t} · Düzenle</span>`
+            } else {
+                opt.classList.add('taken')
+                opt.classList.remove('mine')
+                const name = existing.cashiers?.name || 'Başka kasiyer'
+                const t    = new Date(existing.entry_time).toLocaleTimeString(
+                    'tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
+                status.innerHTML = `<span class="status-taken">🔒 ${name} · ${t}</span>`
+            }
+        }
+
+        function resetShiftSelection() {
+            selectedShift    = null
+            isEditMode       = false
+            editModeReportId = null
+            document.querySelectorAll('.shift-option').forEach(o => o.classList.remove('selected'))
+            document.getElementById('shiftButton').disabled = true
+            document.getElementById('shiftButton').textContent = 'Devam Et →'
+        }
+
+        // ── VARDİYA TIKLAMASI ────────────────────────────────────
+        document.querySelectorAll('.shift-option').forEach(option => {
             option.addEventListener('click', () => {
-                kasaOptions.forEach(o => o.classList.remove('selected'))
+                const shift    = option.dataset.shift
+                const existing = option.dataset.existing
+                    ? JSON.parse(option.dataset.existing) : null
+
+                // Başkası tarafından girilmişse engelle
+                if (existing && existing.cashier_id !== currentCashier.id) {
+                    showToast(
+                        `🔒 Bu vardiya zaten girildi. Sadece görüntüleyebilirsiniz.`,
+                        'error'
+                    )
+                    return
+                }
+
+                // Seçimi uygula
+                document.querySelectorAll('.shift-option').forEach(o => o.classList.remove('selected'))
                 option.classList.add('selected')
-                selectedKasa = option.dataset.kasa
-                kasaButton.disabled = false
+                selectedShift = shift
+
+                // Düzenleme modu mu?
+                if (existing && existing.cashier_id === currentCashier.id) {
+                    isEditMode       = true
+                    editModeReportId = existing.id
+                    document.getElementById('shiftButton').textContent = 'Düzenlemeye Devam Et ✏️'
+                } else {
+                    isEditMode       = false
+                    editModeReportId = null
+                    document.getElementById('shiftButton').textContent = 'Devam Et →'
+                }
+
+                document.getElementById('shiftButton').disabled = false
             })
         })
 
-        kasaBackButton.addEventListener('click', () => {
+        // ── DEVAM ET → FORM ─────────────────────────────────────
+        document.getElementById('shiftButton').addEventListener('click', async () => {
+            if (!selectedShift) return
+
+            document.getElementById('shiftScreen').classList.add('hidden')
+            document.getElementById('mainScreen').classList.add('active')
+
+            const dateVal = document.getElementById('entryDate').value
+            const [sy, sm, sd] = dateVal.split('-')
+            const dateLabel = `${sd}/${sm}`
+            const shiftLabel = selectedShift === 'sabah' ? 'Sabah Vardiyası' : 'Akşam Vardiyası'
+            document.getElementById('navInfo').textContent =
+                `${currentCashier.name} · ${shiftLabel} · ${dateLabel}`
+
+            // Düzenleme modu kurulumu
+            if (isEditMode) {
+                document.getElementById('editBanner').classList.remove('hidden')
+                document.getElementById('submitButton').textContent = '💾 Düzenlemeyi Kaydet (-5 puan)'
+                document.getElementById('submitButton').classList.add('edit-mode')
+
+                // Mevcut veriyi yükle
+                await loadExistingEntry(editModeReportId)
+            } else {
+                document.getElementById('editBanner').classList.add('hidden')
+                document.getElementById('submitButton').textContent = '💾 Kaydet ve Puan Kazan!'
+                document.getElementById('submitButton').classList.remove('edit-mode')
+            }
+
+            // Vardiya bilgi banneri
+            const banner = document.getElementById('shiftInfoBanner')
+            if (selectedShift === 'sabah') {
+                banner.className = 'shift-info-banner sabah'
+                banner.innerHTML = `
+                    <strong style="color:var(--orange);">🌅 Sabah Vardiyası</strong> —
+                    Sabah periyodundaki Z raporu ve kategori satışlarını girin.
+                    Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
+            } else {
+                banner.className = 'shift-info-banner aksam'
+                banner.innerHTML = `
+                    <strong style="color:var(--purple);">🌙 Akşam Vardiyası</strong> —
+                    <strong>Gün sonu TOPLAM</strong> Z raporu ve kategori değerlerini girin.
+                    Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
+            }
+        })
+
+        // Mevcut kaydı forma yükle (düzenleme modu)
+        async function loadExistingEntry(reportId) {
+            try {
+                const { data: entry, error } = await supabase
+                    .from('daily_reports').select('*').eq('id', reportId).single()
+                if (error || !entry) return
+
+                editCurrentPoints = parseInt(entry.points_earned) || 0
+                document.getElementById('currentPoints').textContent =
+                    `${editCurrentPoints} puan → düzenleme sonrası ${Math.max(0, editCurrentPoints - 5)} puan`
+
+                // Form alanlarını doldur
+                setVal('rumeliZ1',    entry.rumeli_z1)
+                setVal('balikEkmek',  entry.balik_ekmek)
+                setVal('dondurmaZ',   entry.dondurma)
+                setVal('kahve',       entry.kahve)
+                setVal('meyveSuyu',   entry.meyvesuyu)
+                setVal('sicakIcecek', entry.sicak_icecek)
+                setVal('sogukIcecek', entry.soguk_icecek)
+                setVal('tatli',       entry.tatli)
+                document.getElementById('notlar').value = entry.notlar || ''
+            } catch (err) {
+                console.error('Mevcut kayıt yüklenemedi:', err)
+            }
+        }
+
+        function setVal(id, val) {
+            const el = document.getElementById(id)
+            if (el) el.value = parseFloat(val) > 0 ? parseFloat(val) : ''
+        }
+
+        // ── GERİ BUTONU ─────────────────────────────────────────
+        document.getElementById('shiftBackButton').addEventListener('click', () => {
             window.location.href = 'index.html'
         })
 
-
-        kasaButton.addEventListener('click', () => {
-            if (!selectedKasa) return
-            showShiftScreen()
-        })
-
-        // VARDİYA SEÇİMİ
-        function showShiftScreen() {
-            kasaScreen.classList.add('hidden')
-            shiftScreen.classList.remove('hidden')
-
-            // Kasiyer bilgilerini göster
-            document.getElementById('cashierName').textContent = currentCashier.name
-            const avatarClasses = {
-                'Tuba Bozaklı': 'av-t',
-                'Elif Yıldırım': 'av-e',
-                'Melda Yılmaz': 'av-m',
-                'Ceren Erdem': 'av-c'
-            }
-            const initials = currentCashier.name.split(' ').map(n => n[0]).join('')
-            document.getElementById('cashierAvatar').textContent = initials
-            document.getElementById('cashierAvatar').className = 'cashier-avatar ' + (avatarClasses[currentCashier.name] || 'av-t')
-
-            // NOT: Tarih init showKasaScreen()'de yapılıyor. Burada tarih sıfırlanmıyor
-            // çünkü kullanıcı kasa ekranında geçmiş tarih seçmiş olabilir.
-        }
-
-        // Tarih seçici event listener
-        document.getElementById('entryDate').addEventListener('change', (e) => {
-            const selectedDate = new Date(e.target.value)
-            selectedDate.setHours(0, 0, 0, 0)
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-
-            const dateNote = document.querySelector('.date-note')
-
-            if (selectedDate < today) {
-                dateNote.innerHTML = `
-                    <span style="color:var(--orange);">⚠️ Geçmiş tarih seçtiniz.</span>
-                    Giriş otomatik olarak "Geç" sayılacak (bonus puan yok).
-                `
-            } else {
-                dateNote.innerHTML = 'Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.'
-            }
-        })
-
-        const shiftOptions = document.querySelectorAll('.shift-option')
-        const shiftButton = document.getElementById('shiftButton')
-        const shiftBackButton = document.getElementById('shiftBackButton')
-
-        shiftOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                shiftOptions.forEach(o => o.classList.remove('selected'))
-                option.classList.add('selected')
-                selectedShift = option.dataset.shift
-                shiftButton.disabled = false
-            })
-        })
-
-        shiftBackButton.addEventListener('click', () => {
-            shiftScreen.classList.add('hidden')
-            kasaScreen.classList.remove('hidden')
-
-            // Reset
-            selectedShift = null
-            shiftOptions.forEach(o => o.classList.remove('selected'))
-            shiftButton.disabled = true
-        })
-
-        shiftButton.addEventListener('click', () => {
-            if (!selectedShift) return
-            console.log('Vardiya seçildi:', selectedShift)
-            console.log('Kasa:', selectedKasa)
-            showMainScreen()
-        })
-
-        // ANA EKRANI GÖSTER
-        async function showMainScreen() {
-            console.log('showMainScreen çağrıldı')
-            console.log('selectedKasa:', selectedKasa)
-            console.log('selectedShift:', selectedShift)
-
-            shiftScreen.classList.add('hidden')
-            mainScreen.classList.add('active')
-
-            const shiftLabel = selectedShift === 'sabah' ? 'Sabah Vardiyası' : 'Akşam Vardiyası'
-            const kasaLabel = selectedKasa === 'restoran' ? 'Restoran' : 'Cafetarya'
-            const selectedDate = document.getElementById('entryDate').value
-            // new Date('YYYY-MM-DD') UTC midnight parse eder; UTC+3'te toLocaleDateString
-            // bir gün ileri gösterebilir. Parçalara ayırarak yerel tarih üretiyoruz.
-            const [sy, sm, sd] = selectedDate.split('-')
-            const dateLabel = sd + '/' + sm
-            document.getElementById('navInfo').textContent = `${currentCashier.name} - ${kasaLabel} - ${shiftLabel} (${dateLabel})`
-
-            // ÖNEMLİ: Form alanlarını güncelle
-            updateFormFields()
-
-            // Akşam vardiyası ise sabah verilerini yükle
-            if (selectedShift === 'aksam') {
-                loadMorningData()
-            }
-        }
-
-        const mainBackButton = document.getElementById('mainBackButton')
-        mainBackButton.addEventListener('click', () => {
+        document.getElementById('mainBackButton').addEventListener('click', () => {
             if (confirm('Veri girişinden çıkmak istediğinize emin misiniz? Girdiğiniz veriler kaybolacak.')) {
-                mainScreen.classList.remove('active')
-                shiftScreen.classList.remove('hidden')
-
-                // Form temizle
-                document.querySelectorAll('input[type="number"]').forEach(input => {
-                    input.value = ''
-                    input.placeholder = '0.00'
-                })
-
-                // Cafetarya akşam info'yu kaldır
-                const infoCard = document.getElementById('cafeteriaAksamInfo')
-                if (infoCard) infoCard.remove()
+                document.getElementById('mainScreen').classList.remove('active')
+                document.getElementById('shiftScreen').classList.remove('hidden')
+                resetShiftSelection()
+                clearForm()
             }
         })
 
-        function updateFormFields() {
-            console.log('updateFormFields çağrıldı:', selectedKasa, selectedShift)
-
-            // Önce tüm alanları gizle
-            hideAllFields()
-
-            // Kombinasyona göre göster
-            if (selectedKasa === 'restoran' && selectedShift === 'sabah') {
-                showField('rumeliZ2Field')
-                showField('gidaField')
-                showField('kahveField')
-                showField('sicakIcecekField')
-                showField('sogukIcecekField')
-                showField('tatliField')
-                showField('meyveSuyuField')
-                showField('kahvaltiField')
-                showField('salataField')
-                setRequired('rumeliZ2', true)
-            } else if (selectedKasa === 'restoran' && selectedShift === 'aksam') {
-                showField('rumeliZ2Field')
-                showField('gidaField')
-                showField('kahveField')
-                showField('sicakIcecekField')
-                showField('sogukIcecekField')
-                showField('tatliField')
-                showField('meyveSuyuField')
-                showField('kahvaltiField')
-                showField('salataField')
-                setRequired('rumeliZ2', true)
-            } else if (selectedKasa === 'cafetarya' && selectedShift === 'sabah') {
-                showField('rumeliZ1Field')
-                showField('gidaField')
-                showField('kahveField')
-                showField('sicakIcecekField')
-                showField('sogukIcecekField')
-                showField('tatliField')
-                showField('meyveSuyuField')
-                showField('kahvaltiField')
-                showField('dondurmaKategoriField')
-                setRequired('rumeliZ1', true)
-            } else if (selectedKasa === 'cafetarya' && selectedShift === 'aksam') {
-                showField('rumeliZ1Field')
-                showField('balikEkmekField')
-                showField('dondurmaZField')
-                setRequired('rumeliZ1', true)
-                setRequired('balikEkmek', true)
-                setRequired('dondurmaZ', true)
-
-                // KATEGORİ ALANLARI GÖSTER (YENİ)
-                showField('gidaField')
-                showField('kahvaltiField')
-                showField('kahveField')
-                showField('meyveSuyuField')
-                showField('sicakIcecekField')
-                showField('sogukIcecekField')
-                showField('tatliField')
-                showField('dondurmaKategoriField')
-
-                // Opsiyonel
-                setRequired('gida', false)
-                setRequired('kahvalti', false)
-                setRequired('kahve', false)
-                setRequired('meyveSuyu', false)
-                setRequired('sicakIcecek', false)
-                setRequired('sogukIcecek', false)
-                setRequired('tatli', false)
-                setRequired('dondurmaKategori', false)
-
-                showCafeteriaAksamInfo()
-            }
-            console.log('Form alanları güncellendi')
-        }
-
-        function hideAllFields() {
-            const fields = [
-                'rumeliZ1Field', 'rumeliZ2Field', 'balikEkmekField', 'dondurmaZField',
-                'gidaField', 'kahveField', 'sicakIcecekField', 'sogukIcecekField',
-                'tatliField', 'meyveSuyuField', 'kahvaltiField', 'salataField', 'dondurmaKategoriField'
-            ]
-            fields.forEach(fieldId => {
-                const field = document.getElementById(fieldId)
-                if (field) {
-                    field.style.display = 'none'
-                    const input = field.querySelector('input')
-                    if (input) {
-                        input.value = ''
-                        input.required = false
-                    }
-                }
+        function clearForm() {
+            document.querySelectorAll('#mainScreen input[type="number"]').forEach(el => {
+                el.value = ''
             })
+            document.getElementById('notlar').value = ''
+            document.getElementById('pointsDisplay').textContent = '+0'
         }
 
-        function showField(fieldId) {
-            const field = document.getElementById(fieldId)
-            if (field) field.style.display = 'block'
-            else console.warn(`Field not found: ${fieldId}`)
-        }
-
-        function setRequired(inputId, isRequired) {
-            const input = document.getElementById(inputId)
-            if (input) input.required = isRequired
-        }
-
-        function showCafeteriaAksamInfo() {
-            const existingInfo = document.getElementById('cafeteriaAksamInfo')
-            if (existingInfo) existingInfo.remove()
-
-            const infoCard = document.createElement('div')
-            infoCard.id = 'cafeteriaAksamInfo'
-            infoCard.style.cssText = 'background:linear-gradient(135deg,rgba(139,92,246,.1),rgba(236,72,153,.1));border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:18px;margin-bottom:20px;'
-            infoCard.innerHTML = `
-                <div style="display:flex;align-items:flex-start;gap:14px;">
-                    <div style="font-size:36px;flex-shrink:0;">🌙</div>
-                    <div>
-                        <div style="font-weight:700;margin-bottom:8px;color:var(--txt);font-size:15px;">
-                            Akşam Vardiyası - Gün Sonu Kapanış
-                        </div>
-                        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
-                            <strong style="color:var(--orange);">⚠️ ÖNEMLİ:</strong> Tüm değerler <strong>GÜN SONU TOPLAMDIR</strong> (Sabah + Akşam birlikte).<br><br>
-
-                            <strong style="color:var(--purple);">Nasıl Çalışır?</strong><br>
-                            • Sabah vardiyası kapattı: Gıda 2,000 ₺<br>
-                            • Akşam vardiyası ekstra sattı: +3,500 ₺<br>
-                            • <strong>Sen gün sonu toplamını gireceksin: 5,500 ₺</strong><br><br>
-
-                            Sistem otomatik olarak sabah verisini çıkarıp senin performansını hesaplar.
-                        </div>
-                    </div>
-                </div>
-            `
-            const firstCard = mainScreen.querySelector('.card')
-            if (firstCard) mainScreen.insertBefore(infoCard, firstCard)
-        }
-
-        async function loadMorningData() {
-            const selectedDate = document.getElementById('entryDate').value
-
-            // Seçilen tarihin sabah vardiyası verisini getir
-            const { data: morningData, error } = await supabase
-                .from('daily_reports')
-                .select('*')
-                .eq('date', selectedDate)
-                .eq('kasa', selectedKasa)
-                .eq('shift', 'sabah')
-                .maybeSingle()
-
-            if (error) {
-                console.error('Sabah verisi çekme hatası:', error)
+        // ── KAYDET ──────────────────────────────────────────────
+        document.getElementById('submitButton').addEventListener('click', async () => {
+            const zVal = parseFloat(document.getElementById('rumeliZ1').value) || 0
+            if (zVal <= 0) {
+                showToast('Z Raporu değeri girilmedi!', 'error')
+                document.getElementById('rumeliZ1').focus()
                 return
             }
 
-            if (!morningData) {
-                console.log('Sabah verisi bulunamadı - normal (ilk vardiya)')
-                return
-            }
+            const btn = document.getElementById('submitButton')
+            btn.disabled = true
+            btn.textContent = 'Kaydediliyor...'
 
-            console.log('Sabah verisi yüklendi:', morningData)
-
-            // Z Raporu ve Kategoriler
-            const fields = [
-                { id: 'rumeliZ1', db: 'rumeli_z1' },
-                { id: 'rumeliZ2', db: 'rumeli_z2' },
-                { id: 'balikEkmek', db: 'balik_ekmek' },
-                { id: 'dondurmaZ', db: 'dondurma' },
-                { id: 'gida', db: 'gida' },
-                { id: 'kahvalti', db: 'kahvalti' },
-                { id: 'kahve', db: 'kahve' },
-                { id: 'meyveSuyu', db: 'meyvesuyu' },
-                { id: 'sicakIcecek', db: 'sicak_icecek' },
-                { id: 'sogukIcecek', db: 'soguk_icecek' },
-                { id: 'tatli', db: 'tatli' },
-                { id: 'salata', db: 'salata' },
-                { id: 'dondurmaKategori', db: 'dondurma_kategori' }
-            ]
-
-            fields.forEach(field => {
-                const input = document.getElementById(field.id)
-                if (input && morningData[field.db]) {
-                    const morningDiff = parseFloat(morningData[field.db] || 0)
-                    input.placeholder = `Sabah: ${formatCurrency(morningDiff)} - Gün sonu TOPLAM gir`
-                    input.setAttribute('data-morning-value', morningDiff)
-                }
-            })
-        }
-
-        function formatCurrency(value) {
-            return new Intl.NumberFormat('tr-TR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(value) + ' ₺'
-        }
-
-        // VERİ GİRİŞİ
-        const submitButton = document.getElementById('submitButton')
-
-        submitButton.addEventListener('click', async () => {
-            const data = {
-                cashierId: currentCashier.id,
-                kasa: selectedKasa,
-                shift: selectedShift,
+            const formData = {
+                cashierId:    currentCashier.id,
+                shift:        selectedShift,
                 selectedDate: document.getElementById('entryDate').value,
-                rumeliZ1: parseFloat(document.getElementById('rumeliZ1').value) || 0,
-                rumeliZ2: parseFloat(document.getElementById('rumeliZ2').value) || 0,
-                balikEkmek: parseFloat(document.getElementById('balikEkmek').value) || 0,
-                dondurma: parseFloat(document.getElementById('dondurmaZ').value) || 0,
-                gida: parseFloat(document.getElementById('gida').value) || 0,
-                kahve: parseFloat(document.getElementById('kahve').value) || 0,
-                sicakIcecek: parseFloat(document.getElementById('sicakIcecek').value) || 0,
-                sogukIcecek: parseFloat(document.getElementById('sogukIcecek').value) || 0,
-                tatli: parseFloat(document.getElementById('tatli').value) || 0,
-                meyveSuyu: parseFloat(document.getElementById('meyveSuyu').value) || 0,
-                kahvalti: parseFloat(document.getElementById('kahvalti').value) || 0,
-                salata: parseFloat(document.getElementById('salata')?.value) || 0,
-                dondurmaKategori: parseFloat(document.getElementById('dondurmaKategori')?.value) || 0,
-                dondurmaAdet: 0,
-                depo: 0,
-                notlar: ''
+                rumeliZ1:     parseFloat(document.getElementById('rumeliZ1').value)    || 0,
+                balikEkmek:   parseFloat(document.getElementById('balikEkmek').value)  || 0,
+                dondurmaZ:    parseFloat(document.getElementById('dondurmaZ').value)   || 0,
+                kahve:        parseFloat(document.getElementById('kahve').value)        || 0,
+                meyveSuyu:    parseFloat(document.getElementById('meyveSuyu').value)    || 0,
+                sicakIcecek:  parseFloat(document.getElementById('sicakIcecek').value)  || 0,
+                sogukIcecek:  parseFloat(document.getElementById('sogukIcecek').value)  || 0,
+                tatli:        parseFloat(document.getElementById('tatli').value)        || 0,
+                notlar:       document.getElementById('notlar').value,
             }
 
-            submitButton.disabled = true
-            submitButton.textContent = 'Kaydediliyor...'
+            try {
+                let result, error
 
-            const { data: result, error } = await insertShiftEntry(data)
+                if (isEditMode) {
+                    ;({ data: result, error } = await updateShiftEntry(
+                        editModeReportId, formData, currentCashier.id
+                    ))
+                } else {
+                    ;({ data: result, error } = await insertShiftEntry(formData))
+                }
 
-            if (error) {
-                showToast('Hata: ' + error.message, 'error')
-                submitButton.disabled = false
-                submitButton.textContent = '💾 Kaydet ve Puan Kazan!'
-                return
+                if (error) throw error
+
+                const pts = result.pointsEarned ?? result.points_earned ?? 0
+                document.getElementById('pointsDisplay').textContent =
+                    isEditMode ? `-5` : `+${pts}`
+
+                const timing = result.isOnTime === undefined
+                    ? '' : (result.isOnTime ? ' ⏰ Zamanında!' : ' ⚠️ Geç giriş')
+
+                if (isEditMode) {
+                    showToast(
+                        `✅ Güncellendi! -5 puan cezası uygulandı. Yeni puan: ${pts}`,
+                        'success'
+                    )
+                } else {
+                    showToast(`✅ Kaydedildi! +${pts} puan kazandınız!${timing}`, 'success')
+                }
+
+                setTimeout(() => location.reload(), 2200)
+            } catch (err) {
+                showToast('Hata: ' + err.message, 'error')
+                btn.disabled = false
+                btn.textContent = isEditMode
+                    ? '💾 Düzenlemeyi Kaydet (-5 puan)'
+                    : '💾 Kaydet ve Puan Kazan!'
+                if (isEditMode) btn.classList.add('edit-mode')
             }
-
-            // Puan göster
-            document.getElementById('pointsDisplay').textContent = `+${result.pointsEarned}`
-
-            showToast(`✅ Kaydedildi! ${result.pointsEarned} puan kazandınız! ${result.isOnTime ? '⏰ Zamanında!' : '⚠️ Geç giriş'}`, 'success')
-
-            setTimeout(() => {
-                location.reload()
-            }, 2000)
         })
 
-        // TOAST
+        // ── YARDIMCI FONKSİYONLAR ────────────────────────────────
+        function localDateStr(d) {
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0')
+        }
+
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast')
             toast.textContent = message
-            toast.className = `toast ${type}`
-            setTimeout(() => toast.classList.add('show'), 100)
-            setTimeout(() => toast.classList.remove('show'), 3000)
+            toast.className   = `toast ${type}`
+            setTimeout(() => toast.classList.add('show'), 80)
+            setTimeout(() => toast.classList.remove('show'), 3200)
         }
-
-        // PIN INPUT OTOMATİK FOCUS
-        pinInput.focus()
     </script>
 </body>
-
 </html>

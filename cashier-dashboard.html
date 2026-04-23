@@ -952,7 +952,7 @@
     </div>
 
     <script type="module">
-        import { supabase } from './js/supabase-client.js'
+        import { supabase, updateShiftEntry } from './js/supabase-client.js'
 
         // URL'den cashier_id al
         const urlParams = new URLSearchParams(window.location.search)
@@ -976,20 +976,18 @@
 
         async function loadDashboard() {
             try {
-                const today = new Date()
+                const today      = new Date()
                 const monthStart = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
+                const monthEnd   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
 
-                // Tüm verileri paralel çek
                 const [cashierRes, monthlyRes, allMonthlyRes, historyRes] = await Promise.all([
                     supabase.from('cashiers').select('*').eq('id', cashierId).single(),
-                    // Bu kasiyerin bu ayki raporları
                     supabase.from('daily_reports').select('*')
-                        .eq('cashier_id', cashierId).gte('date', monthStart),
-                    // Tüm kasiyerlerin bu ayki puanları (leaderboard için)
+                        .eq('cashier_id', cashierId)
+                        .gte('date', monthStart).lte('date', monthEnd),
                     supabase.from('daily_reports')
-                        .select('cashier_id, points_earned, cashiers(name)')
-                        .gte('date', monthStart),
-                    // Son 10 giriş geçmişi
+                        .select('cashier_id, points_earned, is_on_time, rumeli_z1, total_revenue, cashiers(name)')
+                        .gte('date', monthStart).lte('date', monthEnd),
                     supabase.from('entry_history').select('*')
                         .eq('cashier_id', cashierId)
                         .order('entry_time', { ascending: false }).limit(10)
@@ -1002,30 +1000,53 @@
                 const allMonthly     = allMonthlyRes.data || []
                 const history        = historyRes.data   || []
 
-                // Aylık istatistikler hesapla
+                // Aylık istatistikler + performans oranı
+                const totalScore = monthlyReports.reduce((s, r) => s + (parseInt(r.points_earned) || 0), 0)
+                const entryCount = monthlyReports.length
                 const monthStats = {
-                    entries:  monthlyReports.length,
-                    onTime:   monthlyReports.filter(r => r.is_on_time).length,
-                    revenue:  monthlyReports.reduce((s, r) => s + (parseFloat(r.individual_revenue) || 0), 0),
-                    points:   monthlyReports.reduce((s, r) => s + (parseInt(r.points_earned) || 0), 0)
+                    entries:        entryCount,
+                    onTime:         monthlyReports.filter(r => r.is_on_time).length,
+                    revenue:        monthlyReports.reduce((s, r) => s + (parseFloat(r.individual_revenue) || 0), 0),
+                    points:         totalScore,
+                    performancePct: entryCount > 0
+                        ? Math.round((totalScore / (entryCount * 100)) * 100)
+                        : 0,
                 }
 
-                // Aylık leaderboard hesapla
+                // Adil liderboard (performans oranı tabanlı)
                 const leaderMap = {}
                 allMonthly.forEach(r => {
                     const id   = r.cashier_id
                     const name = r.cashiers?.name || 'Bilinmiyor'
-                    if (!leaderMap[id]) leaderMap[id] = { cashier_id: id, cashier_name: name, total_points: 0, total_entries: 0 }
-                    leaderMap[id].total_points  += parseInt(r.points_earned) || 0
-                    leaderMap[id].total_entries += 1
+                    if (!leaderMap[id]) {
+                        leaderMap[id] = { cashier_id: id, cashier_name: name,
+                            total_score: 0, total_entries: 0, on_time_entries: 0 }
+                    }
+                    const score = (r.is_on_time ? 50 : 0) +
+                        (parseFloat(r.rumeli_z1 || 0) > 0 ||
+                         parseFloat(r.total_revenue || 0) > 0 ? 50 : 0)
+                    leaderMap[id].total_score    += score
+                    leaderMap[id].total_entries  += 1
+                    if (r.is_on_time) leaderMap[id].on_time_entries += 1
                 })
-                const leaders = Object.values(leaderMap).sort((a, b) => b.total_points - a.total_points)
 
-                // Dashboard'u render et
+                const leaders = Object.values(leaderMap)
+                    .map(l => ({
+                        ...l,
+                        performance_pct: l.total_entries > 0
+                            ? Math.round((l.total_score / (l.total_entries * 100)) * 100)
+                            : 0
+                    }))
+                    .sort((a, b) => {
+                        if (b.performance_pct !== a.performance_pct)
+                            return b.performance_pct - a.performance_pct
+                        return b.total_entries - a.total_entries
+                    })
+
                 renderDashboard(cashier, monthStats, leaders, history)
                 await fetchMyEntries(cashierId)
 
-                document.getElementById('loading').style.display = 'none'
+                document.getElementById('loading').style.display  = 'none'
                 document.getElementById('dashboard').style.display = 'block'
 
             } catch (error) {
@@ -1036,53 +1057,53 @@
         }
 
         function renderDashboard(cashier, monthStats, leaders, history) {
-            // PROFILE
-            const avatarClasses = {
-                'Tuba Bozaklı': 'av-t',
-                'Elif Yıldırım': 'av-e',
-                'Melda Yılmaz': 'av-m',
-                'Ceren Erdem': 'av-c'
+            const AVATAR = {
+                'Tuba Bozaklı': 'av-t', 'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz':  'av-m', 'Ceren Erdem':   'av-c',
             }
             const initials = cashier.name.split(' ').map(n => n[0]).join('')
             document.getElementById('profileAvatar').textContent = initials
-            document.getElementById('profileAvatar').className = 'avatar ' + (avatarClasses[cashier.name] || 'av-t')
-            document.getElementById('profileName').textContent = cashier.name
-            document.getElementById('profileRole').textContent = `Kasiyer - ${cashier.role || 'Cafetarya'}`
+            document.getElementById('profileAvatar').className = 'avatar ' + (AVATAR[cashier.name] || 'av-t')
+            document.getElementById('profileName').textContent  = cashier.name
+            document.getElementById('profileRole').textContent  = 'Kasiyer — Rumeli İskelesi'
 
-            // BADGE & POINTS (aylık puan + müdür rozet önceliği)
-            const monthlyPoints = monthStats.points
-            document.getElementById('totalPoints').textContent = monthlyPoints
-
-            const badge = getBadge(cashier.badge_level, monthlyPoints)
-            document.getElementById('badgeIcon').textContent = badge.icon
+            // BADGE — performans oranı tabanlı
+            const pct   = monthStats.performancePct
+            const badge = getBadge(cashier.badge_level, pct)
+            document.getElementById('badgeIcon').textContent  = badge.icon
             document.getElementById('badgeLabel').textContent = badge.label
 
-            // PROGRESS
-            const nextBadge = getNextBadge(monthlyPoints, cashier.badge_level)
-            document.getElementById('nextBadge').textContent = nextBadge.label
-            const pointsNeeded = nextBadge.threshold - monthlyPoints
-            document.getElementById('pointsNeeded').textContent = pointsNeeded > 0 ? `${pointsNeeded} puan kaldı` : 'Tamamlandı!'
-            const progress = nextBadge.threshold > 0 ? Math.min((monthlyPoints / nextBadge.threshold) * 100, 100) : 100
-            document.getElementById('progressFill').style.width = progress + '%'
+            // Toplam puanı "performans %" olarak göster
+            document.getElementById('totalPoints').textContent =
+                monthStats.entries > 0 ? `%${pct}` : '—'
+            document.querySelector('[style*="puan"]') &&
+                (document.querySelector('[style*="color: var(--txt2)"]')?.textContent === ' puan' &&
+                (document.querySelector('[style*="color: var(--txt2)"]').textContent = ' performans'))
 
-            // STATS (bu ay)
+            // PROGRESS bar — performans oranına göre
+            const nextBadge = getNextBadge(pct, cashier.badge_level)
+            document.getElementById('nextBadge').textContent    = nextBadge.label
+            document.getElementById('pointsNeeded').textContent = nextBadge.pctLeft > 0
+                ? `%${nextBadge.pctLeft} daha` : 'Tamamlandı!'
+            document.getElementById('progressFill').style.width =
+                Math.min(pct, 100) + '%'
+
+            // STATS
             document.getElementById('statEntries').textContent = monthStats.entries
-            document.getElementById('statOnTime').textContent = monthStats.onTime
+            document.getElementById('statOnTime').textContent  = monthStats.onTime
             document.getElementById('statRevenue').textContent = formatCurrency(monthStats.revenue)
-            // Stat etiketlerini güncelle
             const statLabels = document.querySelectorAll('.stat-label')
             if (statLabels[0]) statLabels[0].textContent = 'Bu Ay Giriş'
 
-            // LEADERBOARD (top 4, aylık)
-            renderLeaderboard(leaders.slice(0, 4), cashier.id)
+            // LEADERBOARD
+            renderLeaderboard(leaders.slice(0, 4), cashierId)
 
             // HISTORY
             renderHistory(history)
         }
 
-        // badgeLevel: müdür tarafından atanan özel rozet (öncelikli)
-        // points: bu ayın puanı (otomatik rozet için)
-        function getBadge(badgeLevel, points) {
+        // Performans oranı (%) tabanlı rozet (Müdür rozeti önceliklidir)
+        function getBadge(badgeLevel, pct) {
             const SPECIAL = {
                 'ozel_yildiz': { icon: '🌟', label: 'Yılın Yıldızı' },
                 'ozel_ates':   { icon: '🔥', label: 'Ateş Çıkışlı' },
@@ -1092,53 +1113,54 @@
             }
             if (badgeLevel && SPECIAL[badgeLevel]) return SPECIAL[badgeLevel]
 
-            // Aylık puan bazlı otomatik rozet
-            if (points >= 600) return { icon: '👑⭐', label: 'Süper Efsane' }
-            if (points >= 400) return { icon: '👑',   label: 'Efsane' }
-            if (points >= 250) return { icon: '💎',   label: 'Elmas' }
-            if (points >= 150) return { icon: '🥇',   label: 'Altın' }
-            if (points >= 75)  return { icon: '🥈',   label: 'Gümüş' }
-            if (points >= 30)  return { icon: '🥉',   label: 'Bronz' }
+            if (pct >= 95) return { icon: '👑⭐', label: 'Süper Efsane' }
+            if (pct >= 85) return { icon: '👑',   label: 'Efsane' }
+            if (pct >= 75) return { icon: '💎',   label: 'Elmas' }
+            if (pct >= 65) return { icon: '🥇',   label: 'Altın' }
+            if (pct >= 50) return { icon: '🥈',   label: 'Gümüş' }
+            if (pct >= 30) return { icon: '🥉',   label: 'Bronz' }
             return { icon: '🌱', label: 'Yeni Başlayan' }
         }
 
-        function getNextBadge(points, badgeLevel) {
-            if (badgeLevel?.startsWith('ozel_')) return { label: 'Özel Rozet (Müdür)', threshold: points }
-            if (points >= 600) return { label: 'Maksimum Seviye', threshold: 600 }
-            if (points >= 400) return { label: 'Süper Efsane',    threshold: 600 }
-            if (points >= 250) return { label: 'Efsane',          threshold: 400 }
-            if (points >= 150) return { label: 'Elmas',           threshold: 250 }
-            if (points >= 75)  return { label: 'Altın',           threshold: 150 }
-            if (points >= 30)  return { label: 'Gümüş',           threshold: 75 }
-            return { label: 'Bronz', threshold: 30 }
+        function getNextBadge(pct, badgeLevel) {
+            if (badgeLevel?.startsWith('ozel_')) return { label: 'Özel Rozet (Müdür)', pctLeft: 0 }
+            if (pct >= 95) return { label: 'Maksimum Seviye', pctLeft: 0 }
+            if (pct >= 85) return { label: 'Süper Efsane', pctLeft: 95 - pct }
+            if (pct >= 75) return { label: 'Efsane',       pctLeft: 85 - pct }
+            if (pct >= 65) return { label: 'Elmas',        pctLeft: 75 - pct }
+            if (pct >= 50) return { label: 'Altın',        pctLeft: 65 - pct }
+            if (pct >= 30) return { label: 'Gümüş',        pctLeft: 50 - pct }
+            return { label: 'Bronz', pctLeft: 30 - pct }
         }
 
         function renderLeaderboard(leaders, currentCashierId) {
             const container = document.getElementById('leaderboard')
             container.innerHTML = ''
-
-            const avatarClasses = {
-                'Tuba Bozaklı': 'av-t',
-                'Elif Yıldırım': 'av-e',
-                'Melda Yılmaz': 'av-m',
-                'Ceren Erdem': 'av-c'
+            const AVATAR = {
+                'Tuba Bozaklı': 'av-t', 'Elif Yıldırım': 'av-e',
+                'Melda Yılmaz':  'av-m', 'Ceren Erdem':   'av-c',
             }
-
             leaders.forEach((leader, index) => {
-                const rank = index + 1
+                const rank      = index + 1
                 const isCurrent = leader.cashier_id === currentCashierId
-                const initials = leader.cashier_name ? leader.cashier_name.split(' ').map(n => n[0]).join('') : '??'
+                const initials  = leader.cashier_name
+                    ? leader.cashier_name.split(' ').map(n => n[0]).join('') : '??'
+                const pct       = leader.performance_pct ?? 0
+                const pctColor  = pct >= 85 ? 'var(--green)' : pct >= 65 ? 'var(--orange)' : 'var(--txt2)'
 
                 const item = document.createElement('div')
                 item.className = 'leaderboard-item' + (isCurrent ? ' current' : '')
                 item.innerHTML = `
                     <div class="rank rank-${rank}">#${rank}</div>
-                    <div class="leaderboard-avatar ${avatarClasses[leader.cashier_name] || 'av-t'}">${initials}</div>
+                    <div class="leaderboard-avatar ${AVATAR[leader.cashier_name] || 'av-t'}">${initials}</div>
                     <div class="leaderboard-info">
                         <div class="leaderboard-name">${leader.cashier_name || 'Bilinmiyor'}${isCurrent ? ' (Sen)' : ''}</div>
-                        <div class="leaderboard-stats">${leader.total_entries || 0} giriş • ${leader.on_time_entries || 0} zamanında</div>
+                        <div class="leaderboard-stats">
+                            ${leader.total_entries || 0} giriş
+                            · ${leader.on_time_entries || 0} zamanında
+                        </div>
                     </div>
-                    <div class="leaderboard-points">⭐ ${leader.total_points || 0}</div>
+                    <div class="leaderboard-points" style="color:${pctColor}">%${pct}</div>
                 `
                 container.appendChild(item)
             })
@@ -1396,42 +1418,30 @@
 
         window.confirmEditMyEntry = async function(entryId) {
             try {
-                const updates = {}
-
-                // Z Raporu alanları
-                const zMap = {
-                    editRumeliZ1: 'rumeli_z1', editRumeliZ2: 'rumeli_z2',
-                    editBalikEkmek: 'balik_ekmek', editDondurma: 'dondurma'
+                // -5 puan cezası için updateShiftEntry kullan
+                const formData = {
+                    rumeliZ1:    parseFloat(document.getElementById('editRumeliZ1')?.value)   || 0,
+                    balikEkmek:  parseFloat(document.getElementById('editBalikEkmek')?.value) || 0,
+                    dondurmaZ:   parseFloat(document.getElementById('editDondurma')?.value)   || 0,
+                    kahve:       parseFloat(document.getElementById('editCat_kahve')?.value)       || 0,
+                    meyveSuyu:   parseFloat(document.getElementById('editCat_meyvesuyu')?.value)   || 0,
+                    sicakIcecek: parseFloat(document.getElementById('editCat_sicak_icecek')?.value)|| 0,
+                    sogukIcecek: parseFloat(document.getElementById('editCat_soguk_icecek')?.value)|| 0,
+                    tatli:       parseFloat(document.getElementById('editCat_tatli')?.value)       || 0,
+                    notlar:      document.getElementById('editCat_notlar')?.value || '',
                 }
-                Object.entries(zMap).forEach(([inputId, col]) => {
-                    const el = document.getElementById(inputId)
-                    if (el) updates[col] = parseFloat(el.value) || 0
-                })
 
-                // Kategori alanları
-                const catCols = ['gida','kahvalti','kahve','meyvesuyu','sicak_icecek',
-                                  'soguk_icecek','tatli','salata','dondurma_kategori']
-                catCols.forEach(col => {
-                    const el = document.getElementById('editCat_' + col)
-                    if (el) updates[col] = parseFloat(el.value) || 0
-                })
-
-                // Total revenue yeniden hesapla
-                updates.total_revenue = (updates.rumeli_z1   || 0)
-                                      + (updates.rumeli_z2   || 0)
-                                      + (updates.balik_ekmek || 0)
-                                      + (updates.dondurma    || 0)
-
-                const { error } = await supabase
-                    .from('daily_reports')
-                    .update(updates)
-                    .eq('id', entryId)
-
+                const { data, error } = await updateShiftEntry(entryId, formData, cashierId)
                 if (error) throw error
 
                 document.querySelector('.edit-modal-overlay').remove()
-                showToast('✅ Giriş başarıyla güncellendi!', 'success')
+                showToast(
+                    `✅ Güncellendi! -5 puan cezası uygulandı. Yeni puan: ${data.points_earned}`,
+                    'success'
+                )
                 await fetchMyEntries(cashierId)
+                // Puan değiştiği için sayfayı yenile
+                setTimeout(() => location.reload(), 2500)
             } catch (err) {
                 console.error('Güncelleme hatası:', err)
                 alert('❌ Güncelleme başarısız: ' + err.message)
@@ -1477,29 +1487,18 @@
             </div>
             <div class="scoring-content">
                 <div class="scoring-section">
-                    <div class="scoring-section-title">⭐ Temel Puanlar</div>
-                    <div class="scoring-item">
-                        <div class="scoring-item-label"><span>✓</span><span>Giriş Yaptı</span></div>
-                        <div class="scoring-item-points positive">+10</div>
-                    </div>
+                    <div class="scoring-section-title">⭐ Giriş Başına Puan (max 100)</div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>⏰</span><span>Zamanında Giriş</span></div>
-                        <div class="scoring-item-points positive">+10</div>
-                    </div>
-                    <div class="scoring-item">
-                        <div class="scoring-item-label"><span>⚠️</span><span>Geç Giriş</span></div>
-                        <div class="scoring-item-points negative">-5</div>
+                        <div class="scoring-item-points positive">+50</div>
                     </div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>📝</span><span>Eksiksiz Veri</span></div>
-                        <div class="scoring-item-points positive">+10</div>
+                        <div class="scoring-item-points positive">+50</div>
                     </div>
-                </div>
-                <div class="scoring-section">
-                    <div class="scoring-section-title">🔥 Bonus Puanlar</div>
                     <div class="scoring-item">
-                        <div class="scoring-item-label"><span>🔥</span><span>7 Gün Üst Üste Giriş</span></div>
-                        <div class="scoring-item-points special">+25</div>
+                        <div class="scoring-item-label"><span>✏️</span><span>Düzenleme Cezası</span></div>
+                        <div class="scoring-item-points negative">-5</div>
                     </div>
                 </div>
                 <div class="scoring-section">
@@ -1510,35 +1509,48 @@
                     </div>
                     <div class="scoring-item">
                         <div class="scoring-item-label"><span>🌙</span><span>Akşam Vardiyası</span></div>
-                        <div style="font-size:13px;color:var(--txt2);">01:00'a kadar</div>
+                        <div style="font-size:13px;color:var(--txt2);">16:00 — 01:00 arası</div>
+                    </div>
+                </div>
+                <div class="scoring-section">
+                    <div class="scoring-section-title">📊 Eksiksiz Veri Kriteri</div>
+                    <div style="font-size:13px;color:var(--txt2);line-height:1.6;padding:4px 0;">
+                        Z Raporu tutarı girilmiş <strong>ve</strong> en az 2 kategori alanı (balık ekmek, dondurma, kahve vb.) doldurulmuş olmalı.
                     </div>
                 </div>
                 <div class="scoring-example">
                     <div class="scoring-example-title">💡 Puan Örnekleri</div>
                     <div style="margin-bottom:16px;">
                         <strong style="display:block;margin-bottom:8px;color:#22c55e;">Mükemmel Giriş:</strong>
-                        <div class="scoring-example-item"><span>Giriş yaptı</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Zamanında</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>7 gün üst üste</span><span>+25</span></div>
-                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#22c55e;">55 Puan</span></div>
+                        <div class="scoring-example-item"><span>Zamanında</span><span>+50</span></div>
+                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+50</span></div>
+                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#22c55e;">100 Puan</span></div>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <strong style="display:block;margin-bottom:8px;color:#f59e0b;">Geç Giriş:</strong>
+                        <div class="scoring-example-item"><span>Eksiksiz veri</span><span>+50</span></div>
+                        <div class="scoring-example-item"><span>Zamanında değil</span><span style="color:#ef4444;">0</span></div>
+                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#f59e0b;">50 Puan</span></div>
                     </div>
                     <div>
-                        <strong style="display:block;margin-bottom:8px;color:#ef4444;">Geç Giriş:</strong>
-                        <div class="scoring-example-item"><span>Giriş yaptı</span><span>+10</span></div>
-                        <div class="scoring-example-item"><span>Geç kaldı</span><span style="color:#ef4444;">-5</span></div>
-                        <div class="scoring-example-total"><span>Toplam:</span><span style="color:#ef4444;">5 Puan</span></div>
+                        <strong style="display:block;margin-bottom:8px;color:#8b5cf6;">Sıralama Nasıl Hesaplanır?</strong>
+                        <div style="font-size:13px;color:var(--txt2);line-height:1.6;">
+                            Aylık sıralama toplam puana göre değil <strong>performans oranına (%)</strong> göre belirlenir.<br>
+                            <code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;font-size:12px;">% = toplam puan / (giriş sayısı × 100) × 100</code><br>
+                            Bu sayede az vardiya alan kasiyerler dezavantajlı olmaz.
+                        </div>
                     </div>
                 </div>
                 <div class="scoring-section" style="margin-top:24px;">
-                    <div class="scoring-section-title">🏅 Rozet Seviyeleri</div>
+                    <div class="scoring-section-title">🏅 Rozet Seviyeleri (Performans %)</div>
                     <div class="badge-levels">
-                        <div class="badge-level-item"><div class="badge-level-icon">🆕</div><div class="badge-level-name">Yeni</div><div class="badge-level-points">0-49 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥉</div><div class="badge-level-name">Bronz</div><div class="badge-level-points">50-149 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥈</div><div class="badge-level-name">Gümüş</div><div class="badge-level-points">150-299 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">🥇</div><div class="badge-level-name">Altın</div><div class="badge-level-points">300-499 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">💎</div><div class="badge-level-name">Elmas</div><div class="badge-level-points">500-999 puan</div></div>
-                        <div class="badge-level-item"><div class="badge-level-icon">👑</div><div class="badge-level-name">Efsane</div><div class="badge-level-points">1000+ puan</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🆕</div><div class="badge-level-name">Yeni</div><div class="badge-level-points">%0-29</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥉</div><div class="badge-level-name">Bronz</div><div class="badge-level-points">%30-49</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥈</div><div class="badge-level-name">Gümüş</div><div class="badge-level-points">%50-64</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🥇</div><div class="badge-level-name">Altın</div><div class="badge-level-points">%65-74</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">💎</div><div class="badge-level-name">Elmas</div><div class="badge-level-points">%75-84</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">👑</div><div class="badge-level-name">Efsane</div><div class="badge-level-points">%85-94</div></div>
+                        <div class="badge-level-item"><div class="badge-level-icon">🌟</div><div class="badge-level-name">Süper Efsane</div><div class="badge-level-points">%95+</div></div>
                     </div>
                 </div>
             </div>
