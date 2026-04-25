@@ -81,8 +81,6 @@
             margin-bottom: 28px;
         }
 
-        /* Kasiyer bilgi kartı */
-
         .cashier-info {
             background: var(--input);
             border: 1px solid var(--brd);
@@ -114,9 +112,7 @@
 
         .cashier-role { font-size: 13px; color: var(--txt2); margin-top: 2px; }
 
-        /* Tarih seçici */
-
-        .date-block { margin-bottom: 22px; }
+        .date-block { margin-bottom: 20px; }
 
         .date-block label {
             display: block;
@@ -138,21 +134,27 @@
 
         .date-note { font-size: 11px; color: var(--txt3); margin-top: 7px; font-style: italic; }
 
-        /* Vardiya seçenekleri */
+        /* Shift groups */
+
+        .shift-group { margin-bottom: 14px; }
+
+        .shift-group-header {
+            font-size: 11px; font-weight: 700; color: var(--txt2);
+            text-transform: uppercase; letter-spacing: .8px;
+            margin-bottom: 8px; padding-left: 2px;
+        }
 
         .shift-options {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-            margin-bottom: 22px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
         }
 
         .shift-option {
-            padding: 20px 16px;
+            padding: 16px 12px;
             border: 2px solid var(--brd);
             border-radius: 14px;
             cursor: pointer;
             transition: all .2s;
             text-align: center;
-            position: relative;
         }
 
         .shift-option:hover:not(.taken) {
@@ -184,28 +186,22 @@
             background: rgba(239,68,68,.04);
         }
 
-        .shift-icon  { font-size: 36px; margin-bottom: 10px; }
+        .shift-icon  { font-size: 26px; margin-bottom: 8px; }
 
-        .shift-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+        .shift-label { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
 
-        .shift-time  { font-size: 12px; color: var(--txt2); margin-bottom: 10px; }
+        .shift-status { min-height: 20px; }
 
-        /* Vardiya durum göstergesi */
+        .status-loading  { font-size: 10px; color: var(--txt3); }
 
-        .shift-status { min-height: 22px; }
+        .status-available{ font-size: 10px; font-weight: 600; color: var(--green); }
 
-        .status-loading  { font-size: 11px; color: var(--txt3); }
+        .status-mine     { font-size: 10px; font-weight: 600; color: var(--orange); }
 
-        .status-available{ font-size: 11px; font-weight: 600; color: var(--green); }
-
-        .status-mine     { font-size: 11px; font-weight: 600; color: var(--orange); }
-
-        .status-taken    { font-size: 11px; font-weight: 600; color: var(--red); }
-
-        /* Butonlar */
+        .status-taken    { font-size: 10px; font-weight: 600; color: var(--red); }
 
         .btn-group {
-            display: flex; gap: 12px;
+            display: flex; gap: 12px; margin-top: 18px;
         }
 
         .btn-back {
@@ -264,8 +260,6 @@
             display: flex; align-items: center; gap: 5px;
         }
 
-        /* Düzenleme modu banner */
-
         .edit-banner {
             background: linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
             border: 1px solid rgba(245,158,11,.4);
@@ -279,8 +273,6 @@
         .edit-banner-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
 
         .edit-banner-desc  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
-
-        /* Kart */
 
         .card {
             background: var(--card); border: 1px solid var(--brd);
@@ -318,8 +310,6 @@
             font-size: 13px; color: var(--txt3); font-weight: 600;
         }
 
-        /* Notlar */
-
         .notes-area {
             width: 100%; background: var(--input); border: 1.5px solid var(--brd);
             color: var(--txt); padding: 12px 14px; border-radius: 10px;
@@ -329,8 +319,6 @@
         }
 
         .notes-area:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
-
-        /* Gönder butonu */
 
         .btn-submit {
             width: 100%; padding: 16px; border-radius: 12px;
@@ -344,8 +332,6 @@
         .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
         .btn-submit.edit-mode { background: linear-gradient(135deg,#92400e,#f59e0b); }
-
-        /* Toast */
 
         .toast {
             position: fixed; top: 20px; right: 20px;
@@ -362,8 +348,6 @@
 
         .hidden { display: none !important; }
 
-        /* Sabah/Akşam info banner */
-
         .shift-info-banner {
             border-radius: 12px; padding: 14px 18px;
             margin-bottom: 18px; font-size: 13px; color: var(--txt2); line-height: 1.6;
@@ -379,20 +363,18 @@
             border: 1px solid rgba(139,92,246,.25);
         }
 
-        /* Responsive */
-
         @media (max-width: 480px) {
             body { padding: 12px; }
-            .shift-screen { padding: 24px 16px; margin: 12px auto; }
-            .shift-options { grid-template-columns: 1fr; gap: 10px; }
+            .shift-screen { padding: 24px 14px; margin: 12px auto; }
+            .shift-options { gap: 8px; }
             .fg { grid-template-columns: 1fr; }
             .btn-group { flex-direction: column; }
             .btn-back { flex: 1; }
         }
     </style>
-  <script type="module" crossorigin src="/assets/entry-DVzJxd03.js"></script>
+  <script type="module" crossorigin src="/assets/entry-Bj2ms-Ov.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-mCNoDXkE.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-D7cjvoTY.js">
 </head>
 
 <body>
@@ -400,7 +382,7 @@
     <!-- VARDİYA SEÇİM EKRANI -->
     <div id="shiftScreen" class="shift-screen hidden">
         <div class="screen-title">📅 Vardiya Seçimi</div>
-        <p class="screen-subtitle">Bugün hangi vardiyada çalışıyorsunuz?</p>
+        <p class="screen-subtitle">Kasa ve vardiyayı seçin</p>
 
         <div class="cashier-info">
             <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
@@ -410,29 +392,50 @@
             </div>
         </div>
 
-        <!-- Tarih seçici -->
         <div class="date-block">
             <label>Giriş Tarihi</label>
             <input type="date" id="entryDate" class="date-input">
             <div id="dateNote" class="date-note">Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.</div>
         </div>
 
-        <!-- Vardiya seçenekleri -->
-        <div class="shift-options">
-            <div class="shift-option" id="option-sabah" data-shift="sabah">
-                <div class="shift-icon">🌅</div>
-                <div class="shift-label">Sabah Vardiyası</div>
-                <div class="shift-time">09:00 — 17:30</div>
-                <div class="shift-status" id="status-sabah">
-                    <span class="status-loading">⏳ Kontrol...</span>
+        <!-- Sabah vardiyası -->
+        <div class="shift-group">
+            <div class="shift-group-header">🌅 Sabah Vardiyası · 09:00 — 17:30</div>
+            <div class="shift-options">
+                <div class="shift-option" data-shift="sabah" data-kasa="ana_kasa" id="option-sabah-ana">
+                    <div class="shift-icon">🏦</div>
+                    <div class="shift-label">Ana Kasa</div>
+                    <div class="shift-status" id="status-sabah-ana">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
+                </div>
+                <div class="shift-option" data-shift="sabah" data-kasa="iki_kasa" id="option-sabah-iki">
+                    <div class="shift-icon">🖥️</div>
+                    <div class="shift-label">2. Kasa</div>
+                    <div class="shift-status" id="status-sabah-iki">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
                 </div>
             </div>
-            <div class="shift-option" id="option-aksam" data-shift="aksam">
-                <div class="shift-icon">🌙</div>
-                <div class="shift-label">Akşam Vardiyası</div>
-                <div class="shift-time">16:00 — 01:00</div>
-                <div class="shift-status" id="status-aksam">
-                    <span class="status-loading">⏳ Kontrol...</span>
+        </div>
+
+        <!-- Akşam vardiyası -->
+        <div class="shift-group">
+            <div class="shift-group-header">🌙 Akşam Vardiyası · 16:00 — 01:00</div>
+            <div class="shift-options">
+                <div class="shift-option" data-shift="aksam" data-kasa="ana_kasa" id="option-aksam-ana">
+                    <div class="shift-icon">🏦</div>
+                    <div class="shift-label">Ana Kasa</div>
+                    <div class="shift-status" id="status-aksam-ana">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
+                </div>
+                <div class="shift-option" data-shift="aksam" data-kasa="iki_kasa" id="option-aksam-iki">
+                    <div class="shift-icon">🖥️</div>
+                    <div class="shift-label">2. Kasa</div>
+                    <div class="shift-status" id="status-aksam-iki">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -463,7 +466,6 @@
             </div>
         </div>
 
-        <!-- Düzenleme modu uyarısı (gizli, edit modda görünür) -->
         <div id="editBanner" class="edit-banner hidden">
             <div class="edit-banner-icon">✏️</div>
             <div>
@@ -475,28 +477,29 @@
             </div>
         </div>
 
-        <!-- Vardiya bilgi banneri -->
         <div id="shiftInfoBanner" class="shift-info-banner sabah"></div>
 
-        <!-- Z Raporu Değerleri -->
+        <!-- Rapor Değerleri (X veya Z vardiyaya göre) -->
         <div class="card">
-            <div class="card-t">💰 Z Raporu Değerleri</div>
+            <div class="card-t" id="raporCardTitle">💰 Rapor Değerleri</div>
             <div class="fg">
                 <div>
-                    <label>Z Raporu <span style="color:var(--red);">*</span></label>
+                    <label id="raporLabel">Rapor <span style="color:var(--red);">*</span></label>
                     <div class="iw">
                         <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00" required>
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div>
+                <!-- Balık Ekmek — sadece akşam vardiyasında görünür -->
+                <div id="balikField" class="hidden">
                     <label>Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div>
+                <!-- Dondurma — sadece akşam vardiyasında görünür -->
+                <div id="dondurmaField" class="hidden">
                     <label>Dondurma</label>
                     <div class="iw">
                         <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
@@ -506,10 +509,24 @@
             </div>
         </div>
 
-        <!-- Kategori Satışları -->
-        <div class="card">
+        <!-- Kategori Satışları — sadece Ana Kasa için görünür -->
+        <div id="kategoriCard" class="card">
             <div class="card-t">🍽️ Kategori Satışları</div>
             <div class="fg">
+                <div>
+                    <label>Gıda</label>
+                    <div class="iw">
+                        <input type="number" id="gida" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Kahvaltı</label>
+                    <div class="iw">
+                        <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
                 <div>
                     <label>Kahve</label>
                     <div class="iw">
@@ -521,6 +538,13 @@
                     <label>Meyve Suyu</label>
                     <div class="iw">
                         <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Salata</label>
+                    <div class="iw">
+                        <input type="number" id="salata" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
@@ -548,7 +572,6 @@
             </div>
         </div>
 
-        <!-- Notlar -->
         <div class="card">
             <div class="card-t">📝 Notlar <span style="font-size:13px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
             <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
