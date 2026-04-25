@@ -1,12 +1,12 @@
-const CACHE_NAME = 'rumeli-v6';
+const CACHE_NAME = 'rumeli-v7';
 
-// Statik sayfalar önbelleğe alınır (JS/CSS Vite tarafından hash'li üretilir, dinamik olarak cache'lenir)
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/admin-dashboard.html',
     '/cashier-dashboard.html',
     '/entry.html',
+    '/js/supabase-client.js',
     '/manifest.json',
     '/icon-192.png',
     '/icon-512.png'
@@ -50,7 +50,9 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((response) => {
-                if (!response || response.status !== 200 || response.type !== 'basic') {
+                // 'basic' = aynı origin, 'cors' = CDN (supabase, chart.js vb.) — her ikisini önbellekle
+                if (!response || response.status !== 200 ||
+                    (response.type !== 'basic' && response.type !== 'cors')) {
                     return response;
                 }
                 // Başarılı yanıtı önbelleğe koy

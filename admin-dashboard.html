@@ -1964,6 +1964,17 @@
         </div>
     </div>
 
+    <script>
+        // Modül scripti başlatılamazsa (servis worker / ağ sorunu) 10sn sonra hata göster
+        var _adminLoadTimer = setTimeout(function () {
+            var mc = document.getElementById('mainContent')
+            if (mc && mc.querySelector('.spinner')) {
+                mc.innerHTML = '<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;font-weight:700;color:#ef4444">Sayfa yüklenemedi</div><div style="color:rgba(255,255,255,.5);margin:10px 0 24px;font-size:14px">Bağlantı sorunu veya eski önbellek.<br>Yenilemek için aşağıya tıklayın.</div><button onclick="location.reload()" style="padding:12px 28px;background:#e46033;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">🔄 Yenile</button></div>'
+            }
+        }, 10000)
+        window._adminLoadOk = function () { clearTimeout(_adminLoadTimer) }
+    </script>
+
     <!-- FLOATING TARGET CARD -->
     <div id="floatingTarget">
         <div class="ft-title">🎯 Bugünkü Hedef</div>
@@ -2025,6 +2036,7 @@
 
     <script type="module">
         import { supabase } from './js/supabase-client.js'
+        if (typeof window._adminLoadOk === 'function') window._adminLoadOk()
 
         // ═══════════════════════════════════════
         // GLOBAL DEĞİŞKENLER - TARİH FİLTRESİ

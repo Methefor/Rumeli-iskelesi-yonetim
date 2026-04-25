@@ -1,4 +1,7 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+// Sayfanın <script src> ile yüklediği UMD build'i öncelikli kullan.
+// UMD yoksa (doğrudan dosya erişimi vb.) ESM CDN'e düş.
+const { createClient } = window.supabase ??
+    await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm')
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://iwikwbjsznjuefvuemdb.supabase.co'
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ||
