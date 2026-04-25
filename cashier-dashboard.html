@@ -860,9 +860,9 @@
             .badge-levels { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
-  <script type="module" crossorigin src="/assets/cashier-IuvO7jYs.js"></script>
+  <script type="module" crossorigin src="/assets/cashier-CEb9YZZ8.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-9tBk9xhh.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-mCNoDXkE.js">
 </head>
 
 <body>
@@ -972,6 +972,18 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        var _cashierLoadTimer = setTimeout(function () {
+            var el = document.getElementById('loading')
+            if (el && el.style.display !== 'none') {
+                el.innerHTML = '<div style="font-size:48px;margin-bottom:16px">⚠️</div><div style="font-size:18px;font-weight:700;color:#ef4444">Sayfa yüklenemedi</div><div style="color:rgba(255,255,255,.5);margin:10px 0 24px;font-size:14px">Bağlantı sorunu veya eski önbellek.<br>Yenilemek için aşağıya tıklayın.</div><button onclick="location.reload()" style="padding:12px 28px;background:#e46033;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer">🔄 Yenile</button>'
+            }
+        }, 10000)
+        window._cashierLoadOk = function () { clearTimeout(_cashierLoadTimer) }
+    </script>
 
 
     <!-- Puanlama Sistemi Bilgi Modalı -->
