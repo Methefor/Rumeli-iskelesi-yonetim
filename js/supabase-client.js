@@ -1,9 +1,4 @@
-// Sayfanın <script src> ile yüklediği UMD build'i öncelikli kullan (CDN round-trip yok).
-// UMD yoksa ESM endpoint'ten al.
-import { createClient as _esmCreateClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-const createClient = (typeof window !== 'undefined' && window.supabase?.createClient)
-    ? window.supabase.createClient
-    : _esmCreateClient
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://iwikwbjsznjuefvuemdb.supabase.co'
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ||
@@ -27,18 +22,18 @@ export async function getAllCashiers() {
   return await supabase.from('cashiers').select('*').order('name')
 }
 
-// ─── VARDİYA KONTROL (TEK KASA) ──────────────────────────────────────────────
+// ─── VARDİYA KONTROL ─────────────────────────────────────────────────────────
 
 /**
- * Belirtilen tarih + vardiya için kayıt yapılmış mı kontrol eder.
+ * Belirtilen tarih + vardiya + kasa için kayıt yapılmış mı kontrol eder.
  * Döner: { data: { id, cashier_id, entry_time, cashiers: { name } } | null }
  */
-export async function checkShiftExists(date, shift) {
+export async function checkShiftExists(date, shift, kasa) {
   const { data, error } = await supabase
     .from('daily_reports')
     .select('id, cashier_id, entry_time, cashiers(name)')
     .eq('date', date)
-    .eq('kasa', 'tek_kasa')
+    .eq('kasa', kasa)
     .eq('shift', shift)
     .maybeSingle()
   return { data, error }
@@ -47,17 +42,20 @@ export async function checkShiftExists(date, shift) {
 // ─── YENİ VARDİYA GİRİŞİ ─────────────────────────────────────────────────────
 
 /**
- * Tek kasa sistemi için yeni vardiya girişi.
+ * 2-kasa sistemi için yeni vardiya girişi.
+ * kasa: 'ana_kasa' | 'iki_kasa'
+ * Sabah = X Raporu (balik/dondurma yok), Akşam = Z Raporu (balik+dondurma var)
  *
  * Puanlama (max 100 / giriş — oran tabanlı adil yarış):
  *   Zamanında  → +50 puan   (Geç → 0)
- *   Eksiksiz   → +50 puan   (Z raporu + en az 2 kategori alanı)
- *
- * Aylık sıralama = toplam_puan / (giriş_sayısı × 100) × 100  (yüzde)
+ *   Eksiksiz   → +50 puan
+ *     Ana Kasa: rapor > 0 && en az 2 ek alan dolu
+ *     2. Kasa:  rapor > 0 (kategori yok)
  */
 export async function insertShiftEntry(data) {
   const now      = new Date()
   const todayStr = localDateStr(now)
+  const kasa     = data.kasa || 'ana_kasa'
 
   // — Zamanında mı? —
   let isOnTime = false
@@ -66,41 +64,40 @@ export async function insertShiftEntry(data) {
     if (data.shift === 'sabah') {
       isOnTime = h < 17 || (h === 17 && m <= 30)
     } else {
-      // Akşam: 16:00 → 01:00 arası zamanında
       isOnTime = h >= 16 || h === 0 || (h === 1 && m === 0)
     }
   }
-  // Geçmiş tarih → otomatik geç (isOnTime = false)
 
-  // — Eksiksiz veri mi? (Z raporu + en az 2 diğer alan) —
+  // — Eksiksiz veri mi? —
   const extraFields = [
-    data.balikEkmek, data.dondurma ?? data.dondurmaZ,
+    data.balikEkmek, data.dondurmaZ,
     data.kahve, data.meyveSuyu, data.sicakIcecek, data.sogukIcecek, data.tatli,
+    data.gida, data.kahvalti, data.salata,
   ]
-  const hasCompleteData =
-    parseFloat(data.rumeliZ1) > 0 &&
-    extraFields.filter(v => parseFloat(v) > 0).length >= 2
+  const hasCompleteData = kasa === 'iki_kasa'
+    ? parseFloat(data.rumeliZ1) > 0
+    : parseFloat(data.rumeliZ1) > 0 && extraFields.filter(v => parseFloat(v) > 0).length >= 2
 
   // — Puan (max 100) —
   const pointsEarned = (isOnTime ? 50 : 0) + (hasCompleteData ? 50 : 0)
 
-  // — Toplam ciro (Z + balık ekmek + dondurma) —
+  // — Toplam ciro —
   const totalRevenue =
-    (parseFloat(data.rumeliZ1)    || 0) +
-    (parseFloat(data.balikEkmek)  || 0) +
-    (parseFloat(data.dondurma) || parseFloat(data.dondurmaZ) || 0)
+    (parseFloat(data.rumeliZ1)   || 0) +
+    (parseFloat(data.balikEkmek) || 0) +
+    (parseFloat(data.dondurmaZ)  || 0)
 
   const reportRecord = {
     date:          data.selectedDate,
     cashier_id:    data.cashierId,
-    kasa:          'tek_kasa',
+    kasa:          kasa,
     shift:         data.shift,
-    register_name: 'Rumeli İskelesi',
+    register_name: kasa === 'ana_kasa' ? 'Ana Kasa' : '2. Kasa',
 
     rumeli_z1:    parseFloat(data.rumeliZ1)   || 0,
     rumeli_z2:    0,
     balik_ekmek:  parseFloat(data.balikEkmek) || 0,
-    dondurma:     parseFloat(data.dondurma) || parseFloat(data.dondurmaZ) || 0,
+    dondurma:     parseFloat(data.dondurmaZ)  || 0,
     dondurma_adet: 0,
 
     kahve:        parseFloat(data.kahve)       || 0,
@@ -108,9 +105,11 @@ export async function insertShiftEntry(data) {
     soguk_icecek: parseFloat(data.sogukIcecek) || 0,
     tatli:        parseFloat(data.tatli)       || 0,
     meyvesuyu:    parseFloat(data.meyveSuyu)   || 0,
+    gida:         parseFloat(data.gida)        || 0,
+    kahvalti:     parseFloat(data.kahvalti)    || 0,
+    salata:       parseFloat(data.salata)      || 0,
 
-    // Kaldırılan alanlar — şema uyumluluğu için sıfır
-    gida: 0, kahvalti: 0, salata: 0, dondurma_kategori: 0, depo: 0,
+    dondurma_kategori: 0, depo: 0,
 
     notlar:             data.notlar || '',
     total_revenue:      totalRevenue,
@@ -166,19 +165,22 @@ export async function updateShiftEntry(reportId, formData, cashierId) {
   const totalRevenue =
     (parseFloat(formData.rumeliZ1)   || 0) +
     (parseFloat(formData.balikEkmek) || 0) +
-    (parseFloat(formData.dondurma) || parseFloat(formData.dondurmaZ) || 0)
+    (parseFloat(formData.dondurmaZ)  || 0)
 
   const { data, error } = await supabase
     .from('daily_reports')
     .update({
       rumeli_z1:    parseFloat(formData.rumeliZ1)   || 0,
       balik_ekmek:  parseFloat(formData.balikEkmek) || 0,
-      dondurma:     parseFloat(formData.dondurma) || parseFloat(formData.dondurmaZ) || 0,
+      dondurma:     parseFloat(formData.dondurmaZ)  || 0,
       kahve:        parseFloat(formData.kahve)       || 0,
       sicak_icecek: parseFloat(formData.sicakIcecek) || 0,
       soguk_icecek: parseFloat(formData.sogukIcecek) || 0,
       tatli:        parseFloat(formData.tatli)       || 0,
       meyvesuyu:    parseFloat(formData.meyveSuyu)   || 0,
+      gida:         parseFloat(formData.gida)        || 0,
+      kahvalti:     parseFloat(formData.kahvalti)    || 0,
+      salata:       parseFloat(formData.salata)      || 0,
       notlar:       formData.notlar || '',
       total_revenue:      totalRevenue,
       individual_revenue: totalRevenue,

@@ -79,7 +79,6 @@
             margin-bottom: 28px;
         }
 
-        /* Kasiyer bilgi kartı */
         .cashier-info {
             background: var(--input);
             border: 1px solid var(--brd);
@@ -107,8 +106,7 @@
         .cashier-name { font-size: 17px; font-weight: 700; }
         .cashier-role { font-size: 13px; color: var(--txt2); margin-top: 2px; }
 
-        /* Tarih seçici */
-        .date-block { margin-bottom: 22px; }
+        .date-block { margin-bottom: 20px; }
         .date-block label {
             display: block;
             font-size: 12px; font-weight: 600; color: var(--txt2);
@@ -128,20 +126,26 @@
 
         .date-note { font-size: 11px; color: var(--txt3); margin-top: 7px; font-style: italic; }
 
-        /* Vardiya seçenekleri */
+        /* Shift groups */
+        .shift-group { margin-bottom: 14px; }
+
+        .shift-group-header {
+            font-size: 11px; font-weight: 700; color: var(--txt2);
+            text-transform: uppercase; letter-spacing: .8px;
+            margin-bottom: 8px; padding-left: 2px;
+        }
+
         .shift-options {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-            margin-bottom: 22px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
         }
 
         .shift-option {
-            padding: 20px 16px;
+            padding: 16px 12px;
             border: 2px solid var(--brd);
             border-radius: 14px;
             cursor: pointer;
             transition: all .2s;
             text-align: center;
-            position: relative;
         }
 
         .shift-option:hover:not(.taken) {
@@ -173,20 +177,17 @@
             background: rgba(239,68,68,.04);
         }
 
-        .shift-icon  { font-size: 36px; margin-bottom: 10px; }
-        .shift-label { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-        .shift-time  { font-size: 12px; color: var(--txt2); margin-bottom: 10px; }
+        .shift-icon  { font-size: 26px; margin-bottom: 8px; }
+        .shift-label { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
 
-        /* Vardiya durum göstergesi */
-        .shift-status { min-height: 22px; }
-        .status-loading  { font-size: 11px; color: var(--txt3); }
-        .status-available{ font-size: 11px; font-weight: 600; color: var(--green); }
-        .status-mine     { font-size: 11px; font-weight: 600; color: var(--orange); }
-        .status-taken    { font-size: 11px; font-weight: 600; color: var(--red); }
+        .shift-status { min-height: 20px; }
+        .status-loading  { font-size: 10px; color: var(--txt3); }
+        .status-available{ font-size: 10px; font-weight: 600; color: var(--green); }
+        .status-mine     { font-size: 10px; font-weight: 600; color: var(--orange); }
+        .status-taken    { font-size: 10px; font-weight: 600; color: var(--red); }
 
-        /* Butonlar */
         .btn-group {
-            display: flex; gap: 12px;
+            display: flex; gap: 12px; margin-top: 18px;
         }
 
         .btn-back {
@@ -241,7 +242,6 @@
             display: flex; align-items: center; gap: 5px;
         }
 
-        /* Düzenleme modu banner */
         .edit-banner {
             background: linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
             border: 1px solid rgba(245,158,11,.4);
@@ -254,7 +254,6 @@
         .edit-banner-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
         .edit-banner-desc  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
 
-        /* Kart */
         .card {
             background: var(--card); border: 1px solid var(--brd);
             border-radius: 16px; padding: 22px; margin-bottom: 18px;
@@ -291,7 +290,6 @@
             font-size: 13px; color: var(--txt3); font-weight: 600;
         }
 
-        /* Notlar */
         .notes-area {
             width: 100%; background: var(--input); border: 1.5px solid var(--brd);
             color: var(--txt); padding: 12px 14px; border-radius: 10px;
@@ -302,7 +300,6 @@
 
         .notes-area:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
 
-        /* Gönder butonu */
         .btn-submit {
             width: 100%; padding: 16px; border-radius: 12px;
             font-size: 15px; font-weight: 700; border: none; cursor: pointer;
@@ -314,7 +311,6 @@
         .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
         .btn-submit.edit-mode { background: linear-gradient(135deg,#92400e,#f59e0b); }
 
-        /* Toast */
         .toast {
             position: fixed; top: 20px; right: 20px;
             padding: 14px 22px; border-radius: 12px;
@@ -328,7 +324,6 @@
 
         .hidden { display: none !important; }
 
-        /* Sabah/Akşam info banner */
         .shift-info-banner {
             border-radius: 12px; padding: 14px 18px;
             margin-bottom: 18px; font-size: 13px; color: var(--txt2); line-height: 1.6;
@@ -344,11 +339,10 @@
             border: 1px solid rgba(139,92,246,.25);
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
             body { padding: 12px; }
-            .shift-screen { padding: 24px 16px; margin: 12px auto; }
-            .shift-options { grid-template-columns: 1fr; gap: 10px; }
+            .shift-screen { padding: 24px 14px; margin: 12px auto; }
+            .shift-options { gap: 8px; }
             .fg { grid-template-columns: 1fr; }
             .btn-group { flex-direction: column; }
             .btn-back { flex: 1; }
@@ -361,7 +355,7 @@
     <!-- VARDİYA SEÇİM EKRANI -->
     <div id="shiftScreen" class="shift-screen hidden">
         <div class="screen-title">📅 Vardiya Seçimi</div>
-        <p class="screen-subtitle">Bugün hangi vardiyada çalışıyorsunuz?</p>
+        <p class="screen-subtitle">Kasa ve vardiyayı seçin</p>
 
         <div class="cashier-info">
             <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
@@ -371,29 +365,50 @@
             </div>
         </div>
 
-        <!-- Tarih seçici -->
         <div class="date-block">
             <label>Giriş Tarihi</label>
             <input type="date" id="entryDate" class="date-input">
             <div id="dateNote" class="date-note">Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.</div>
         </div>
 
-        <!-- Vardiya seçenekleri -->
-        <div class="shift-options">
-            <div class="shift-option" id="option-sabah" data-shift="sabah">
-                <div class="shift-icon">🌅</div>
-                <div class="shift-label">Sabah Vardiyası</div>
-                <div class="shift-time">09:00 — 17:30</div>
-                <div class="shift-status" id="status-sabah">
-                    <span class="status-loading">⏳ Kontrol...</span>
+        <!-- Sabah vardiyası -->
+        <div class="shift-group">
+            <div class="shift-group-header">🌅 Sabah Vardiyası · 09:00 — 17:30</div>
+            <div class="shift-options">
+                <div class="shift-option" data-shift="sabah" data-kasa="ana_kasa" id="option-sabah-ana">
+                    <div class="shift-icon">🏦</div>
+                    <div class="shift-label">Ana Kasa</div>
+                    <div class="shift-status" id="status-sabah-ana">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
+                </div>
+                <div class="shift-option" data-shift="sabah" data-kasa="iki_kasa" id="option-sabah-iki">
+                    <div class="shift-icon">🖥️</div>
+                    <div class="shift-label">2. Kasa</div>
+                    <div class="shift-status" id="status-sabah-iki">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
                 </div>
             </div>
-            <div class="shift-option" id="option-aksam" data-shift="aksam">
-                <div class="shift-icon">🌙</div>
-                <div class="shift-label">Akşam Vardiyası</div>
-                <div class="shift-time">16:00 — 01:00</div>
-                <div class="shift-status" id="status-aksam">
-                    <span class="status-loading">⏳ Kontrol...</span>
+        </div>
+
+        <!-- Akşam vardiyası -->
+        <div class="shift-group">
+            <div class="shift-group-header">🌙 Akşam Vardiyası · 16:00 — 01:00</div>
+            <div class="shift-options">
+                <div class="shift-option" data-shift="aksam" data-kasa="ana_kasa" id="option-aksam-ana">
+                    <div class="shift-icon">🏦</div>
+                    <div class="shift-label">Ana Kasa</div>
+                    <div class="shift-status" id="status-aksam-ana">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
+                </div>
+                <div class="shift-option" data-shift="aksam" data-kasa="iki_kasa" id="option-aksam-iki">
+                    <div class="shift-icon">🖥️</div>
+                    <div class="shift-label">2. Kasa</div>
+                    <div class="shift-status" id="status-aksam-iki">
+                        <span class="status-loading">⏳ Kontrol...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -424,7 +439,6 @@
             </div>
         </div>
 
-        <!-- Düzenleme modu uyarısı (gizli, edit modda görünür) -->
         <div id="editBanner" class="edit-banner hidden">
             <div class="edit-banner-icon">✏️</div>
             <div>
@@ -436,28 +450,29 @@
             </div>
         </div>
 
-        <!-- Vardiya bilgi banneri -->
         <div id="shiftInfoBanner" class="shift-info-banner sabah"></div>
 
-        <!-- Z Raporu Değerleri -->
+        <!-- Rapor Değerleri (X veya Z vardiyaya göre) -->
         <div class="card">
-            <div class="card-t">💰 Z Raporu Değerleri</div>
+            <div class="card-t" id="raporCardTitle">💰 Rapor Değerleri</div>
             <div class="fg">
                 <div>
-                    <label>Z Raporu <span style="color:var(--red);">*</span></label>
+                    <label id="raporLabel">Rapor <span style="color:var(--red);">*</span></label>
                     <div class="iw">
                         <input type="number" id="rumeliZ1" step="0.01" placeholder="0.00" required>
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div>
+                <!-- Balık Ekmek — sadece akşam vardiyasında görünür -->
+                <div id="balikField" class="hidden">
                     <label>Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <div>
+                <!-- Dondurma — sadece akşam vardiyasında görünür -->
+                <div id="dondurmaField" class="hidden">
                     <label>Dondurma</label>
                     <div class="iw">
                         <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
@@ -467,10 +482,24 @@
             </div>
         </div>
 
-        <!-- Kategori Satışları -->
-        <div class="card">
+        <!-- Kategori Satışları — sadece Ana Kasa için görünür -->
+        <div id="kategoriCard" class="card">
             <div class="card-t">🍽️ Kategori Satışları</div>
             <div class="fg">
+                <div>
+                    <label>Gıda</label>
+                    <div class="iw">
+                        <input type="number" id="gida" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Kahvaltı</label>
+                    <div class="iw">
+                        <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
                 <div>
                     <label>Kahve</label>
                     <div class="iw">
@@ -482,6 +511,13 @@
                     <label>Meyve Suyu</label>
                     <div class="iw">
                         <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
+                <div>
+                    <label>Salata</label>
+                    <div class="iw">
+                        <input type="number" id="salata" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
@@ -509,7 +545,6 @@
             </div>
         </div>
 
-        <!-- Notlar -->
         <div class="card">
             <div class="card-t">📝 Notlar <span style="font-size:13px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
             <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
@@ -524,10 +559,11 @@
         import { supabase, checkShiftExists, insertShiftEntry, updateShiftEntry } from './js/supabase-client.js'
 
         // ── DURUM ──────────────────────────────────────────────────
-        let currentCashier   = null
-        let selectedShift    = null
-        let isEditMode       = false
-        let editModeReportId = null
+        let currentCashier    = null
+        let selectedShift     = null
+        let selectedKasa      = null   // 'ana_kasa' | 'iki_kasa'
+        let isEditMode        = false
+        let editModeReportId  = null
         let editCurrentPoints = 0
 
         const AVATAR_CLASSES = {
@@ -537,9 +573,16 @@
             'Ceren Erdem':   'av-c',
         }
 
+        const SLOTS = [
+            { shift: 'sabah', kasa: 'ana_kasa', id: 'sabah-ana' },
+            { shift: 'sabah', kasa: 'iki_kasa', id: 'sabah-iki' },
+            { shift: 'aksam', kasa: 'ana_kasa', id: 'aksam-ana' },
+            { shift: 'aksam', kasa: 'iki_kasa', id: 'aksam-iki' },
+        ]
+
         // ── BAŞLATMA ───────────────────────────────────────────────
-        const urlParams  = new URLSearchParams(window.location.search)
-        const cashierId  = urlParams.get('cashier_id')
+        const urlParams = new URLSearchParams(window.location.search)
+        const cashierId = urlParams.get('cashier_id')
 
         if (!cashierId) {
             window.location.href = 'index.html'
@@ -547,7 +590,6 @@
             ;(async () => {
                 const { data, error } = await supabase
                     .from('cashiers').select('*').eq('id', cashierId).single()
-
                 if (data && !error) {
                     currentCashier = data
                     initShiftScreen()
@@ -565,11 +607,9 @@
             document.getElementById('cashierAvatar').className =
                 'cashier-avatar ' + (AVATAR_CLASSES[currentCashier.name] || 'av-t')
 
-            // Özetim butonuna cashier_id ekle
             document.getElementById('ozetimBtn').href =
                 `cashier-dashboard.html?cashier_id=${currentCashier.id}`
 
-            // Tarih başlat
             const dateInput = document.getElementById('entryDate')
             const todayStr  = localDateStr(new Date())
             dateInput.value = todayStr
@@ -579,15 +619,13 @@
             dateInput.min   = localDateStr(minDate)
 
             document.getElementById('shiftScreen').classList.remove('hidden')
-
-            // Shift durumlarını kontrol et
             checkShiftStatuses(todayStr)
         }
 
         // ── TARİH DEĞİŞTİ ──────────────────────────────────────────
         document.getElementById('entryDate').addEventListener('change', e => {
-            const val     = e.target.value
-            const today   = localDateStr(new Date())
+            const val      = e.target.value
+            const today    = localDateStr(new Date())
             const dateNote = document.getElementById('dateNote')
 
             if (val < today) {
@@ -597,7 +635,6 @@
                 dateNote.textContent = 'Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.'
             }
 
-            // Seçimi sıfırla ve yeniden kontrol et
             resetShiftSelection()
             checkShiftStatuses(val)
         })
@@ -606,54 +643,49 @@
         async function checkShiftStatuses(date) {
             setStatusLoading()
             try {
-                const [sabahRes, aksamRes] = await Promise.all([
-                    checkShiftExists(date, 'sabah'),
-                    checkShiftExists(date, 'aksam'),
-                ])
-                applyShiftStatus('sabah', sabahRes.data)
-                applyShiftStatus('aksam', aksamRes.data)
+                const results = await Promise.all(
+                    SLOTS.map(s => checkShiftExists(date, s.shift, s.kasa))
+                )
+                SLOTS.forEach((s, i) => applyShiftStatus(s.id, results[i].data))
             } catch {
-                // Hata durumunda "kullanılabilir" göster
-                applyShiftStatus('sabah', null)
-                applyShiftStatus('aksam', null)
+                SLOTS.forEach(s => applyShiftStatus(s.id, null))
             }
         }
 
         function setStatusLoading() {
-            ;['sabah', 'aksam'].forEach(s => {
-                document.getElementById(`status-${s}`).innerHTML =
+            SLOTS.forEach(s => {
+                document.getElementById(`status-${s.id}`).innerHTML =
                     '<span class="status-loading">⏳ Kontrol...</span>'
-                const opt = document.getElementById(`option-${s}`)
-                opt.classList.remove('taken', 'mine', 'selected')
+                document.getElementById(`option-${s.id}`).classList.remove('taken', 'mine', 'selected')
             })
         }
 
-        function applyShiftStatus(shift, existing) {
-            const opt    = document.getElementById(`option-${shift}`)
-            const status = document.getElementById(`status-${shift}`)
+        function applyShiftStatus(slotId, existing) {
+            const opt    = document.getElementById(`option-${slotId}`)
+            const status = document.getElementById(`status-${slotId}`)
             opt.dataset.existing = existing ? JSON.stringify(existing) : ''
 
             if (!existing) {
                 opt.classList.remove('taken', 'mine')
-                status.innerHTML = '<span class="status-available">✅ Giriş Yapılabilir</span>'
+                status.innerHTML = '<span class="status-available">✅ Açık</span>'
             } else if (existing.cashier_id === currentCashier.id) {
                 opt.classList.remove('taken')
                 opt.classList.add('mine')
                 const t = new Date(existing.entry_time).toLocaleTimeString(
                     'tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
-                status.innerHTML = `<span class="status-mine">✏️ Senin girişin · ${t} · Düzenle</span>`
+                status.innerHTML = `<span class="status-mine">✏️ Senin · ${t}</span>`
             } else {
                 opt.classList.add('taken')
                 opt.classList.remove('mine')
-                const name = existing.cashiers?.name || 'Başka kasiyer'
-                const t    = new Date(existing.entry_time).toLocaleTimeString(
+                const t = new Date(existing.entry_time).toLocaleTimeString(
                     'tr-TR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Istanbul' })
-                status.innerHTML = `<span class="status-taken">🔒 ${name} · ${t}</span>`
+                status.innerHTML = `<span class="status-taken">🔒 ${t}</span>`
             }
         }
 
         function resetShiftSelection() {
             selectedShift    = null
+            selectedKasa     = null
             isEditMode       = false
             editModeReportId = null
             document.querySelectorAll('.shift-option').forEach(o => o.classList.remove('selected'))
@@ -665,24 +697,20 @@
         document.querySelectorAll('.shift-option').forEach(option => {
             option.addEventListener('click', () => {
                 const shift    = option.dataset.shift
+                const kasa     = option.dataset.kasa
                 const existing = option.dataset.existing
                     ? JSON.parse(option.dataset.existing) : null
 
-                // Başkası tarafından girilmişse engelle
                 if (existing && existing.cashier_id !== currentCashier.id) {
-                    showToast(
-                        `🔒 Bu vardiya zaten girildi. Sadece görüntüleyebilirsiniz.`,
-                        'error'
-                    )
+                    showToast('🔒 Bu slot zaten girildi.', 'error')
                     return
                 }
 
-                // Seçimi uygula
                 document.querySelectorAll('.shift-option').forEach(o => o.classList.remove('selected'))
                 option.classList.add('selected')
                 selectedShift = shift
+                selectedKasa  = kasa
 
-                // Düzenleme modu mu?
                 if (existing && existing.cashier_id === currentCashier.id) {
                     isEditMode       = true
                     editModeReportId = existing.id
@@ -699,25 +727,38 @@
 
         // ── DEVAM ET → FORM ─────────────────────────────────────
         document.getElementById('shiftButton').addEventListener('click', async () => {
-            if (!selectedShift) return
+            if (!selectedShift || !selectedKasa) return
 
             document.getElementById('shiftScreen').classList.add('hidden')
             document.getElementById('mainScreen').classList.add('active')
 
-            const dateVal = document.getElementById('entryDate').value
-            const [sy, sm, sd] = dateVal.split('-')
-            const dateLabel = `${sd}/${sm}`
-            const shiftLabel = selectedShift === 'sabah' ? 'Sabah Vardiyası' : 'Akşam Vardiyası'
+            const dateVal  = document.getElementById('entryDate').value
+            const [,sm,sd] = dateVal.split('-')
+            const dateLabel  = `${sd}/${sm}`
+            const shiftLabel = selectedShift === 'sabah' ? 'Sabah' : 'Akşam'
+            const kasaLabel  = selectedKasa === 'ana_kasa' ? 'Ana Kasa' : '2. Kasa'
             document.getElementById('navInfo').textContent =
-                `${currentCashier.name} · ${shiftLabel} · ${dateLabel}`
+                `${currentCashier.name} · ${shiftLabel} ${kasaLabel} · ${dateLabel}`
 
-            // Düzenleme modu kurulumu
+            // Sabah = X Raporu, Akşam = Z Raporu
+            const isEvening = selectedShift === 'aksam'
+            const raporName = isEvening ? 'Z Raporu' : 'X Raporu'
+            document.getElementById('raporCardTitle').textContent = `💰 ${raporName} Değerleri`
+            document.getElementById('raporLabel').innerHTML =
+                `${raporName} <span style="color:var(--red);">*</span>`
+
+            // Balık + Dondurma sadece akşam vardiyasında
+            document.getElementById('balikField').classList.toggle('hidden', !isEvening)
+            document.getElementById('dondurmaField').classList.toggle('hidden', !isEvening)
+
+            // Kategori satışları sadece Ana Kasa'da
+            document.getElementById('kategoriCard').classList.toggle('hidden', selectedKasa === 'iki_kasa')
+
+            // Düzenleme modu
             if (isEditMode) {
                 document.getElementById('editBanner').classList.remove('hidden')
                 document.getElementById('submitButton').textContent = '💾 Düzenlemeyi Kaydet (-5 puan)'
                 document.getElementById('submitButton').classList.add('edit-mode')
-
-                // Mevcut veriyi yükle
                 await loadExistingEntry(editModeReportId)
             } else {
                 document.getElementById('editBanner').classList.add('hidden')
@@ -725,24 +766,21 @@
                 document.getElementById('submitButton').classList.remove('edit-mode')
             }
 
-            // Vardiya bilgi banneri
+            // Bilgi banneri
             const banner = document.getElementById('shiftInfoBanner')
             if (selectedShift === 'sabah') {
                 banner.className = 'shift-info-banner sabah'
-                banner.innerHTML = `
-                    <strong style="color:var(--orange);">🌅 Sabah Vardiyası</strong> —
-                    Sabah periyodundaki Z raporu ve kategori satışlarını girin.
-                    Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
+                banner.innerHTML = selectedKasa === 'ana_kasa'
+                    ? `<strong style="color:var(--orange);">🌅 Sabah - Ana Kasa</strong> — X Raporu ve kategori satışlarını girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
+                    : `<strong style="color:var(--orange);">🌅 Sabah - 2. Kasa</strong> — Yalnızca X Raporu değerini girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
             } else {
                 banner.className = 'shift-info-banner aksam'
-                banner.innerHTML = `
-                    <strong style="color:var(--purple);">🌙 Akşam Vardiyası</strong> —
-                    <strong>Gün sonu TOPLAM</strong> Z raporu ve kategori değerlerini girin.
-                    Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
+                banner.innerHTML = selectedKasa === 'ana_kasa'
+                    ? `<strong style="color:var(--purple);">🌙 Akşam - Ana Kasa</strong> — Z Raporu, Balık Ekmek, Dondurma ve kategori satışlarını girin. Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
+                    : `<strong style="color:var(--purple);">🌙 Akşam - 2. Kasa</strong> — Z Raporu, Balık Ekmek ve Dondurma değerlerini girin. Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
             }
         })
 
-        // Mevcut kaydı forma yükle (düzenleme modu)
         async function loadExistingEntry(reportId) {
             try {
                 const { data: entry, error } = await supabase
@@ -753,7 +791,6 @@
                 document.getElementById('currentPoints').textContent =
                     `${editCurrentPoints} puan → düzenleme sonrası ${Math.max(0, editCurrentPoints - 5)} puan`
 
-                // Form alanlarını doldur
                 setVal('rumeliZ1',    entry.rumeli_z1)
                 setVal('balikEkmek',  entry.balik_ekmek)
                 setVal('dondurmaZ',   entry.dondurma)
@@ -762,6 +799,9 @@
                 setVal('sicakIcecek', entry.sicak_icecek)
                 setVal('sogukIcecek', entry.soguk_icecek)
                 setVal('tatli',       entry.tatli)
+                setVal('gida',        entry.gida)
+                setVal('kahvalti',    entry.kahvalti)
+                setVal('salata',      entry.salata)
                 document.getElementById('notlar').value = entry.notlar || ''
             } catch (err) {
                 console.error('Mevcut kayıt yüklenemedi:', err)
@@ -779,7 +819,7 @@
         })
 
         document.getElementById('mainBackButton').addEventListener('click', () => {
-            if (confirm('Veri girişinden çıkmak istediğinize emin misiniz? Girdiğiniz veriler kaybolacak.')) {
+            if (confirm('Veri girişinden çıkmak istediğinize emin misiniz?')) {
                 document.getElementById('mainScreen').classList.remove('active')
                 document.getElementById('shiftScreen').classList.remove('hidden')
                 resetShiftSelection()
@@ -788,9 +828,7 @@
         })
 
         function clearForm() {
-            document.querySelectorAll('#mainScreen input[type="number"]').forEach(el => {
-                el.value = ''
-            })
+            document.querySelectorAll('#mainScreen input[type="number"]').forEach(el => el.value = '')
             document.getElementById('notlar').value = ''
             document.getElementById('pointsDisplay').textContent = '+0'
         }
@@ -799,7 +837,8 @@
         document.getElementById('submitButton').addEventListener('click', async () => {
             const zVal = parseFloat(document.getElementById('rumeliZ1').value) || 0
             if (zVal <= 0) {
-                showToast('Z Raporu değeri girilmedi!', 'error')
+                const label = selectedShift === 'sabah' ? 'X Raporu' : 'Z Raporu'
+                showToast(`${label} değeri girilmedi!`, 'error')
                 document.getElementById('rumeliZ1').focus()
                 return
             }
@@ -808,18 +847,25 @@
             btn.disabled = true
             btn.textContent = 'Kaydediliyor...'
 
+            const isEvening = selectedShift === 'aksam'
+            const isAnaKasa = selectedKasa === 'ana_kasa'
+
             const formData = {
                 cashierId:    currentCashier.id,
                 shift:        selectedShift,
+                kasa:         selectedKasa,
                 selectedDate: document.getElementById('entryDate').value,
                 rumeliZ1:     parseFloat(document.getElementById('rumeliZ1').value)    || 0,
-                balikEkmek:   parseFloat(document.getElementById('balikEkmek').value)  || 0,
-                dondurmaZ:    parseFloat(document.getElementById('dondurmaZ').value)   || 0,
-                kahve:        parseFloat(document.getElementById('kahve').value)        || 0,
-                meyveSuyu:    parseFloat(document.getElementById('meyveSuyu').value)    || 0,
-                sicakIcecek:  parseFloat(document.getElementById('sicakIcecek').value)  || 0,
-                sogukIcecek:  parseFloat(document.getElementById('sogukIcecek').value)  || 0,
-                tatli:        parseFloat(document.getElementById('tatli').value)        || 0,
+                balikEkmek:   isEvening ? parseFloat(document.getElementById('balikEkmek').value)  || 0 : 0,
+                dondurmaZ:    isEvening ? parseFloat(document.getElementById('dondurmaZ').value)   || 0 : 0,
+                kahve:        isAnaKasa ? parseFloat(document.getElementById('kahve').value)        || 0 : 0,
+                meyveSuyu:    isAnaKasa ? parseFloat(document.getElementById('meyveSuyu').value)    || 0 : 0,
+                sicakIcecek:  isAnaKasa ? parseFloat(document.getElementById('sicakIcecek').value)  || 0 : 0,
+                sogukIcecek:  isAnaKasa ? parseFloat(document.getElementById('sogukIcecek').value)  || 0 : 0,
+                tatli:        isAnaKasa ? parseFloat(document.getElementById('tatli').value)        || 0 : 0,
+                gida:         isAnaKasa ? parseFloat(document.getElementById('gida').value)         || 0 : 0,
+                kahvalti:     isAnaKasa ? parseFloat(document.getElementById('kahvalti').value)     || 0 : 0,
+                salata:       isAnaKasa ? parseFloat(document.getElementById('salata').value)       || 0 : 0,
                 notlar:       document.getElementById('notlar').value,
             }
 
@@ -836,18 +882,14 @@
 
                 if (error) throw error
 
-                const pts = result.pointsEarned ?? result.points_earned ?? 0
-                document.getElementById('pointsDisplay').textContent =
-                    isEditMode ? `-5` : `+${pts}`
-
+                const pts    = result.pointsEarned ?? result.points_earned ?? 0
                 const timing = result.isOnTime === undefined
                     ? '' : (result.isOnTime ? ' ⏰ Zamanında!' : ' ⚠️ Geç giriş')
 
+                document.getElementById('pointsDisplay').textContent = isEditMode ? `-5` : `+${pts}`
+
                 if (isEditMode) {
-                    showToast(
-                        `✅ Güncellendi! -5 puan cezası uygulandı. Yeni puan: ${pts}`,
-                        'success'
-                    )
+                    showToast(`✅ Güncellendi! -5 puan cezası uygulandı. Yeni puan: ${pts}`, 'success')
                 } else {
                     showToast(`✅ Kaydedildi! +${pts} puan kazandınız!${timing}`, 'success')
                 }
@@ -856,9 +898,7 @@
             } catch (err) {
                 showToast('Hata: ' + err.message, 'error')
                 btn.disabled = false
-                btn.textContent = isEditMode
-                    ? '💾 Düzenlemeyi Kaydet (-5 puan)'
-                    : '💾 Kaydet ve Puan Kazan!'
+                btn.textContent = isEditMode ? '💾 Düzenlemeyi Kaydet (-5 puan)' : '💾 Kaydet ve Puan Kazan!'
                 if (isEditMode) btn.classList.add('edit-mode')
             }
         })

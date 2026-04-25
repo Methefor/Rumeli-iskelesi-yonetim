@@ -789,6 +789,21 @@
             color: #a78bfa
         }
 
+        .badge.ana_kasa {
+            background: rgba(59, 130, 246, .15);
+            color: #60a5fa
+        }
+
+        .badge.iki_kasa {
+            background: rgba(6, 182, 212, .15);
+            color: #22d3ee
+        }
+
+        .badge.tek_kasa {
+            background: rgba(34, 197, 94, .15);
+            color: #4ade80
+        }
+
         .badge.restoran {
             background: rgba(59, 130, 246, .15);
             color: #60a5fa
@@ -2121,33 +2136,44 @@
         // ═══════════════════════════════════════
 
         function calcKasaCiros(reports) {
-            // tek_kasa: günde en fazla 2 vardiya — akşam toplam girdiği için akşamı al
-            // Eski veri (restoran/cafetarya): aynı gün 2 ayrı kasa, her ikisini topla
-            const tekKasaDaily = {}
+            // ana_kasa / iki_kasa: her (tarih, kasa) çifti için akşam tercihli en iyi kaydı al
+            // tek_kasa (eski): günde akşamı tercih et
+            // restoran/cafetarya (çok eski): tümünü topla
+            const newKasaDaily = {}   // key = `${date}-${kasa}` → en iyi kayıt
+            const tekKasaDaily = {}   // key = date → en iyi kayıt
             let oldZ = 0, oldBalik = 0, oldDond = 0
 
             reports.forEach(r => {
-                if (r.kasa === 'tek_kasa') {
-                    const key = r.date
-                    if (!tekKasaDaily[key] || r.shift === 'aksam') tekKasaDaily[key] = r
+                if (r.kasa === 'ana_kasa' || r.kasa === 'iki_kasa') {
+                    const key = `${r.date}-${r.kasa}`
+                    if (!newKasaDaily[key] || r.shift === 'aksam') newKasaDaily[key] = r
+                } else if (r.kasa === 'tek_kasa') {
+                    if (!tekKasaDaily[r.date] || r.shift === 'aksam') tekKasaDaily[r.date] = r
                 } else {
-                    // restoran: z2 ana Z alanı; cafetarya: z1 ana Z alanı
+                    // restoran: z2; cafetarya: z1
                     oldZ     += parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0)
                     oldBalik += parseFloat(r.balik_ekmek || 0)
                     oldDond  += parseFloat(r.dondurma || 0)
                 }
             })
 
-            const tek = Object.values(tekKasaDaily).reduce((acc, r) => {
+            const sumNew = Object.values(newKasaDaily).reduce((acc, r) => {
                 acc.z     += parseFloat(r.rumeli_z1 || 0)
                 acc.balik += parseFloat(r.balik_ekmek || 0)
                 acc.dond  += parseFloat(r.dondurma || 0)
                 return acc
             }, { z: 0, balik: 0, dond: 0 })
 
-            const zRaporu  = tek.z     + oldZ
-            const balik    = tek.balik + oldBalik
-            const dondurma = tek.dond  + oldDond
+            const sumTek = Object.values(tekKasaDaily).reduce((acc, r) => {
+                acc.z     += parseFloat(r.rumeli_z1 || 0)
+                acc.balik += parseFloat(r.balik_ekmek || 0)
+                acc.dond  += parseFloat(r.dondurma || 0)
+                return acc
+            }, { z: 0, balik: 0, dond: 0 })
+
+            const zRaporu  = sumNew.z     + sumTek.z     + oldZ
+            const balik    = sumNew.balik + sumTek.balik + oldBalik
+            const dondurma = sumNew.dond  + sumTek.dond  + oldDond
             return { zRaporu, balik, dondurma, total: zRaporu + balik + dondurma, restoran: 0, cafetarya: 0 }
         }
 
@@ -2791,7 +2817,9 @@
                         </select>
                         <select id="filterKasa" class="fsel">
                             <option value="">Tüm Kasalar</option>
-                            <option value="tek_kasa">Tek Kasa</option>
+                            <option value="ana_kasa">Ana Kasa</option>
+                            <option value="iki_kasa">2. Kasa</option>
+                            <option value="tek_kasa">Eski: Tek Kasa</option>
                             <option value="restoran">Eski: Restoran</option>
                             <option value="cafetarya">Eski: Cafetarya</option>
                         </select>
@@ -3100,7 +3128,7 @@
                 <tr>
                     <td>${formatDateShort(r.date)}</td>
                     <td style="font-weight:600">${r.cashiers?.name || '-'}</td>
-                    <td><span class="badge ${r.kasa || ''}">${r.kasa === 'restoran' ? '🍽️ Restoran' : r.kasa === 'cafetarya' ? '☕ Cafetarya' : '-'}</span></td>
+                    <td><span class="badge ${r.kasa || ''}">${r.kasa === 'ana_kasa' ? '🏦 Ana Kasa' : r.kasa === 'iki_kasa' ? '🖥️ 2. Kasa' : r.kasa === 'tek_kasa' ? '🏪 Tek Kasa' : r.kasa === 'restoran' ? '🍽️ Restoran' : r.kasa === 'cafetarya' ? '☕ Cafetarya' : '-'}</span></td>
                     <td><span class="badge ${r.shift || ''}">${r.shift === 'sabah' ? '🌅 Sabah' : r.shift === 'aksam' ? '🌙 Akşam' : '-'}</span></td>
                     <td class="mono">${formatTime(r.entry_time)}</td>
                     <td class="r">
