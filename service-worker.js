@@ -12,15 +12,17 @@ const STATIC_ASSETS = [
     '/icon-512.png'
 ];
 
-// Install — statik varlıkları önbelleğe al (skipWaiting YOK — kullanıcı onayı beklenir)
+// Install — statik varlıkları önbelleğe al ve hemen devreye gir
+// skipWaiting: yeni SW eski SW'yi beklemeden hemen alır → eski bozuk önbellek anında temizlenir
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(STATIC_ASSETS))
     );
 });
 
-// Güncelleme mesajı: sayfa "SKIP_WAITING" gönderince devreye gir
+// Güncelleme mesajı (geriye dönük uyumluluk — artık install sırasında otomatik yapılıyor)
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') {
         self.skipWaiting();
