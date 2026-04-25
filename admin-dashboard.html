@@ -2215,20 +2215,18 @@
         }
 
         function calcDailyCiros(reports) {
-            // Tek kasa: her gün için sadece akşam vardiyasını al (yoksa sabah)
-            const dailyReports = {}
+            // Her (tarih, kasa) çifti için akşam vardiyasını tercih et (yoksa sabah)
+            // Akşam Z değeri gerçek günlük toplam; sabah X değerinden çıkarma yapılmaz
+            const bestPerDateKasa = {}
             reports.forEach(r => {
-                const key = r.date
-                if (!dailyReports[key] || r.shift === 'aksam') {
-                    dailyReports[key] = r
-                }
+                const key = `${r.date}-${r.kasa || 'x'}`
+                if (!bestPerDateKasa[key] || r.shift === 'aksam') bestPerDateKasa[key] = r
             })
 
             const days = {}
-            Object.values(dailyReports).forEach(r => {
-                const day = r.date
-                if (!days[day]) days[day] = 0
-                days[day] += parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0) +
+            Object.values(bestPerDateKasa).forEach(r => {
+                if (!days[r.date]) days[r.date] = 0
+                days[r.date] += parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0) +
                     parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
             })
 
@@ -2410,6 +2408,7 @@
                 kahvalti:     { name: 'Kahvaltı',       icon: '🥐', total: 0, color: '#f59e0b' },
                 kahve:        { name: 'Kahve',          icon: '☕', total: 0, color: '#8b5cf6' },
                 meyvesuyu:    { name: 'Meyve Suyu',     icon: '🧃', total: 0, color: '#ec4899' },
+                salata:       { name: 'Salata',         icon: '🥙', total: 0, color: '#06b6d4' },
                 sicak_icecek: { name: 'Sıcak İçecek',  icon: '🔥', total: 0, color: '#ef4444' },
                 soguk_icecek: { name: 'Soğuk İçecek',  icon: '🥤', total: 0, color: '#3b82f6' },
                 tatli:        { name: 'Tatlı',          icon: '🍰', total: 0, color: '#a855f7' }
@@ -2429,6 +2428,7 @@
                 categories.kahvalti.total     += parseFloat(r.kahvalti)     || 0
                 categories.kahve.total        += parseFloat(r.kahve)        || 0
                 categories.meyvesuyu.total    += parseFloat(r.meyvesuyu)    || 0
+                categories.salata.total       += parseFloat(r.salata)       || 0
                 categories.sicak_icecek.total += parseFloat(r.sicak_icecek) || 0
                 categories.soguk_icecek.total += parseFloat(r.soguk_icecek) || 0
                 categories.tatli.total        += parseFloat(r.tatli)        || 0
@@ -2509,7 +2509,7 @@
                     <div class="summary-icon">💰</div>
                     <div class="summary-label">Kategori Toplamı</div>
                     <div class="summary-value">${formatCurrencyShort(categorySales.total)}</div>
-                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">7 kategori</div>
+                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">8 kategori</div>
                 </div>
             `
         }
