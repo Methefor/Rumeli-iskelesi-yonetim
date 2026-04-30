@@ -428,17 +428,17 @@
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <!-- Dondurma — sabah ve akşam her iki vardiyada da görünür -->
+                <!-- Dondurma — sadece akşam Ana Kasa'da görünür -->
                 <div id="dondurmaField">
-                    <label>Dondurma</label>
+                    <label>🍦 Dondurma</label>
                     <div class="iw">
                         <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
-                <!-- Balık Ekmek — sadece akşam vardiyasında görünür -->
+                <!-- Balık Ekmek — sadece akşam Ana Kasa'da görünür -->
                 <div id="balikField" class="hidden">
-                    <label>Balık Ekmek</label>
+                    <label>🐟 Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
@@ -452,56 +452,56 @@
             <div class="card-t">🍽️ Kategori Satışları</div>
             <div class="fg">
                 <div>
-                    <label>Gıda</label>
+                    <label>🥘 Gıda</label>
                     <div class="iw">
                         <input type="number" id="gida" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Kahvaltı</label>
+                    <label>🍳 Kahvaltı</label>
                     <div class="iw">
                         <input type="number" id="kahvalti" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Kahve</label>
+                    <label>☕ Kahve</label>
                     <div class="iw">
                         <input type="number" id="kahve" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Meyve Suyu</label>
+                    <label>🧃 Meyve Suyu</label>
                     <div class="iw">
                         <input type="number" id="meyveSuyu" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Salata</label>
+                    <label>🥗 Salata</label>
                     <div class="iw">
                         <input type="number" id="salata" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Sıcak İçecek</label>
+                    <label>🔥 Sıcak İçecek</label>
                     <div class="iw">
                         <input type="number" id="sicakIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Soğuk İçecek</label>
+                    <label>🥤 Soğuk İçecek</label>
                     <div class="iw">
                         <input type="number" id="sogukIcecek" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
                 <div>
-                    <label>Tatlı</label>
+                    <label>🍰 Tatlı</label>
                     <div class="iw">
                         <input type="number" id="tatli" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
@@ -771,11 +771,10 @@
             document.getElementById('raporLabel').innerHTML =
                 `${raporName} <span style="color:var(--red);">*</span>`
 
-            // Balık ekmek sadece akşamda
-            document.getElementById('balikField').classList.toggle('hidden', !isEvening)
-
-            // Dondurma rapor satırı her iki vardiyada görünür
-            document.getElementById('dondurmaField').classList.remove('hidden')
+            // Dondurma + Balık Ekmek: sadece akşam Ana Kasa'da
+            const showRaporExtras = isEvening && isAnaKasa
+            document.getElementById('dondurmaField').classList.toggle('hidden', !showRaporExtras)
+            document.getElementById('balikField').classList.toggle('hidden', !showRaporExtras)
 
             // Kategori kartı her iki kasada da görünür
             document.getElementById('kategoriCard').classList.remove('hidden')
@@ -785,13 +784,13 @@
             if (selectedShift === 'sabah') {
                 banner.className = 'shift-info-banner sabah'
                 banner.innerHTML = isAnaKasa
-                    ? `<strong style="color:var(--orange);">🌅 Sabah — Ana Kasa</strong> — X Raporu, Dondurma ve kategori satışlarını girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
-                    : `<strong style="color:var(--orange);">🌅 Sabah — 2. Kasa</strong> — Yalnızca X Raporu ve Dondurma değerini girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
+                    ? `<strong style="color:var(--orange);">🌅 Sabah — Ana Kasa</strong> — X Raporu ve kategori satışlarını girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
+                    : `<strong style="color:var(--orange);">🌅 Sabah — 2. Kasa</strong> — X Raporu ve kategori satışlarını girin. Zamanında giriş için <strong>17:30</strong>'a kadar kaydedin.`
             } else {
                 banner.className = 'shift-info-banner aksam'
                 banner.innerHTML = isAnaKasa
                     ? `<strong style="color:var(--purple);">🌙 Akşam — Ana Kasa</strong> — Z Raporu, Balık Ekmek, Dondurma ve kategori satışlarını girin. Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
-                    : `<strong style="color:var(--purple);">🌙 Akşam — 2. Kasa</strong> — Z Raporu, Balık Ekmek ve Dondurma değerlerini girin. Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
+                    : `<strong style="color:var(--purple);">🌙 Akşam — 2. Kasa</strong> — Z Raporu ve kategori satışlarını girin. Zamanında giriş için <strong>01:00</strong>'a kadar kaydedin.`
             }
 
             // Düzenleme modu
@@ -901,8 +900,8 @@
                 kasa:             selectedKasa,
                 selectedDate:     document.getElementById('entryDate').value,
                 rumeliZ1:         parseFloat(document.getElementById('rumeliZ1').value)         || 0,
-                balikEkmek:       isEvening ? parseFloat(document.getElementById('balikEkmek').value)      || 0 : 0,
-                dondurmaZ:        parseFloat(document.getElementById('dondurmaZ').value)        || 0,
+                balikEkmek:       (isEvening && isAnaKasa) ? parseFloat(document.getElementById('balikEkmek').value)  || 0 : 0,
+                dondurmaZ:        (isEvening && isAnaKasa) ? parseFloat(document.getElementById('dondurmaZ').value)   || 0 : 0,
                 dondurmaKategori: parseFloat(document.getElementById('dondurmaKategori').value) || 0,
                 kahve:            parseFloat(document.getElementById('kahve').value)         || 0,
                 meyveSuyu:        parseFloat(document.getElementById('meyveSuyu').value)     || 0,
