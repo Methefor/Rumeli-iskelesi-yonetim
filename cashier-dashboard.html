@@ -864,8 +864,8 @@
                         <div id="profileRole" class="profile-role">Kasiyer - Cafetarya Z1</div>
                         <div class="badge-row">
                             <div class="badge">
-                                <span id="badgeIcon">🥉</span>
-                                <span id="badgeLabel">Bronz</span>
+                                <span id="badgeIcon">⚓</span>
+                                <span id="badgeLabel">Stajyer Tayfa</span>
                             </div>
                             <div class="points-display">
                                 <span>⭐ </span>
@@ -878,7 +878,7 @@
 
                 <div class="progress-section">
                     <div class="progress-label">
-                        <span>Sonraki rozete: <strong id="nextBadge">Gümüş</strong></span>
+                        <span>Sonraki unvana: <strong id="nextBadge">Güverte Tayfası 🪢</strong></span>
                         <span id="pointsNeeded">50 puan kaldı</span>
                     </div>
                     <div class="progress-bar">
@@ -1115,7 +1115,7 @@
             renderHistory(history)
         }
 
-        // Performans oranı (%) tabanlı rozet (Müdür rozeti önceliklidir)
+        // Performans oranı (%) tabanlı denizcilik unvanı (Müdür rozeti önceliklidir)
         function getBadge(badgeLevel, pct) {
             const SPECIAL = {
                 'ozel_yildiz': { icon: '🌟', label: 'Yılın Yıldızı' },
@@ -1126,24 +1126,24 @@
             }
             if (badgeLevel && SPECIAL[badgeLevel]) return SPECIAL[badgeLevel]
 
-            if (pct >= 95) return { icon: '👑⭐', label: 'Süper Efsane' }
-            if (pct >= 85) return { icon: '👑',   label: 'Efsane' }
-            if (pct >= 75) return { icon: '💎',   label: 'Elmas' }
-            if (pct >= 65) return { icon: '🥇',   label: 'Altın' }
-            if (pct >= 50) return { icon: '🥈',   label: 'Gümüş' }
-            if (pct >= 30) return { icon: '🥉',   label: 'Bronz' }
-            return { icon: '🌱', label: 'Yeni Başlayan' }
+            if (pct >= 95) return { icon: '🦈', label: 'Efsane Kaptan' }
+            if (pct >= 85) return { icon: '🌊', label: 'Deniz Kurdu' }
+            if (pct >= 75) return { icon: '🏛️', label: 'İskele Reisi' }
+            if (pct >= 65) return { icon: '⛵', label: 'Kıdemli Kaptan' }
+            if (pct >= 50) return { icon: '🧭', label: 'Lostromo' }
+            if (pct >= 30) return { icon: '🪢', label: 'Güverte Tayfası' }
+            return { icon: '⚓', label: 'Stajyer Tayfa' }
         }
 
         function getNextBadge(pct, badgeLevel) {
             if (badgeLevel?.startsWith('ozel_')) return { label: 'Özel Rozet (Müdür)', pctLeft: 0 }
-            if (pct >= 95) return { label: 'Maksimum Seviye', pctLeft: 0 }
-            if (pct >= 85) return { label: 'Süper Efsane', pctLeft: 95 - pct }
-            if (pct >= 75) return { label: 'Efsane',       pctLeft: 85 - pct }
-            if (pct >= 65) return { label: 'Elmas',        pctLeft: 75 - pct }
-            if (pct >= 50) return { label: 'Altın',        pctLeft: 65 - pct }
-            if (pct >= 30) return { label: 'Gümüş',        pctLeft: 50 - pct }
-            return { label: 'Bronz', pctLeft: 30 - pct }
+            if (pct >= 95) return { label: 'Maksimum Seviye — Tam Deniz Kurdu!', pctLeft: 0 }
+            if (pct >= 85) return { label: 'Efsane Kaptan 🦈', pctLeft: 95 - pct }
+            if (pct >= 75) return { label: 'Deniz Kurdu 🌊',   pctLeft: 85 - pct }
+            if (pct >= 65) return { label: 'İskele Reisi 🏛️',  pctLeft: 75 - pct }
+            if (pct >= 50) return { label: 'Kıdemli Kaptan ⛵', pctLeft: 65 - pct }
+            if (pct >= 30) return { label: 'Lostromo 🧭',       pctLeft: 50 - pct }
+            return { label: 'Güverte Tayfası 🪢', pctLeft: 30 - pct }
         }
 
         function renderLeaderboard(leaders, currentCashierId) {
