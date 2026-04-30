@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rumeli-v8';
+const CACHE_NAME = 'rumeli-v9';
 
 const STATIC_ASSETS = [
     '/',
@@ -8,6 +8,7 @@ const STATIC_ASSETS = [
     '/entry.html',
     '/js/supabase-client.js',
     '/manifest.json',
+    '/icon.svg',
     '/icon-192.png',
     '/icon-512.png'
 ];
