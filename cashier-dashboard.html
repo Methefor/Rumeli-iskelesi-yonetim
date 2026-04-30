@@ -89,6 +89,49 @@
             margin-bottom: 24px
         }
 
+        .avatar-wrapper {
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-radius: 20px;
+        }
+
+        .avatar-upload-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, .52);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            opacity: 0;
+            transition: opacity .2s;
+            pointer-events: none;
+        }
+
+        .avatar-wrapper:hover .avatar-upload-overlay,
+        .avatar-wrapper:active .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        .avatar-uploading .avatar-upload-overlay {
+            opacity: 1;
+        }
+
+        @keyframes avatar-spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .avatar-uploading .avatar-upload-overlay::after {
+            content: '';
+            width: 28px; height: 28px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: avatar-spin .8s linear infinite;
+        }
+
         .avatar {
             width: 100px;
             height: 100px;
@@ -99,7 +142,16 @@
             font-size: 40px;
             font-weight: 700;
             color: #fff;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: inherit;
+            display: block;
         }
 
         .av-t {
@@ -655,6 +707,8 @@
             .header { padding: 20px 16px; }
             .profile { gap: 14px; }
             .avatar { width: 72px; height: 72px; font-size: 28px; border-radius: 16px; }
+            .avatar-wrapper { border-radius: 16px; }
+            .avatar-upload-overlay { border-radius: 16px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .stat-card { padding: 14px 12px; }
             .back-btn { font-size: 13px; padding: 8px 14px; }
@@ -860,9 +914,9 @@
             .badge-levels { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
-  <script type="module" crossorigin src="/assets/cashier-u_dgZ0dA.js"></script>
+  <script type="module" crossorigin src="/assets/cashier-D-N6PcPa.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-Cz_bCqFO.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-_4kS_E--.js">
 </head>
 
 <body>
@@ -880,7 +934,11 @@
             <!-- HEADER / PROFILE -->
             <div class="header">
                 <div class="profile">
-                    <div id="profileAvatar" class="avatar av-t">TB</div>
+                    <div class="avatar-wrapper" onclick="triggerAvatarUpload()" title="Fotoğraf değiştir">
+                        <div id="profileAvatar" class="avatar av-t">TB</div>
+                        <div class="avatar-upload-overlay"></div>
+                        <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" onchange="handleAvatarUpload(this)">
+                    </div>
                     <div class="profile-info">
                         <div id="profileName" class="profile-name">Tuba Bozaklı</div>
                         <div id="profileRole" class="profile-role">Kasiyer - Cafetarya Z1</div>
