@@ -295,3 +295,30 @@ export async function deleteSalesRecord(id) {
 export async function verifyAdminPin(pin) {
   return await supabase.from('admins').select('*').eq('pin', pin).single()
 }
+
+// ─── PROFİL FOTOĞRAFI ────────────────────────────────────────────────────────
+
+export async function uploadCashierAvatar(cashierId, file) {
+  const ext  = (file.name.split('.').pop() || 'jpg').toLowerCase()
+  const path = `${cashierId}/avatar.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true, contentType: file.type })
+
+  if (uploadError) return { url: null, error: uploadError }
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('avatars')
+    .getPublicUrl(path)
+
+  // URL'ye cache-buster ekle — upsert sonrası tarayıcı eski görseli gösterebilir
+  const cacheBusted = publicUrl + '?t=' + Date.now()
+
+  const { error: dbError } = await supabase
+    .from('cashiers')
+    .update({ avatar_url: publicUrl })
+    .eq('id', cashierId)
+
+  return { url: cacheBusted, error: dbError }
+}
