@@ -63,41 +63,30 @@
             background: var(--card);
             border: 1px solid var(--brd);
             border-radius: 20px;
-            padding: 36px;
+            padding: 28px 24px;
             box-shadow: 0 20px 60px rgba(0,0,0,.3);
         }
 
         .screen-title {
-            font-size: 22px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 6px;
+            font-size: 22px; font-weight: 700;
+            text-align: center; margin-bottom: 4px;
         }
 
         .screen-subtitle {
-            font-size: 13px;
-            color: var(--txt2);
-            text-align: center;
-            margin-bottom: 28px;
+            font-size: 13px; color: var(--txt2);
+            text-align: center; margin-bottom: 22px;
         }
 
         .cashier-info {
-            background: var(--input);
-            border: 1px solid var(--brd);
-            border-radius: 14px;
-            padding: 18px 20px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            background: var(--input); border: 1px solid var(--brd);
+            border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 14px;
         }
 
         .cashier-avatar {
-            width: 56px; height: 56px;
-            border-radius: 14px;
+            width: 48px; height: 48px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px; font-weight: 700; color: #fff;
-            flex-shrink: 0;
+            font-size: 18px; font-weight: 700; color: #fff; flex-shrink: 0;
         }
 
         .av-t { background: linear-gradient(135deg,#7c3aed,#8b5cf6) }
@@ -108,23 +97,23 @@
 
         .av-c { background: linear-gradient(135deg,#059669,#22c55e) }
 
-        .cashier-name { font-size: 17px; font-weight: 700; }
+        .cashier-name { font-size: 16px; font-weight: 700; }
 
-        .cashier-role { font-size: 13px; color: var(--txt2); margin-top: 2px; }
+        .cashier-role { font-size: 12px; color: var(--txt2); margin-top: 2px; }
 
-        .date-block { margin-bottom: 20px; }
+        .date-block { margin-bottom: 18px; }
 
         .date-block label {
-            display: block;
-            font-size: 12px; font-weight: 600; color: var(--txt2);
-            margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;
+            display: block; font-size: 11px; font-weight: 600;
+            color: var(--txt2); margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: .5px;
         }
 
         .date-input {
-            width: 100%; padding: 12px 14px;
+            width: 100%; padding: 11px 14px;
             border-radius: 10px; border: 1.5px solid var(--brd);
             background: var(--input); color: var(--txt);
-            font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600;
+            font-family: 'JetBrains Mono', monospace; font-weight: 600;
             cursor: pointer; transition: border-color .2s;
         }
 
@@ -132,80 +121,57 @@
 
         .date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .7; cursor: pointer; }
 
-        .date-note { font-size: 11px; color: var(--txt3); margin-top: 7px; font-style: italic; }
+        .date-note { font-size: 11px; color: var(--txt3); margin-top: 6px; font-style: italic; }
 
-        /* Shift groups */
+        /* ── VARDİYA KARTI (2 büyük kart) ─────────────────────── */
 
-        .shift-group { margin-bottom: 14px; }
+        .shift-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
 
-        .shift-group-header {
-            font-size: 11px; font-weight: 700; color: var(--txt2);
-            text-transform: uppercase; letter-spacing: .8px;
-            margin-bottom: 8px; padding-left: 2px;
+        .shift-card {
+            border: 2px solid var(--brd); border-radius: 14px; padding: 16px;
+            cursor: pointer; transition: all .2s;
         }
 
-        .shift-options {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+        .shift-card:hover:not(.all-taken) { border-color: var(--acc); background: var(--glow); }
+
+        .shift-card.selected { border-color: var(--acc); background: var(--glow); box-shadow: 0 0 20px rgba(59,130,246,.2); }
+
+        .shift-card.all-taken { opacity: .55; cursor: default; }
+
+        .shift-card-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
         }
 
-        .shift-option {
-            padding: 16px 12px;
-            border: 2px solid var(--brd);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all .2s;
-            text-align: center;
+        .shift-card-icon { font-size: 26px; }
+
+        .shift-card-name { font-size: 15px; font-weight: 700; }
+
+        .shift-card-time { font-size: 11px; color: var(--txt2); margin-top: 2px; }
+
+        .shift-kasa-row { display: flex; gap: 8px; }
+
+        .kasa-pill {
+            flex: 1; display: flex; align-items: center; justify-content: space-between;
+            padding: 7px 10px; border-radius: 8px;
+            font-size: 11px; font-weight: 600;
+            background: var(--bg); border: 1px solid var(--brd);
+            gap: 4px;
         }
 
-        .shift-option:hover:not(.taken) {
-            border-color: var(--acc);
-            background: var(--glow);
-        }
+        .kasa-pill-label { color: var(--txt2); white-space: nowrap; }
 
-        .shift-option.selected {
-            border-color: var(--acc);
-            background: var(--glow);
-            box-shadow: 0 0 20px rgba(59,130,246,.2);
-        }
+        .pill-loading  { color: var(--txt3); font-size: 10px; }
 
-        .shift-option.mine {
-            border-color: var(--orange);
-            background: rgba(245,158,11,.08);
-        }
+        .pill-open     { color: var(--green); }
 
-        .shift-option.mine.selected {
-            border-color: var(--orange);
-            background: rgba(245,158,11,.14);
-            box-shadow: 0 0 20px rgba(245,158,11,.25);
-        }
+        .pill-mine     { color: var(--orange); }
 
-        .shift-option.taken {
-            opacity: .55;
-            cursor: not-allowed;
-            border-color: rgba(239,68,68,.4);
-            background: rgba(239,68,68,.04);
-        }
+        .pill-taken    { color: var(--red); }
 
-        .shift-icon  { font-size: 26px; margin-bottom: 8px; }
-
-        .shift-label { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
-
-        .shift-status { min-height: 20px; }
-
-        .status-loading  { font-size: 10px; color: var(--txt3); }
-
-        .status-available{ font-size: 10px; font-weight: 600; color: var(--green); }
-
-        .status-mine     { font-size: 10px; font-weight: 600; color: var(--orange); }
-
-        .status-taken    { font-size: 10px; font-weight: 600; color: var(--red); }
-
-        .btn-group {
-            display: flex; gap: 12px; margin-top: 18px;
-        }
+        .btn-group { display: flex; gap: 10px; margin-top: 18px; }
 
         .btn-back {
-            flex: 0 0 110px; padding: 14px;
+            flex: 0 0 100px; padding: 13px;
             background: var(--input); border: 1px solid var(--brd);
             color: var(--txt); border-radius: 12px;
             font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s;
@@ -214,7 +180,7 @@
         .btn-back:hover { border-color: var(--acc); background: var(--glow); }
 
         .btn-continue {
-            flex: 1; padding: 14px 20px;
+            flex: 1; padding: 13px 16px;
             background: linear-gradient(135deg,var(--acc),#4f46e5);
             border: none; color: #fff; border-radius: 12px;
             font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s;
@@ -232,8 +198,7 @@
 
         .nav {
             background: var(--card); border: 1px solid var(--brd);
-            border-radius: 14px; padding: 14px 18px;
-            margin-bottom: 18px;
+            border-radius: 14px; padding: 14px 18px; margin-bottom: 12px;
             display: flex; justify-content: space-between; align-items: center;
             flex-wrap: wrap; gap: 8px;
         }
@@ -260,36 +225,68 @@
             display: flex; align-items: center; gap: 5px;
         }
 
+        /* ── KASA SEKME ÇUBUĞU ──────────────────────────────────── */
+
+        .kasa-tabs {
+            display: flex; gap: 6px;
+            background: var(--card); border: 1px solid var(--brd);
+            border-radius: 14px; padding: 6px; margin-bottom: 16px;
+        }
+
+        .kasa-tab {
+            flex: 1; padding: 11px 8px; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700;
+            background: transparent; color: var(--txt2);
+            cursor: pointer; transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+
+        .kasa-tab.active {
+            background: linear-gradient(135deg,#1e40af,var(--acc));
+            color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,.35);
+        }
+
+        .kasa-tab.saved { color: var(--green); }
+
+        .kasa-tab.active.saved {
+            background: linear-gradient(135deg,#065f46,#22c55e);
+            box-shadow: 0 4px 14px rgba(34,197,94,.3);
+        }
+
+        .kasa-tab.locked { color: var(--txt3); cursor: not-allowed; opacity: .6; }
+
+        /* Kaydedilen kasada rozet */
+
+        .tab-saved-badge {
+            font-size: 13px; margin-left: 2px;
+        }
+
         .edit-banner {
             background: linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
             border: 1px solid rgba(245,158,11,.4);
-            border-radius: 14px; padding: 16px 20px;
-            margin-bottom: 18px;
-            display: flex; align-items: flex-start; gap: 14px;
+            border-radius: 14px; padding: 14px 18px; margin-bottom: 16px;
+            display: flex; align-items: flex-start; gap: 12px;
         }
 
-        .edit-banner-icon { font-size: 28px; flex-shrink: 0; }
+        .edit-banner-icon { font-size: 24px; flex-shrink: 0; }
 
-        .edit-banner-title { font-size: 15px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
+        .edit-banner-title { font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 3px; }
 
-        .edit-banner-desc  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+        .edit-banner-desc  { font-size: 12px; color: var(--txt2); line-height: 1.5; }
 
         .card {
             background: var(--card); border: 1px solid var(--brd);
-            border-radius: 16px; padding: 22px; margin-bottom: 18px;
+            border-radius: 16px; padding: 20px; margin-bottom: 16px;
         }
 
-        .card-t { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+        .card-t { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
 
-        .fg {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-        }
+        .fg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 
         .fg label {
-            display: block; font-size: 12px; font-weight: 600;
-            color: var(--txt2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px;
+            display: block; font-size: 11px; font-weight: 600;
+            color: var(--txt2); margin-bottom: 6px;
+            text-transform: uppercase; letter-spacing: .4px;
         }
 
         .iw { position: relative; }
@@ -314,15 +311,23 @@
             width: 100%; background: var(--input); border: 1.5px solid var(--brd);
             color: var(--txt); padding: 12px 14px; border-radius: 10px;
             font-size: 14px; font-family: 'DM Sans', sans-serif;
-            resize: vertical; min-height: 80px; outline: none;
-            transition: border-color .2s;
+            resize: vertical; min-height: 70px; outline: none; transition: border-color .2s;
         }
 
         .notes-area:focus { border-color: var(--acc); box-shadow: 0 0 0 3px var(--glow); }
 
+        .shift-info-banner {
+            border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+            font-size: 13px; color: var(--txt2); line-height: 1.6;
+        }
+
+        .shift-info-banner.sabah { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.25); }
+
+        .shift-info-banner.aksam { background: rgba(139,92,246,.08); border: 1px solid rgba(139,92,246,.25); }
+
         .btn-submit {
             width: 100%; padding: 16px; border-radius: 12px;
-            font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+            font-size: 16px; font-weight: 700; border: none; cursor: pointer;
             background: linear-gradient(135deg,#1e40af,#3b82f6); color: #fff;
             transition: all .2s;
         }
@@ -338,6 +343,7 @@
             padding: 14px 22px; border-radius: 12px;
             font-weight: 600; font-size: 14px;
             z-index: 1000; opacity: 0; transition: all .3s; pointer-events: none;
+            max-width: calc(100vw - 40px);
         }
 
         .toast.show { opacity: 1; }
@@ -346,43 +352,30 @@
 
         .toast.error   { background: #7f1d1d; color: #fca5a5; border: 1px solid #991b1b; }
 
+        .toast.info    { background: #1e3a5f; color: #93c5fd; border: 1px solid #1e40af; }
+
         .hidden { display: none !important; }
-
-        .shift-info-banner {
-            border-radius: 12px; padding: 14px 18px;
-            margin-bottom: 18px; font-size: 13px; color: var(--txt2); line-height: 1.6;
-        }
-
-        .shift-info-banner.sabah {
-            background: rgba(245,158,11,.08);
-            border: 1px solid rgba(245,158,11,.25);
-        }
-
-        .shift-info-banner.aksam {
-            background: rgba(139,92,246,.08);
-            border: 1px solid rgba(139,92,246,.25);
-        }
 
         @media (max-width: 480px) {
             body { padding: 12px; }
-            .shift-screen { padding: 24px 14px; margin: 12px auto; }
-            .shift-options { gap: 8px; }
+            .shift-screen { padding: 20px 14px; margin: 10px auto; }
             .fg { grid-template-columns: 1fr; }
             .btn-group { flex-direction: column; }
             .btn-back { flex: 1; }
+            .kasa-tab { font-size: 13px; padding: 10px 6px; }
         }
     </style>
-  <script type="module" crossorigin src="/assets/entry-Bj2ms-Ov.js"></script>
+  <script type="module" crossorigin src="/assets/entry-Dt0VSzaV.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="modulepreload" crossorigin href="/assets/supabase-client-D7cjvoTY.js">
+  <link rel="modulepreload" crossorigin href="/assets/supabase-client-BcsJE3T2.js">
 </head>
 
 <body>
 
-    <!-- VARDİYA SEÇİM EKRANI -->
+    <!-- ── VARDİYA SEÇİM EKRANI ── -->
     <div id="shiftScreen" class="shift-screen hidden">
         <div class="screen-title">📅 Vardiya Seçimi</div>
-        <p class="screen-subtitle">Kasa ve vardiyayı seçin</p>
+        <p class="screen-subtitle">Hangi vardiyayı gireceksiniz?</p>
 
         <div class="cashier-info">
             <div id="cashierAvatar" class="cashier-avatar av-t">TB</div>
@@ -398,43 +391,44 @@
             <div id="dateNote" class="date-note">Bugün için veri girmek istiyorsanız tarihi değiştirmeyin.</div>
         </div>
 
-        <!-- Sabah vardiyası -->
-        <div class="shift-group">
-            <div class="shift-group-header">🌅 Sabah Vardiyası · 09:00 — 17:30</div>
-            <div class="shift-options">
-                <div class="shift-option" data-shift="sabah" data-kasa="ana_kasa" id="option-sabah-ana">
-                    <div class="shift-icon">🏦</div>
-                    <div class="shift-label">Ana Kasa</div>
-                    <div class="shift-status" id="status-sabah-ana">
-                        <span class="status-loading">⏳ Kontrol...</span>
+        <!-- 2 büyük kart: Sabah / Akşam -->
+        <div class="shift-cards">
+            <div class="shift-card" id="card-sabah" data-shift="sabah">
+                <div class="shift-card-header">
+                    <span class="shift-card-icon">🌅</span>
+                    <div>
+                        <div class="shift-card-name">Sabah Vardiyası</div>
+                        <div class="shift-card-time">09:00 — 17:30</div>
                     </div>
                 </div>
-                <div class="shift-option" data-shift="sabah" data-kasa="iki_kasa" id="option-sabah-iki">
-                    <div class="shift-icon">🖥️</div>
-                    <div class="shift-label">2. Kasa</div>
-                    <div class="shift-status" id="status-sabah-iki">
-                        <span class="status-loading">⏳ Kontrol...</span>
+                <div class="shift-kasa-row">
+                    <div class="kasa-pill" id="pill-sabah-ana">
+                        <span class="kasa-pill-label">🏦 Ana Kasa</span>
+                        <span class="pill-loading" id="pillst-sabah-ana">⏳</span>
+                    </div>
+                    <div class="kasa-pill" id="pill-sabah-iki">
+                        <span class="kasa-pill-label">🖥️ 2. Kasa</span>
+                        <span class="pill-loading" id="pillst-sabah-iki">⏳</span>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Akşam vardiyası -->
-        <div class="shift-group">
-            <div class="shift-group-header">🌙 Akşam Vardiyası · 16:00 — 01:00</div>
-            <div class="shift-options">
-                <div class="shift-option" data-shift="aksam" data-kasa="ana_kasa" id="option-aksam-ana">
-                    <div class="shift-icon">🏦</div>
-                    <div class="shift-label">Ana Kasa</div>
-                    <div class="shift-status" id="status-aksam-ana">
-                        <span class="status-loading">⏳ Kontrol...</span>
+            <div class="shift-card" id="card-aksam" data-shift="aksam">
+                <div class="shift-card-header">
+                    <span class="shift-card-icon">🌙</span>
+                    <div>
+                        <div class="shift-card-name">Akşam Vardiyası</div>
+                        <div class="shift-card-time">16:00 — 01:00</div>
                     </div>
                 </div>
-                <div class="shift-option" data-shift="aksam" data-kasa="iki_kasa" id="option-aksam-iki">
-                    <div class="shift-icon">🖥️</div>
-                    <div class="shift-label">2. Kasa</div>
-                    <div class="shift-status" id="status-aksam-iki">
-                        <span class="status-loading">⏳ Kontrol...</span>
+                <div class="shift-kasa-row">
+                    <div class="kasa-pill" id="pill-aksam-ana">
+                        <span class="kasa-pill-label">🏦 Ana Kasa</span>
+                        <span class="pill-loading" id="pillst-aksam-ana">⏳</span>
+                    </div>
+                    <div class="kasa-pill" id="pill-aksam-iki">
+                        <span class="kasa-pill-label">🖥️ 2. Kasa</span>
+                        <span class="pill-loading" id="pillst-aksam-iki">⏳</span>
                     </div>
                 </div>
             </div>
@@ -446,8 +440,9 @@
         </div>
     </div>
 
-    <!-- VERİ GİRİŞ EKRANI -->
+    <!-- ── VERİ GİRİŞ EKRANI ── -->
     <div id="mainScreen" class="main">
+
         <div class="nav">
             <div>
                 <div class="nav-title">Veri Girişi</div>
@@ -466,6 +461,16 @@
             </div>
         </div>
 
+        <!-- KASA SEKME ÇUBUĞU -->
+        <div class="kasa-tabs">
+            <button class="kasa-tab active" data-kasa="ana_kasa" id="tab-ana">
+                🏦 Ana Kasa <span class="tab-saved-badge" id="badge-ana"></span>
+            </button>
+            <button class="kasa-tab" data-kasa="iki_kasa" id="tab-iki">
+                🖥️ 2. Kasa <span class="tab-saved-badge" id="badge-iki"></span>
+            </button>
+        </div>
+
         <div id="editBanner" class="edit-banner hidden">
             <div class="edit-banner-icon">✏️</div>
             <div>
@@ -479,7 +484,7 @@
 
         <div id="shiftInfoBanner" class="shift-info-banner sabah"></div>
 
-        <!-- Rapor Değerleri (X veya Z vardiyaya göre) -->
+        <!-- Rapor Değerleri (X veya Z) -->
         <div class="card">
             <div class="card-t" id="raporCardTitle">💰 Rapor Değerleri</div>
             <div class="fg">
@@ -490,19 +495,19 @@
                         <span class="sfx">₺</span>
                     </div>
                 </div>
+                <!-- Dondurma — sabah ve akşam her iki vardiyada da görünür -->
+                <div id="dondurmaField">
+                    <label>Dondurma</label>
+                    <div class="iw">
+                        <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
                 <!-- Balık Ekmek — sadece akşam vardiyasında görünür -->
                 <div id="balikField" class="hidden">
                     <label>Balık Ekmek</label>
                     <div class="iw">
                         <input type="number" id="balikEkmek" step="0.01" placeholder="0.00">
-                        <span class="sfx">₺</span>
-                    </div>
-                </div>
-                <!-- Dondurma — sadece akşam vardiyasında görünür -->
-                <div id="dondurmaField" class="hidden">
-                    <label>Dondurma</label>
-                    <div class="iw">
-                        <input type="number" id="dondurmaZ" step="0.01" placeholder="0.00">
                         <span class="sfx">₺</span>
                     </div>
                 </div>
@@ -569,15 +574,23 @@
                         <span class="sfx">₺</span>
                     </div>
                 </div>
+                <!-- Dondurma kategorisi — sabah ve akşam her iki vardiyada -->
+                <div>
+                    <label>🍦 Dondurma</label>
+                    <div class="iw">
+                        <input type="number" id="dondurmaKategori" step="0.01" placeholder="0.00">
+                        <span class="sfx">₺</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-t">📝 Notlar <span style="font-size:13px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
+            <div class="card-t">📝 Notlar <span style="font-size:12px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
             <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
         </div>
 
-        <button id="submitButton" class="btn-submit">💾 Kaydet ve Puan Kazan!</button>
+        <button id="submitButton" class="btn-submit">💾 Kaydet</button>
     </div>
 
     <div id="toast" class="toast"></div>
