@@ -109,7 +109,8 @@ export async function insertShiftEntry(data) {
     kahvalti:     parseFloat(data.kahvalti)    || 0,
     salata:       parseFloat(data.salata)      || 0,
 
-    dondurma_kategori: 0, depo: 0,
+    dondurma_kategori: parseFloat(data.dondurmaKategori) || 0,
+    depo: 0,
 
     notlar:             data.notlar || '',
     total_revenue:      totalRevenue,
@@ -180,7 +181,8 @@ export async function updateShiftEntry(reportId, formData, cashierId) {
       meyvesuyu:    parseFloat(formData.meyveSuyu)   || 0,
       gida:         parseFloat(formData.gida)        || 0,
       kahvalti:     parseFloat(formData.kahvalti)    || 0,
-      salata:       parseFloat(formData.salata)      || 0,
+      salata:            parseFloat(formData.salata)            || 0,
+      dondurma_kategori: parseFloat(formData.dondurmaKategori) || 0,
       notlar:       formData.notlar || '',
       total_revenue:      totalRevenue,
       individual_revenue: totalRevenue,
