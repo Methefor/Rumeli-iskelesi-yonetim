@@ -72,11 +72,11 @@ export async function insertShiftEntry(data) {
   const extraFields = [
     data.balikEkmek, data.dondurmaZ,
     data.kahve, data.meyveSuyu, data.sicakIcecek, data.sogukIcecek, data.tatli,
-    data.gida, data.kahvalti, data.salata,
+    data.gida, data.kahvalti, data.salata, data.dondurmaKategori,
   ]
-  const hasCompleteData = kasa === 'iki_kasa'
-    ? parseFloat(data.rumeliZ1) > 0
-    : parseFloat(data.rumeliZ1) > 0 && extraFields.filter(v => parseFloat(v) > 0).length >= 2
+  // Her iki kasa için de rapor + en az 2 kategori alanı dolu olmalı
+  const hasCompleteData =
+    parseFloat(data.rumeliZ1) > 0 && extraFields.filter(v => parseFloat(v) > 0).length >= 2
 
   // — Puan (max 100) —
   const pointsEarned = (isOnTime ? 50 : 0) + (hasCompleteData ? 50 : 0)
