@@ -4039,6 +4039,17 @@
         }
     </script>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.addEventListener('controllerchange', function () {
+                    window.location.reload()
+                })
+            }
+            navigator.serviceWorker.register('/service-worker.js').catch(function () {})
+        }
+    </script>
+
 </body>
 
 </html>
