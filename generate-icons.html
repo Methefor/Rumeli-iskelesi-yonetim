@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>İkon Üretici — Rumeli İskelesi</title>
+<style>
+  body { font-family: sans-serif; background: #0a1628; color: #e8edf5; text-align: center; padding: 40px 20px; }
+  h1   { font-size: 22px; margin-bottom: 8px; }
+  p    { color: #7a8ba8; margin-bottom: 32px; font-size: 14px; }
+  .row { display: flex; gap: 40px; justify-content: center; flex-wrap: wrap; }
+  .box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  canvas { border-radius: 18px; box-shadow: 0 8px 32px rgba(0,0,0,.5); }
+  button {
+    padding: 10px 24px; border: none; border-radius: 10px;
+    background: #3b82f6; color: #fff; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+  }
+  button:hover { background: #2563eb; }
+  .note { margin-top: 40px; font-size: 13px; color: #4a5d7a; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h1>🏛️ İkon Üretici</h1>
+<p>PNG ikonları oluştur, indir ve proje klasörüne koy.</p>
+
+<div class="row">
+  <div class="box">
+    <canvas id="c192" width="192" height="192"></canvas>
+    <button onclick="dl(192)">⬇️ icon-192.png indir</button>
+  </div>
+  <div class="box">
+    <canvas id="c512" width="512" height="512"></canvas>
+    <button onclick="dl(512)">⬇️ icon-512.png indir</button>
+  </div>
+</div>
+
+<div class="note">
+  İndirilen dosyaları proje klasöründe <code>icon-192.png</code> ve <code>icon-512.png</code> olarak kaydet (üzerine yaz), ardından Git'e commit + push yap.
+</div>
+
+<script>
+const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF8440"/>
+      <stop offset="40%" stop-color="#0A4D68"/>
+      <stop offset="100%" stop-color="#021525"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="90" fill="url(#sky)"/>
+  <circle cx="372" cy="175" r="56" fill="#FFD060" opacity="0.78"/>
+  <circle cx="372" cy="175" r="72" fill="#FFD060" opacity="0.12"/>
+  <path d="M0,292 Q128,280 256,292 Q384,304 512,292 L512,512 L0,512 Z" fill="#021525"/>
+  <path d="M0,298 Q85,287 170,298 T340,298 T512,298" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M0,315 Q85,304 170,315 T340,315 T512,315" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M0,332 Q85,321 170,332 T340,332 T512,332" fill="none" stroke="rgba(255,255,255,0.11)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="136" y1="268" x2="376" y2="268" stroke="#D4A840" stroke-width="4.5" stroke-linecap="round"/>
+  <rect x="136" y="263" width="7" height="24" rx="3" fill="#D4A840"/>
+  <rect x="193" y="263" width="7" height="24" rx="3" fill="#D4A840"/>
+  <rect x="253" y="263" width="7" height="24" rx="3" fill="#D4A840"/>
+  <rect x="313" y="263" width="7" height="24" rx="3" fill="#D4A840"/>
+  <rect x="370" y="263" width="7" height="24" rx="3" fill="#D4A840"/>
+  <rect x="132" y="282" width="248" height="24" rx="7" fill="#C8902A"/>
+  <line x1="164" y1="282" x2="164" y2="306" stroke="#9A6B12" stroke-width="2.5"/>
+  <line x1="200" y1="282" x2="200" y2="306" stroke="#9A6B12" stroke-width="2.5"/>
+  <line x1="256" y1="282" x2="256" y2="306" stroke="#9A6B12" stroke-width="2.5"/>
+  <line x1="312" y1="282" x2="312" y2="306" stroke="#9A6B12" stroke-width="2.5"/>
+  <line x1="348" y1="282" x2="348" y2="306" stroke="#9A6B12" stroke-width="2.5"/>
+  <rect x="160" y="306" width="16" height="112" rx="5" fill="#A07015"/>
+  <rect x="336" y="306" width="16" height="112" rx="5" fill="#A07015"/>
+  <rect x="243" y="124" width="26" height="162" rx="7" fill="#D4A840"/>
+  <circle cx="256" cy="152" r="30" fill="#FFF5CC" opacity="0.18"/>
+  <rect x="216" y="145" width="80" height="42" rx="11" fill="#B88228"/>
+  <rect x="222" y="151" width="68" height="30" rx="7" fill="#EEC850"/>
+  <circle cx="256" cy="166" r="14" fill="white" opacity="0.94"/>
+  <circle cx="256" cy="166" r="22" fill="white" opacity="0.14"/>
+  <polygon points="256,108 210,147 302,147" fill="#C49030"/>
+  <rect x="251" y="94" width="10" height="16" rx="4" fill="#D4A840"/>
+  <circle cx="256" cy="92" r="7" fill="#F0C040"/>
+  <rect x="246" y="306" width="20" height="52" rx="4" fill="#D4A840" opacity="0.16"/>
+</svg>`
+
+function render(size) {
+  return new Promise(resolve => {
+    const canvas = document.getElementById('c' + size)
+    const ctx    = canvas.getContext('2d')
+    const blob   = new Blob([SVG], { type: 'image/svg+xml;charset=utf-8' })
+    const url    = URL.createObjectURL(blob)
+    const img    = new Image()
+    img.onload = () => {
+      ctx.clearRect(0, 0, size, size)
+      ctx.drawImage(img, 0, 0, size, size)
+      URL.revokeObjectURL(url)
+      resolve()
+    }
+    img.src = url
+  })
+}
+
+function dl(size) {
+  const canvas = document.getElementById('c' + size)
+  const a = document.createElement('a')
+  a.download = 'icon-' + size + '.png'
+  a.href = canvas.toDataURL('image/png')
+  a.click()
+}
+
+render(192)
+render(512)
+</script>
+</body>
+</html>
