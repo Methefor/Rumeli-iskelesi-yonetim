@@ -2406,15 +2406,15 @@
 
         function calcCategorySales(reports) {
             const categories = {
-                gida:         { name: 'Gıda',          icon: '🥗', total: 0, color: '#22c55e' },
-                kahvalti:     { name: 'Kahvaltı',       icon: '🥐', total: 0, color: '#f59e0b' },
-                kahve:        { name: 'Kahve',          icon: '☕', total: 0, color: '#8b5cf6' },
-                meyvesuyu:    { name: 'Meyve Suyu',     icon: '🧃', total: 0, color: '#ec4899' },
-                salata:       { name: 'Salata',         icon: '🥙', total: 0, color: '#06b6d4' },
+                gida:              { name: 'Gıda',          icon: '🥗', total: 0, color: '#22c55e' },
+                kahvalti:          { name: 'Kahvaltı',       icon: '🥐', total: 0, color: '#f59e0b' },
+                kahve:             { name: 'Kahve',          icon: '☕', total: 0, color: '#8b5cf6' },
+                meyvesuyu:         { name: 'Meyve Suyu',     icon: '🧃', total: 0, color: '#ec4899' },
+                salata:            { name: 'Salata',         icon: '🥙', total: 0, color: '#06b6d4' },
+                dondurma_kategori: { name: 'Dondurma',       icon: '🍦', total: 0, color: '#fb923c' },
                 sicak_icecek:      { name: 'Sıcak İçecek',  icon: '🔥', total: 0, color: '#ef4444' },
                 soguk_icecek:      { name: 'Soğuk İçecek',  icon: '🥤', total: 0, color: '#3b82f6' },
-                tatli:             { name: 'Tatlı',          icon: '🍰', total: 0, color: '#a855f7' },
-                dondurma_kategori: { name: 'Dondurma',       icon: '🍦', total: 0, color: '#06b6d4' }
+                tatli:             { name: 'Tatlı',          icon: '🍰', total: 0, color: '#a855f7' }
             }
 
             // Her gün+kasa için sadece akşam vardiyasını al (çift sayım önleme)
@@ -2427,15 +2427,15 @@
             })
 
             Object.values(dailyReports).forEach(r => {
-                categories.gida.total         += parseFloat(r.gida)         || 0
-                categories.kahvalti.total     += parseFloat(r.kahvalti)     || 0
-                categories.kahve.total        += parseFloat(r.kahve)        || 0
-                categories.meyvesuyu.total    += parseFloat(r.meyvesuyu)    || 0
-                categories.salata.total       += parseFloat(r.salata)       || 0
+                categories.gida.total              += parseFloat(r.gida)              || 0
+                categories.kahvalti.total          += parseFloat(r.kahvalti)          || 0
+                categories.kahve.total             += parseFloat(r.kahve)             || 0
+                categories.meyvesuyu.total         += parseFloat(r.meyvesuyu)         || 0
+                categories.salata.total            += parseFloat(r.salata)            || 0
+                categories.dondurma_kategori.total += parseFloat(r.dondurma_kategori) || 0
                 categories.sicak_icecek.total      += parseFloat(r.sicak_icecek)      || 0
                 categories.soguk_icecek.total      += parseFloat(r.soguk_icecek)      || 0
                 categories.tatli.total             += parseFloat(r.tatli)             || 0
-                categories.dondurma_kategori.total += parseFloat(r.dondurma_kategori) || 0
             })
 
             const totalCategorySales = Object.values(categories).reduce((sum, c) => sum + c.total, 0)

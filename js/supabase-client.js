@@ -78,8 +78,8 @@ export async function insertShiftEntry(data) {
   const hasCompleteData =
     parseFloat(data.rumeliZ1) > 0 && extraFields.filter(v => parseFloat(v) > 0).length >= 2
 
-  // — Puan (max 100) —
-  const pointsEarned = (isOnTime ? 50 : 0) + (hasCompleteData ? 50 : 0)
+  // — Puan (max 100) — iki_kasa puanlamaya dahil edilmez
+  const pointsEarned = kasa === 'iki_kasa' ? 0 : (isOnTime ? 50 : 0) + (hasCompleteData ? 50 : 0)
 
   // — Toplam ciro —
   const totalRevenue =
@@ -128,19 +128,21 @@ export async function insertShiftEntry(data) {
 
   if (reportError) return { data: null, error: reportError }
 
-  await supabase.from('entry_history').insert([{
-    cashier_id:     data.cashierId,
-    report_id:      reportData.id,
-    shift:          data.shift,
-    kasa:           'tek_kasa',
-    entry_time:     now.toISOString(),
-    is_on_time:     isOnTime,
-    is_complete:    hasCompleteData,
-    points_earned:  pointsEarned,
-    revenue_amount: totalRevenue,
-  }])
+  if (kasa !== 'iki_kasa') {
+    await supabase.from('entry_history').insert([{
+      cashier_id:     data.cashierId,
+      report_id:      reportData.id,
+      shift:          data.shift,
+      kasa:           kasa,
+      entry_time:     now.toISOString(),
+      is_on_time:     isOnTime,
+      is_complete:    hasCompleteData,
+      points_earned:  pointsEarned,
+      revenue_amount: totalRevenue,
+    }])
 
-  await _syncMonthlyScore(data.cashierId, now)
+    await _syncMonthlyScore(data.cashierId, now)
+  }
 
   return {
     data: { ...reportData, pointsEarned, isOnTime, isComplete: hasCompleteData },
@@ -180,10 +182,10 @@ export async function updateShiftEntry(reportId, formData, cashierId) {
       tatli:        parseFloat(formData.tatli)       || 0,
       meyvesuyu:    parseFloat(formData.meyveSuyu)   || 0,
       gida:         parseFloat(formData.gida)        || 0,
-      kahvalti:     parseFloat(formData.kahvalti)    || 0,
+      kahvalti:          parseFloat(formData.kahvalti)         || 0,
       salata:            parseFloat(formData.salata)            || 0,
       dondurma_kategori: parseFloat(formData.dondurmaKategori) || 0,
-      notlar:       formData.notlar || '',
+      notlar:            formData.notlar || '',
       total_revenue:      totalRevenue,
       individual_revenue: totalRevenue,
       points_earned:      newPoints,
@@ -213,6 +215,7 @@ async function _syncMonthlyScore(cashierId, now) {
       .from('daily_reports')
       .select('points_earned')
       .eq('cashier_id', cashierId)
+      .neq('kasa', 'iki_kasa')
       .gte('date', monthStart)
       .lte('date', monthEnd)
 
