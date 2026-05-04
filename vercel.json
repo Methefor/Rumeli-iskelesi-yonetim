@@ -1,4 +1,6 @@
 {
+  "framework": null,
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/admin", "destination": "/admin-dashboard.html" },
     { "source": "/cashier", "destination": "/cashier-dashboard.html" },
