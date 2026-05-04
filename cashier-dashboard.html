@@ -75,13 +75,38 @@
 
         /* HEADER */
         .header {
-            background: var(--card);
-            border: 1px solid var(--brd);
+            background: linear-gradient(145deg, #0f2460 0%, #0c1e4a 30%, #0a1a3e 65%, #08101e 100%);
+            border: 1px solid rgba(59,130,246,.3);
             border-radius: 20px;
             padding: 32px;
             margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .3)
+            box-shadow: 0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.07);
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
         }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -70px; right: -70px;
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(59,130,246,.2) 0%, transparent 68%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -90px; left: -50px;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(139,92,246,.14) 0%, transparent 68%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header > * { position: relative; z-index: 1; }
 
         .profile {
             display: flex;
@@ -1005,22 +1030,28 @@
 
             <!-- HISTORY -->
             <div class="section">
-                <div class="section-title">
-                    <span>📜</span>
-                    <span>Son Girişler</span>
+                <div class="section-title" onclick="toggleHistory()" style="cursor:pointer;user-select:none;justify-content:space-between;margin-bottom:0;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span>📜</span>
+                        <span>Son Girişler</span>
+                    </div>
+                    <span id="historyChevron" style="font-size:20px;transition:transform .3s;color:var(--txt2);transform:rotate(-90deg);">▾</span>
                 </div>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Tarih</th>
-                            <th>Vardiya</th>
-                            <th>Durum</th>
-                            <th>Ciro</th>
-                            <th>Puan</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyBody"></tbody>
-                </table>
+                <div id="historyTableWrapper" style="overflow:hidden;transition:max-height .35s ease,opacity .25s ease;max-height:0px;opacity:0;">
+                    <div style="height:16px;"></div>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Vardiya</th>
+                                <th>Durum</th>
+                                <th>Ciro</th>
+                                <th>Puan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- GİRİŞLERİM -->
@@ -1673,6 +1704,15 @@
                 alert('❌ Silme başarısız: ' + err.message)
             }
         }
+        window.toggleHistory = function() {
+            const wrapper = document.getElementById('historyTableWrapper')
+            const chevron = document.getElementById('historyChevron')
+            const isClosed = wrapper.style.maxHeight === '0px'
+            wrapper.style.maxHeight = isClosed ? '800px' : '0px'
+            wrapper.style.opacity  = isClosed ? '1' : '0'
+            chevron.style.transform = isClosed ? 'rotate(0deg)' : 'rotate(-90deg)'
+        }
+
         // PUANLAMA BİLGİ MODALI
         window.showScoringInfo = function() {
             document.getElementById('scoringInfoModal').style.display = 'flex'
@@ -1766,6 +1806,41 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // ── GÜNCELLEME BİLDİRİMİ ──────────────────────────────────────────────────
+        var _APP_VER = 'v1.5';
+        var _APP_NOTES = [
+            '✨ Profil kartı yenilendi — gradient arka plan, mavi/mor glow efekti',
+            '📜 Son Girişler bölümü artık açılır/kapanır',
+            '🗂️ 2. Kasa formunda ayrı 9 kategori, balık ekmek/dondurma kaldırıldı',
+            '👤 Giriş sonrası direkt profile yönlendirme',
+            '📝 Bio ve Güçlü Yönlerim bölümleri eklendi',
+            '🔔 Güncelleme bildirimleri eklendi',
+        ];
+        (function () {
+            var last = localStorage.getItem('rumeli_app_version');
+            localStorage.setItem('rumeli_app_version', _APP_VER);
+            if (!last || last === _APP_VER) return;
+            window.addEventListener('DOMContentLoaded', function () {
+                setTimeout(function () {
+                    var b = document.createElement('div');
+                    b.id = 'updateBanner';
+                    b.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0f2460,#0c1a3e);border:1.5px solid #3b82f6;border-radius:16px;padding:18px 22px;width:min(380px,92vw);z-index:9999;box-shadow:0 12px 40px rgba(0,0,0,.65);animation:swUp .4s ease;';
+                    b.innerHTML = '<style>@keyframes swUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}</style>'
+                        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+                        + '<div style="font-weight:700;font-size:15px;color:#e8edf5;">🚀 Güncelleme ' + _APP_VER + '</div>'
+                        + '<button onclick="document.getElementById(\'updateBanner\').remove()" style="background:none;border:none;color:#7a8ba8;font-size:22px;cursor:pointer;line-height:1;padding:0 4px;">✕</button>'
+                        + '</div>'
+                        + '<ul style="margin:0;padding-left:18px;font-size:13px;color:#94a3b8;line-height:1.75;">'
+                        + _APP_NOTES.map(function (n) { return '<li>' + n + '</li>'; }).join('')
+                        + '</ul>';
+                    document.body.appendChild(b);
+                    setTimeout(function () { if (b.parentNode) b.remove(); }, 15000);
+                }, 800);
+            });
+        })();
+    </script>
 
     <script>
         if ('serviceWorker' in navigator) {
