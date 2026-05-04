@@ -1,11 +1,11 @@
 {
-  "name": "İskele Defteri",
-  "short_name": "İskele",
-  "description": "Rumeli İskelesi'nin vardiya defteri. Marmara kıyısında her gün bir kayıt.",
+  "name": "Rumeli İskelesi - Kasiyer",
+  "short_name": "İskelesi",
+  "description": "Rumeli İskelesi vardiya takip ve ciro giriş sistemi.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#021525",
+  "background_color": "#0a1628",
   "theme_color": "#0a1628",
   "orientation": "any",
   "icons": [
