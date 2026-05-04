@@ -357,7 +357,7 @@
                 <div class="kasa-header">🖥️ 2. Kasa</div>
                 <div class="kasa-fields">
                     <div>
-                        <label class="fl" id="raporLabel2">X Raporu <span style="color:var(--red);">*</span></label>
+                        <label class="fl" id="raporLabel2">X Raporu <span style="font-size:11px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></label>
                         <div class="iw">
                             <input type="number" id="kasa2_z1" step="0.01" placeholder="0.00">
                             <span class="sfx">₺</span>
@@ -570,7 +570,7 @@
             const isEvening = selectedShift === 'aksam'
             const raporName = isEvening ? 'Z Raporu' : 'X Raporu'
             $('raporLabel1').innerHTML = `${raporName} <span style="color:var(--red);">*</span>`
-            $('raporLabel2').innerHTML = `${raporName} <span style="color:var(--red);">*</span>`
+            $('raporLabel2').innerHTML = `${raporName} <span style="font-size:11px;font-weight:400;color:var(--txt3);">(opsiyonel)</span>`
 
             // Balık + Dondurma sadece 1. Kasada ve akşamda
             $('kasa1_balikField').classList.toggle('hidden', !isEvening)
@@ -674,10 +674,7 @@
                 showToast(`1. Kasa ${selectedShift === 'sabah' ? 'X' : 'Z'} Raporu girilmedi!`, 'error')
                 $('kasa1_z1').focus(); return
             }
-            if (z2 <= 0) {
-                showToast(`2. Kasa ${selectedShift === 'sabah' ? 'X' : 'Z'} Raporu girilmedi!`, 'error')
-                $('kasa2_z1').focus(); return
-            }
+            // 2. Kasa opsiyonel — girilmezse kayıt oluşturulmaz
 
             const btn = $('submitButton')
             btn.disabled = true; btn.textContent = 'Kaydediliyor...'
@@ -731,18 +728,22 @@
                 if (isEditMode) {
                     ;({ data: r1, error: e1 } = await updateShiftEntry(editModeAnaId, kasa1Data, currentCashier.id))
                     if (e1) throw e1
-                    if (editModeIkiId) {
-                        ;({ data: r2, error: e2 } = await updateShiftEntry(editModeIkiId, kasa2Data, currentCashier.id))
-                    } else {
-                        ;({ data: r2, error: e2 } = await insertShiftEntry(kasa2Data))
+                    if (z2 > 0) {
+                        if (editModeIkiId) {
+                            ;({ data: r2, error: e2 } = await updateShiftEntry(editModeIkiId, kasa2Data, currentCashier.id))
+                        } else {
+                            ;({ data: r2, error: e2 } = await insertShiftEntry(kasa2Data))
+                        }
+                        if (e2) throw e2
                     }
                 } else {
                     ;({ data: r1, error: e1 } = await insertShiftEntry(kasa1Data))
                     if (e1) throw e1
-                    ;({ data: r2, error: e2 } = await insertShiftEntry(kasa2Data))
+                    if (z2 > 0) {
+                        ;({ data: r2, error: e2 } = await insertShiftEntry(kasa2Data))
+                        if (e2) throw e2
+                    }
                 }
-
-                if (e2) throw e2
 
                 const total1 = r1?.total_revenue || 0
                 const total2 = r2?.total_revenue || 0
@@ -751,9 +752,10 @@
 
                 $('pointsDisplay').textContent = isEditMode ? `-5` : `+${pts}`
 
+                const kasa2part = r2 ? ` + 2.Kasa: ${fmt(total2)}` : ''
                 const msg = isEditMode
-                    ? `✅ Güncellendi! 1.Kasa: ${fmt(total1)} + 2.Kasa: ${fmt(total2)} = ${fmt(total)} ₺`
-                    : `✅ Kaydedildi! 1.Kasa: ${fmt(total1)} + 2.Kasa: ${fmt(total2)} = ${fmt(total)} ₺  +${pts} puan!`
+                    ? `✅ Güncellendi! 1.Kasa: ${fmt(total1)}${kasa2part} = ${fmt(total)} ₺`
+                    : `✅ Kaydedildi! 1.Kasa: ${fmt(total1)}${kasa2part} = ${fmt(total)} ₺  +${pts} puan!`
                 showToast(msg, 'success')
 
                 setTimeout(() => location.reload(), 2800)
