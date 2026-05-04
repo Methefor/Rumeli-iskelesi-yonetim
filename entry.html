@@ -329,7 +329,7 @@
                 <div class="kasa-header">🏦 1. Kasa</div>
                 <div class="kasa-fields">
                     <div>
-                        <label class="fl" id="raporLabel1">X Raporu <span style="color:var(--red);">*</span></label>
+                        <label class="fl" id="raporLabel1">X Raporu</label>
                         <div class="iw">
                             <input type="number" id="kasa1_z1" step="0.01" placeholder="0.00">
                             <span class="sfx">₺</span>
@@ -569,7 +569,7 @@
             // Sabah = X Raporu, Akşam = Z Raporu
             const isEvening = selectedShift === 'aksam'
             const raporName = isEvening ? 'Z Raporu' : 'X Raporu'
-            $('raporLabel1').innerHTML = `${raporName} <span style="color:var(--red);">*</span>`
+            $('raporLabel1').textContent = raporName
             $('raporLabel2').innerHTML = `${raporName} <span style="font-size:11px;font-weight:400;color:var(--txt3);">(opsiyonel)</span>`
 
             // Balık + Dondurma sadece 1. Kasada ve akşamda
@@ -670,11 +670,7 @@
         // ── KAYDET ─────────────────────────────────────────────
         $('submitButton').addEventListener('click', async () => {
             const z1 = fv('kasa1_z1'), z2 = fv('kasa2_z1')
-            if (z1 <= 0) {
-                showToast(`1. Kasa ${selectedShift === 'sabah' ? 'X' : 'Z'} Raporu girilmedi!`, 'error')
-                $('kasa1_z1').focus(); return
-            }
-            // 2. Kasa opsiyonel — girilmezse kayıt oluşturulmaz
+            // Tüm alanlar opsiyonel — girilmezse 0 sayılır
 
             const btn = $('submitButton')
             btn.disabled = true; btn.textContent = 'Kaydediliyor...'

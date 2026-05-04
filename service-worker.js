@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rumeli-v15';
+const CACHE_NAME = 'rumeli-v16';
 
 const STATIC_ASSETS = [
     '/',
