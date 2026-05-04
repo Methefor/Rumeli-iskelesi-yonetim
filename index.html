@@ -1044,7 +1044,7 @@
                     .single()
 
                 if (result.data && !result.error) {
-                    window.location.href = './entry.html?cashier_id=' + result.data.id
+                    window.location.href = './cashier-dashboard.html?cashier_id=' + result.data.id
                 } else {
                     showErr(err, '❌ PIN hatalı! Tekrar deneyin.')
                     shake('.form-box.Register .pin-keypad')

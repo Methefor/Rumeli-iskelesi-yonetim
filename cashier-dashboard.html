@@ -946,6 +946,33 @@
                     </div>
                     <button class="scoring-trigger-btn" onclick="showScoringInfo()">🏆 Puan Sistemi Nasıl Çalışır?</button>
                 </div>
+
+                <!-- BIO -->
+                <div style="margin-top:16px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📝 Hakkımda</div>
+                    <div style="position:relative;">
+                        <textarea id="bioInput" maxlength="200" rows="3" placeholder="Kendini tanıt... (max 200 karakter)"
+                            style="width:100%;background:var(--input);border:1.5px solid var(--brd);color:var(--txt);padding:11px 13px;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none;transition:border-color .2s;line-height:1.5;"></textarea>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                            <span id="bioCharCount" style="font-size:11px;color:var(--txt3);">0/200</span>
+                            <button onclick="saveBio()" style="padding:6px 16px;background:var(--acc);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SKILLS -->
+                <div style="margin-top:16px;">
+                    <div style="font-size:12px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">⚡ Güçlü Yönlerim</div>
+                    <div id="skillTags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+                    <button onclick="saveSkills()" style="padding:6px 16px;background:var(--acc);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">Kaydet</button>
+                </div>
+
+                <!-- VERİ GİRİŞİ BUTONU -->
+                <div style="margin-top:20px;">
+                    <a id="veriGirisiBtn" href="#" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;transition:all .2s;box-shadow:0 4px 20px rgba(16,185,129,.3);">
+                        📝 Veri Girişi Yap
+                    </a>
+                </div>
             </div>
 
             <!-- STATS -->
@@ -1024,7 +1051,7 @@
     </script>
 
     <script type="module">
-        import { supabase, updateShiftEntry, uploadCashierAvatar } from './js/supabase-client.js'
+        import { supabase, updateShiftEntry, uploadCashierAvatar, updateCashierProfile } from './js/supabase-client.js'
         if (typeof window._cashierLoadOk === 'function') window._cashierLoadOk()
 
         // URL'den cashier_id al
@@ -1150,6 +1177,36 @@
             }
             document.getElementById('profileName').textContent  = cashier.name
             document.getElementById('profileRole').textContent  = 'Kasiyer — Rumeli İskelesi'
+            document.getElementById('veriGirisiBtn').href = `./entry.html?cashier_id=${cashier.id}`
+
+            // Bio
+            const bioInput = document.getElementById('bioInput')
+            bioInput.value = cashier.bio || ''
+            document.getElementById('bioCharCount').textContent = `${bioInput.value.length}/200`
+            bioInput.addEventListener('input', () => {
+                document.getElementById('bioCharCount').textContent = `${bioInput.value.length}/200`
+            })
+
+            // Skills
+            const ALL_SKILLS = [
+                { id: 'hizli',    label: '⚡ Hızlı Kasa' },
+                { id: 'musteri',  label: '😊 Müşteri İlişkileri' },
+                { id: 'takim',    label: '🤝 Takım Çalışması' },
+                { id: 'detay',    label: '🎯 Detaycı' },
+                { id: 'kahve',    label: '☕ Kahve Uzmanı' },
+                { id: 'dondurma', label: '🍦 Dondurma Ustası' },
+                { id: 'balik',    label: '🐟 Balık Ekmek Pro' },
+                { id: 'veri',     label: '📊 Veri Girişi' },
+                { id: 'sabah',    label: '🌅 Sabah Ekibi' },
+                { id: 'aksam',    label: '🌙 Akşam Ekibi' },
+                { id: 'güleryuz', label: '🌟 Güler Yüzlü' },
+                { id: 'temizlik', label: '🧹 Düzenli & Temiz' },
+            ]
+            let selectedSkills = []
+            try { selectedSkills = JSON.parse(cashier.skills || '[]') } catch {}
+            window._allSkills = ALL_SKILLS
+            window._selectedSkills = new Set(selectedSkills)
+            renderSkillTags(ALL_SKILLS, window._selectedSkills)
 
             // BADGE — performans oranı tabanlı
             const pct   = monthStats.performancePct
@@ -1184,6 +1241,35 @@
 
             // HISTORY
             renderHistory(history)
+        }
+
+        function renderSkillTags(allSkills, selected) {
+            const container = document.getElementById('skillTags')
+            container.innerHTML = allSkills.map(s => {
+                const active = selected.has(s.id)
+                return `<button onclick="toggleSkill('${s.id}')" id="skill-${s.id}"
+                    style="padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:2px solid ${active ? 'var(--acc)' : 'var(--brd)'};background:${active ? 'rgba(59,130,246,.18)' : 'var(--input)'};color:${active ? 'var(--acc)' : 'var(--txt2)'};">
+                    ${s.label}
+                </button>`
+            }).join('')
+        }
+
+        window.toggleSkill = function(id) {
+            if (window._selectedSkills.has(id)) window._selectedSkills.delete(id)
+            else window._selectedSkills.add(id)
+            renderSkillTags(window._allSkills, window._selectedSkills)
+        }
+
+        window.saveBio = async function() {
+            const bio = document.getElementById('bioInput').value.trim()
+            const { error } = await updateCashierProfile(_currentCashierId, { bio })
+            showToast(error ? '❌ Kaydedilemedi' : '✅ Bio güncellendi', error ? 'error' : 'success')
+        }
+
+        window.saveSkills = async function() {
+            const skills = JSON.stringify([...window._selectedSkills])
+            const { error } = await updateCashierProfile(_currentCashierId, { skills })
+            showToast(error ? '❌ Kaydedilemedi' : '✅ Güçlü yönler güncellendi', error ? 'error' : 'success')
         }
 
         // Performans oranı (%) tabanlı denizcilik unvanı (Müdür rozeti önceliklidir)

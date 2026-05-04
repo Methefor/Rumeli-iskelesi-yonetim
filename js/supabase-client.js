@@ -35,6 +35,10 @@ export async function setCashierActive(id, active) {
   return await supabase.from('cashiers').update({ active }).eq('id', id).select().single()
 }
 
+export async function updateCashierProfile(id, fields) {
+  return await supabase.from('cashiers').update(fields).eq('id', id).select().single()
+}
+
 // ─── VARDİYA KONTROL ─────────────────────────────────────────────────────────
 
 /**
