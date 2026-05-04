@@ -242,14 +242,14 @@ async function _syncMonthlyScore(cashierId, now) {
     const entryCount     = monthReports.length
     const performancePct = Math.round((totalPoints / (entryCount * 100)) * 100)
 
-    // Rozet seviyesi — oran tabanlı
+    // Rozet seviyesi — oran + minimum giriş sayısı tabanlı
     let badgeLevel = 'yeni'
-    if      (performancePct >= 95) badgeLevel = 'efsane_plus'
-    else if (performancePct >= 85) badgeLevel = 'efsane'
-    else if (performancePct >= 75) badgeLevel = 'elmas'
-    else if (performancePct >= 65) badgeLevel = 'altin'
-    else if (performancePct >= 50) badgeLevel = 'gumus'
-    else if (performancePct >= 30) badgeLevel = 'bronz'
+    if      (entryCount >= 30 && performancePct >= 95) badgeLevel = 'efsane_plus'
+    else if (entryCount >= 24 && performancePct >= 88) badgeLevel = 'efsane'
+    else if (entryCount >= 18 && performancePct >= 80) badgeLevel = 'elmas'
+    else if (entryCount >= 12 && performancePct >= 72) badgeLevel = 'altin'
+    else if (entryCount >= 8  && performancePct >= 62) badgeLevel = 'gumus'
+    else if (entryCount >= 4  && performancePct >= 50) badgeLevel = 'bronz'
 
     const { data: cashierRow } = await supabase
       .from('cashiers').select('badge_level').eq('id', cashierId).single()

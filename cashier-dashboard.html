@@ -606,9 +606,9 @@
     .scoring-info-box {
       background: rgba(12,18,38,.97); border: 1px solid var(--border);
       border-radius: 22px; max-width: 480px; width: 100%;
-      max-height: 90vh; overflow-y: auto;
+      max-height: 90vh; overflow-y: auto; overflow-x: hidden;
       box-shadow: 0 40px 100px rgba(0,0,0,.9);
-      position: relative; overflow: hidden;
+      position: relative;
     }
     .scoring-info-box::before {
       content: ''; position: absolute;
@@ -917,9 +917,11 @@
         supabase.from('cashiers').select('*').eq('id', cashierId).single(),
         supabase.from('daily_reports').select('*')
           .eq('cashier_id', cashierId)
+          .neq('kasa', 'iki_kasa')
           .gte('date', monthStart).lte('date', monthEnd),
         supabase.from('daily_reports')
           .select('cashier_id, points_earned, is_on_time, rumeli_z1, total_revenue, cashiers(name)')
+          .neq('kasa', 'iki_kasa')
           .gte('date', monthStart).lte('date', monthEnd),
         supabase.from('entry_history').select('*')
           .eq('cashier_id', cashierId)
@@ -948,7 +950,7 @@
         const id   = r.cashier_id
         const name = r.cashiers?.name || 'Bilinmiyor'
         if (!leaderMap[id]) leaderMap[id] = { cashier_id: id, cashier_name: name, total_score: 0, total_entries: 0, on_time_entries: 0 }
-        const score = (r.is_on_time ? 50 : 0) + (parseFloat(r.rumeli_z1 || 0) > 0 || parseFloat(r.total_revenue || 0) > 0 ? 50 : 0)
+        const score = parseInt(r.points_earned) || 0
         leaderMap[id].total_score   += score
         leaderMap[id].total_entries += 1
         if (r.is_on_time) leaderMap[id].on_time_entries += 1
@@ -1022,14 +1024,17 @@
     renderSkillTags(ALL_SKILLS, window._selectedSkills)
 
     const pct   = monthStats.performancePct
-    const badge = getBadge(cashier.badge_level, pct)
+    const badge = getBadge(cashier.badge_level, pct, monthStats.entries)
     document.getElementById('badgeIcon').textContent  = badge.icon
     document.getElementById('badgeLabel').textContent = badge.label
     document.getElementById('totalPoints').textContent = monthStats.entries > 0 ? `%${pct}` : '—'
 
-    const nextBadge = getNextBadge(pct, cashier.badge_level)
-    document.getElementById('nextBadge').textContent    = nextBadge.label
-    document.getElementById('pointsNeeded').textContent = nextBadge.pctLeft > 0 ? `%${nextBadge.pctLeft} daha` : 'Tamamlandı!'
+    const nextBadge = getNextBadge(pct, monthStats.entries, cashier.badge_level)
+    document.getElementById('nextBadge').textContent = nextBadge.label
+    const needParts = []
+    if (nextBadge.pctLeft > 0) needParts.push(`%${nextBadge.pctLeft} daha`)
+    if (nextBadge.entriesLeft > 0) needParts.push(`${nextBadge.entriesLeft} giriş daha`)
+    document.getElementById('pointsNeeded').textContent = needParts.length > 0 ? needParts.join(' · ') : 'Tamamlandı!'
     document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%'
 
     document.getElementById('statEntries').textContent = monthStats.entries
@@ -1067,30 +1072,30 @@
     showToast(error ? '❌ Kaydedilemedi' : '✅ Güçlü yönler güncellendi', error ? 'error' : 'success')
   }
 
-  function getBadge(badgeLevel, pct) {
+  function getBadge(badgeLevel, pct, n) {
     const SPECIAL = {
       'ozel_yildiz':{ icon:'🌟', label:'Yılın Yıldızı' }, 'ozel_ates':{ icon:'🔥', label:'Ateş Çıkışlı' },
       'ozel_roket': { icon:'🚀', label:'Hızlı Yükseliş' }, 'ozel_onur':{ icon:'🏅', label:'Onur Madalyası' },
       'ozel_takim': { icon:'🤝', label:'Takım Ruhu' },
     }
     if (badgeLevel && SPECIAL[badgeLevel]) return SPECIAL[badgeLevel]
-    if (pct >= 95) return { icon:'🦈', label:'Efsane Kaptan' }
-    if (pct >= 85) return { icon:'🌊', label:'Deniz Kurdu' }
-    if (pct >= 75) return { icon:'🏛️', label:'İskele Reisi' }
-    if (pct >= 65) return { icon:'⛵', label:'Kıdemli Kaptan' }
-    if (pct >= 50) return { icon:'🧭', label:'Lostromo' }
-    if (pct >= 30) return { icon:'🪢', label:'Güverte Tayfası' }
+    if (n >= 30 && pct >= 95) return { icon:'🦈', label:'Efsane Kaptan' }
+    if (n >= 24 && pct >= 88) return { icon:'🌊', label:'Deniz Kurdu' }
+    if (n >= 18 && pct >= 80) return { icon:'🏛️', label:'İskele Reisi' }
+    if (n >= 12 && pct >= 72) return { icon:'⛵', label:'Kıdemli Kaptan' }
+    if (n >= 8  && pct >= 62) return { icon:'🧭', label:'Lostromo' }
+    if (n >= 4  && pct >= 50) return { icon:'🪢', label:'Güverte Tayfası' }
     return { icon:'⚓', label:'Stajyer Tayfa' }
   }
-  function getNextBadge(pct, badgeLevel) {
-    if (badgeLevel?.startsWith('ozel_')) return { label:'Özel Rozet (Müdür)', pctLeft:0 }
-    if (pct >= 95) return { label:'Maksimum Seviye!', pctLeft:0 }
-    if (pct >= 85) return { label:'Efsane Kaptan 🦈', pctLeft:95-pct }
-    if (pct >= 75) return { label:'Deniz Kurdu 🌊',   pctLeft:85-pct }
-    if (pct >= 65) return { label:'İskele Reisi 🏛️',  pctLeft:75-pct }
-    if (pct >= 50) return { label:'Kıdemli Kaptan ⛵', pctLeft:65-pct }
-    if (pct >= 30) return { label:'Lostromo 🧭',       pctLeft:50-pct }
-    return { label:'Güverte Tayfası 🪢', pctLeft:30-pct }
+  function getNextBadge(pct, n, badgeLevel) {
+    if (badgeLevel?.startsWith('ozel_')) return { label:'Özel Rozet (Müdür)', pctLeft:0, entriesLeft:0 }
+    if (n >= 30 && pct >= 95) return { label:'Maksimum Seviye!', pctLeft:0, entriesLeft:0 }
+    if (n >= 24 && pct >= 88) return { label:'Efsane Kaptan 🦈', pctLeft:Math.max(0,95-pct), entriesLeft:Math.max(0,30-n) }
+    if (n >= 18 && pct >= 80) return { label:'Deniz Kurdu 🌊',   pctLeft:Math.max(0,88-pct), entriesLeft:Math.max(0,24-n) }
+    if (n >= 12 && pct >= 72) return { label:'İskele Reisi 🏛️',  pctLeft:Math.max(0,80-pct), entriesLeft:Math.max(0,18-n) }
+    if (n >= 8  && pct >= 62) return { label:'Kıdemli Kaptan ⛵', pctLeft:Math.max(0,72-pct), entriesLeft:Math.max(0,12-n) }
+    if (n >= 4  && pct >= 50) return { label:'Lostromo 🧭',       pctLeft:Math.max(0,62-pct), entriesLeft:Math.max(0,8-n) }
+    return { label:'Güverte Tayfası 🪢', pctLeft:Math.max(0,50-pct), entriesLeft:Math.max(0,4-n) }
   }
 
   function renderLeaderboard(leaders, currentCashierId) {
@@ -1342,13 +1347,13 @@
       <div class="scoring-section" style="margin-top:16px">
         <div class="scoring-section-title">🏅 Denizcilik Unvanları</div>
         <div class="badge-levels">
-          <div class="badge-level-item"><div class="badge-level-icon">⚓</div><div class="badge-level-name">Stajyer Tayfa</div><div class="badge-level-points">%0–29</div></div>
-          <div class="badge-level-item"><div class="badge-level-icon">🪢</div><div class="badge-level-name">Güverte Tayfası</div><div class="badge-level-points">%30–49</div></div>
-          <div class="badge-level-item"><div class="badge-level-icon">🧭</div><div class="badge-level-name">Lostromo</div><div class="badge-level-points">%50–64</div></div>
-          <div class="badge-level-item"><div class="badge-level-icon">⛵</div><div class="badge-level-name">Kıdemli Kaptan</div><div class="badge-level-points">%65–74</div></div>
-          <div class="badge-level-item"><div class="badge-level-icon">🏛️</div><div class="badge-level-name">İskele Reisi</div><div class="badge-level-points">%75–84</div></div>
-          <div class="badge-level-item"><div class="badge-level-icon">🌊</div><div class="badge-level-name">Deniz Kurdu</div><div class="badge-level-points">%85–94</div></div>
-          <div class="badge-level-item" style="grid-column:span 3"><div class="badge-level-icon">🦈</div><div class="badge-level-name">Efsane Kaptan</div><div class="badge-level-points">%95+</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">⚓</div><div class="badge-level-name">Stajyer Tayfa</div><div class="badge-level-points">Başlangıç</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">🪢</div><div class="badge-level-name">Güverte Tayfası</div><div class="badge-level-points">4 giriş · %50+</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">🧭</div><div class="badge-level-name">Lostromo</div><div class="badge-level-points">8 giriş · %62+</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">⛵</div><div class="badge-level-name">Kıdemli Kaptan</div><div class="badge-level-points">12 giriş · %72+</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">🏛️</div><div class="badge-level-name">İskele Reisi</div><div class="badge-level-points">18 giriş · %80+</div></div>
+          <div class="badge-level-item"><div class="badge-level-icon">🌊</div><div class="badge-level-name">Deniz Kurdu</div><div class="badge-level-points">24 giriş · %88+</div></div>
+          <div class="badge-level-item" style="grid-column:span 3"><div class="badge-level-icon">🦈</div><div class="badge-level-name">Efsane Kaptan</div><div class="badge-level-points">30 giriş · %95+ — Tam Ay Performansı</div></div>
         </div>
       </div>
     </div>
