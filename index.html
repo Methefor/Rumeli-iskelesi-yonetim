@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#25252b">
+    <meta name="theme-color" content="#0a1628">
     <meta name="description" content="Rumeli İskelesi Yönetim Sistemi - Günlük veri giriş ve analiz">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1040,6 +1040,7 @@
                     .from('cashiers')
                     .select('*')
                     .eq('pin', cashierCurrentPin)
+                    .neq('active', false)
                     .single()
 
                 if (result.data && !result.error) {

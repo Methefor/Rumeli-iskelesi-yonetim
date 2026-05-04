@@ -14,12 +14,6 @@ function localDateStr(d) {
 
 // ─── KASİYER ─────────────────────────────────────────────────────────────────
 
-export async function verifyCashierPin(pin) {
-  const { data, error } = await supabase
-    .from('cashiers').select('*').eq('pin', pin).neq('active', false).single()
-  return { data, error }
-}
-
 export async function getAllCashiers() {
   return await supabase.from('cashiers').select('*').order('name')
 }
@@ -265,58 +259,6 @@ async function _syncMonthlyScore(cashierId, now) {
   } catch (err) {
     console.error('Puan senkronizasyonu hatası:', err)
   }
-}
-
-// ─── PERFORMANS ───────────────────────────────────────────────────────────────
-
-export async function getWeeklyPerformance() {
-  return await supabase.from('weekly_performance').select('*')
-}
-
-export async function getDailyPerformance() {
-  return await supabase.from('daily_performance').select('*')
-}
-
-export async function getCashierAchievements(cashierId) {
-  return await supabase
-    .from('achievements').select('*')
-    .eq('cashier_id', cashierId)
-    .order('achieved_at', { ascending: false })
-}
-
-export async function getCashierHistory(cashierId, limit = 20) {
-  return await supabase
-    .from('entry_history').select('*')
-    .eq('cashier_id', cashierId)
-    .order('entry_time', { ascending: false })
-    .limit(limit)
-}
-
-// ─── ESKİ FONKSİYONLAR (UYUMLULUK) ──────────────────────────────────────────
-
-export async function insertSalesRecord(data) {
-  return await supabase.from('sales_records').insert([{
-    date: data.selectedDate, cashier_name: data.cashierName,
-    rumeli_z1: data.rumeliZ1, rumeli_z2: data.rumeliZ2,
-    balik_ekmek: data.balikEkmek, dondurma: data.dondurma,
-    gida: data.gida, kahve: data.kahve,
-    sicak_icecek: data.sicakIcecek, soguk_icecek: data.sogukIcecek,
-    tatli: data.tatli, meyvesuyu: data.meyveSuyu,
-    kahvalti: data.kahvalti, dondurma_adet: data.dondurmaAdet,
-    depo: data.depo, notlar: data.notlar,
-  }]).select()
-}
-
-export async function fetchSalesRecords() {
-  return await supabase.from('sales_records').select('*').order('date', { ascending: false })
-}
-
-export async function deleteSalesRecord(id) {
-  return await supabase.from('sales_records').delete().eq('id', id)
-}
-
-export async function verifyAdminPin(pin) {
-  return await supabase.from('admins').select('*').eq('pin', pin).single()
 }
 
 // ─── PROFİL FOTOĞRAFI ────────────────────────────────────────────────────────
