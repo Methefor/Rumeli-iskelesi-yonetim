@@ -1967,6 +1967,7 @@
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <div id="lastUpdate" style="font-size:12px;color:var(--txt2)">Yükleniyor...</div>
                 <button class="nb" onclick="showVerimlilik()" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-color:#3b82f6;">📊 Operasyonel Verimlilik</button>
+                <button class="nb" onclick="showKasiyerYonetimi()" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#10b981;">👥 Kasiyerler</button>
                 <button id="refreshBtn" class="nb">🔄 Yenile</button>
                 <a href="index.html" class="nb">← Çıkış</a>
             </div>
@@ -4046,6 +4047,143 @@
                 toast.style.animation = 'slideOut .3s'
                 setTimeout(() => toast.remove(), 300)
             }, 3000)
+        }
+    </script>
+
+    <!-- KASİYER YÖNETİMİ MODALI -->
+    <div id="kasiyerModal" class="modal-overlay hidden">
+        <div class="modal-box" style="max-width:660px;max-height:90vh;display:flex;flex-direction:column;">
+            <div class="modal-title" style="justify-content:space-between;">
+                <span>👥 Kasiyer Yönetimi</span>
+                <button onclick="document.getElementById('kasiyerModal').classList.add('hidden')"
+                    style="background:none;border:none;font-size:20px;color:var(--txt2);cursor:pointer;line-height:1;">✕</button>
+            </div>
+
+            <!-- Yeni Kasiyer Formu -->
+            <div style="background:var(--input);border:1px solid var(--brd);border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="font-size:13px;font-weight:700;color:var(--acc);margin-bottom:12px;">➕ Yeni Kasiyer Ekle</div>
+                <div style="display:grid;grid-template-columns:1fr 140px auto;gap:10px;align-items:end;">
+                    <div>
+                        <label style="font-size:11px;color:var(--txt2);display:block;margin-bottom:4px;">İsim Soyisim</label>
+                        <input id="newCashierName" type="text" placeholder="örn. Ali Yılmaz"
+                            style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--bg);color:var(--txt);font-size:14px;">
+                    </div>
+                    <div>
+                        <label style="font-size:11px;color:var(--txt2);display:block;margin-bottom:4px;">Şifre (PIN)</label>
+                        <input id="newCashierPin" type="text" placeholder="örn. 1234" maxlength="10"
+                            style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--brd);background:var(--bg);color:var(--txt);font-size:14px;">
+                    </div>
+                    <button onclick="kasiyerEkle()"
+                        style="padding:10px 18px;background:var(--acc);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kasiyer Listesi -->
+            <div style="overflow-y:auto;flex:1;">
+                <div id="kasiyerListesi" style="display:flex;flex-direction:column;gap:8px;">
+                    <div style="text-align:center;padding:20px;color:var(--txt2);">Yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, addCashier, updateCashierPin, updateCashierName, setCashierActive, getAllCashiers } from '/js/supabase-client.js'
+
+        async function loadKasiyerList() {
+            const { data: cashiers, error } = await getAllCashiers()
+            const list = document.getElementById('kasiyerListesi')
+            if (error || !cashiers?.length) {
+                list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--txt2);">Kasiyer bulunamadı.</div>'
+                return
+            }
+            list.innerHTML = cashiers.map(c => {
+                const isActive = c.active !== false
+                return `
+                <div id="krow-${c.id}" style="display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;
+                    padding:12px 16px;border-radius:10px;border:1px solid ${isActive ? 'var(--brd)' : 'rgba(239,68,68,.3)'};
+                    background:${isActive ? 'var(--input)' : 'rgba(239,68,68,.06)'};transition:.2s;">
+                    <div style="display:flex;flex-direction:column;gap:3px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span id="kname-${c.id}" style="font-weight:700;font-size:15px;color:${isActive ? 'var(--txt)' : 'var(--txt3)'};">${c.name}</span>
+                            <span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;
+                                background:${isActive ? 'rgba(34,197,94,.15)' : 'rgba(239,68,68,.15)'};
+                                color:${isActive ? 'var(--green)' : 'var(--red)'};">
+                                ${isActive ? '● Aktif' : '● Pasif'}
+                            </span>
+                        </div>
+                        <div style="font-size:12px;color:var(--txt2);">
+                            PIN: <span id="kpin-${c.id}" style="font-family:monospace;">${c.pin}</span>
+                            &nbsp;·&nbsp; ${c.badge_level || 'yeni'} &nbsp;·&nbsp; ${c.total_points || 0} puan
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+                        <button onclick="kasiyerPinDegistir('${c.id}')"
+                            style="padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--brd);background:var(--bg);color:var(--txt);cursor:pointer;">
+                            🔑 PIN
+                        </button>
+                        <button onclick="kasiyerIsimDegistir('${c.id}')"
+                            style="padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--brd);background:var(--bg);color:var(--txt);cursor:pointer;">
+                            ✏️ İsim
+                        </button>
+                        <button onclick="kasiyerToggleAktif('${c.id}', ${isActive})"
+                            style="padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:none;cursor:pointer;
+                            background:${isActive ? 'rgba(239,68,68,.15)' : 'rgba(34,197,94,.15)'};
+                            color:${isActive ? 'var(--red)' : 'var(--green)'};">
+                            ${isActive ? '🔒 Pasif Yap' : '✅ Aktif Yap'}
+                        </button>
+                    </div>
+                </div>`
+            }).join('')
+        }
+
+        window.showKasiyerYonetimi = async function () {
+            document.getElementById('kasiyerModal').classList.remove('hidden')
+            await loadKasiyerList()
+        }
+
+        window.kasiyerEkle = async function () {
+            const name = document.getElementById('newCashierName').value.trim()
+            const pin  = document.getElementById('newCashierPin').value.trim()
+            if (!name || !pin) { showToast('❌ İsim ve şifre zorunlu', 'error'); return }
+            const { error } = await addCashier(name, pin)
+            if (error) { showToast('❌ Eklenemedi: ' + error.message, 'error'); return }
+            document.getElementById('newCashierName').value = ''
+            document.getElementById('newCashierPin').value  = ''
+            showToast('✅ ' + name + ' eklendi')
+            await loadKasiyerList()
+        }
+
+        window.kasiyerPinDegistir = async function (id) {
+            const current = document.getElementById('kpin-' + id)?.textContent || ''
+            const newPin = prompt(`Yeni PIN girin (mevcut: ${current}):`)
+            if (!newPin?.trim()) return
+            const { error } = await updateCashierPin(id, newPin.trim())
+            if (error) { showToast('❌ Güncellenemedi: ' + error.message, 'error'); return }
+            showToast('✅ PIN güncellendi')
+            await loadKasiyerList()
+        }
+
+        window.kasiyerIsimDegistir = async function (id) {
+            const current = document.getElementById('kname-' + id)?.textContent || ''
+            const newName = prompt(`Yeni isim girin (mevcut: ${current}):`)
+            if (!newName?.trim()) return
+            const { error } = await updateCashierName(id, newName.trim())
+            if (error) { showToast('❌ Güncellenemedi: ' + error.message, 'error'); return }
+            showToast('✅ İsim güncellendi')
+            await loadKasiyerList()
+        }
+
+        window.kasiyerToggleAktif = async function (id, currentlyActive) {
+            const newState = !currentlyActive
+            const label = newState ? 'aktif' : 'pasif'
+            if (!confirm(`Bu kasiyeri ${label} yapmak istediğinizden emin misiniz?`)) return
+            const { error } = await setCashierActive(id, newState)
+            if (error) { showToast('❌ Güncellenemedi: ' + error.message, 'error'); return }
+            showToast(`✅ Kasiyer ${label} yapıldı`)
+            await loadKasiyerList()
         }
     </script>
 

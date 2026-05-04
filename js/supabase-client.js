@@ -15,11 +15,31 @@ function localDateStr(d) {
 // ─── KASİYER ─────────────────────────────────────────────────────────────────
 
 export async function verifyCashierPin(pin) {
-  return await supabase.from('cashiers').select('*').eq('pin', pin).single()
+  const { data, error } = await supabase
+    .from('cashiers').select('*').eq('pin', pin).neq('active', false).single()
+  return { data, error }
 }
 
 export async function getAllCashiers() {
   return await supabase.from('cashiers').select('*').order('name')
+}
+
+export async function addCashier(name, pin) {
+  return await supabase.from('cashiers')
+    .insert([{ name, pin, badge_level: 'yeni', total_points: 0, active: true }])
+    .select().single()
+}
+
+export async function updateCashierPin(id, newPin) {
+  return await supabase.from('cashiers').update({ pin: newPin }).eq('id', id).select().single()
+}
+
+export async function updateCashierName(id, newName) {
+  return await supabase.from('cashiers').update({ name: newName }).eq('id', id).select().single()
+}
+
+export async function setCashierActive(id, active) {
+  return await supabase.from('cashiers').update({ active }).eq('id', id).select().single()
 }
 
 // ─── VARDİYA KONTROL ─────────────────────────────────────────────────────────
