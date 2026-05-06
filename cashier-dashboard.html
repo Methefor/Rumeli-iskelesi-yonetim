@@ -334,6 +334,68 @@
       cursor: pointer; font-family: inherit; transition: all .2s;
     }
     .scoring-trigger-btn:hover { background: var(--glass-h); color: var(--txt); }
+    .trigger-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+    .trigger-row .scoring-trigger-btn { margin-top: 0; }
+
+    /* ═══════════════════════════════════════════════════
+       BADGE HISTORY MODAL
+    ═══════════════════════════════════════════════════ */
+    .bh-modal {
+      position: fixed; inset: 0;
+      background: rgba(2,6,23,.92); backdrop-filter: blur(12px);
+      z-index: 4100; display: flex; align-items: center; justify-content: center;
+      padding: 20px; animation: fade-in .2s;
+    }
+    .bh-box {
+      background: rgba(10,16,34,.98); border: 1px solid var(--border);
+      border-radius: 24px; max-width: 500px; width: 100%;
+      max-height: 90vh; overflow-y: auto; overflow-x: hidden;
+      box-shadow: 0 48px 120px rgba(0,0,0,.95);
+      position: relative;
+    }
+    .bh-box::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px; border-radius: 24px 24px 0 0;
+      background: linear-gradient(90deg, var(--gold), var(--coral, #f97316), var(--violet));
+    }
+    .bh-header { padding: 22px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .bh-header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .bh-header h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 3px; }
+    .bh-header p  { font-size: 12px; color: var(--txt2); }
+    .bh-body { padding: 18px 20px; }
+    .bh-summary {
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px; padding: 11px 15px; margin-bottom: 16px;
+      font-size: 12px; color: var(--txt2); flex-wrap: wrap; gap: 8px;
+    }
+    .bh-summary strong { color: var(--txt); }
+    .bh-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    }
+    .bh-card {
+      position: relative; border-radius: 16px; padding: 18px 10px 15px;
+      border: 1px solid rgba(255,255,255,.07); text-align: center;
+      background: rgba(255,255,255,.025);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .bh-achieved { }
+    .bh-locked   { opacity: .35; filter: grayscale(.8); }
+    .bh-best     { transform: scale(1.05); z-index: 1; }
+    .bh-crown {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      font-size: 18px; line-height: 1; filter: drop-shadow(0 2px 6px rgba(251,191,36,.6));
+    }
+    .bh-icon  { font-size: 34px; margin-bottom: 7px; line-height: 1; }
+    .bh-name  { font-size: 10px; font-weight: 700; color: var(--txt); margin-bottom: 7px; line-height: 1.3; min-height: 26px; display: flex; align-items: center; justify-content: center; }
+    .bh-count { font-size: 15px; font-weight: 700; color: var(--txt3); font-family: 'JetBrains Mono', monospace; margin-bottom: 5px; }
+    .bh-count-active { color: var(--txt); }
+    .bh-month-label { font-size: 9px; color: var(--txt3); text-transform: uppercase; letter-spacing: .06em; }
+    .bh-dots { display: flex; justify-content: center; gap: 3px; margin-top: 6px; flex-wrap: wrap; }
+    .bh-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .bh-dot-on  { background: currentColor; }
+    .bh-dot-off { background: rgba(255,255,255,.12); }
+    .bh-actions { padding: 14px 20px; border-top: 1px solid rgba(255,255,255,.06); text-align: center; }
 
     /* BIO & SKILLS */
     .section-label {
@@ -741,7 +803,10 @@
         <div class="progress-track">
           <div id="progressFill" class="progress-fill" style="width:0%"></div>
         </div>
-        <button class="scoring-trigger-btn" onclick="showScoringInfo()">🏆 Puan Sistemi Nasıl Çalışır?</button>
+        <div class="trigger-row">
+          <button class="scoring-trigger-btn" onclick="showScoringInfo()">🏆 Puan Sistemi Nasıl Çalışır?</button>
+          <button class="scoring-trigger-btn" onclick="showBadgeHistory()" style="border-color:rgba(251,191,36,.25);color:var(--gold);">🎖️ Onur Tablosum</button>
+        </div>
       </div>
 
       <!-- BIO -->
@@ -1313,6 +1378,121 @@
 
   window.showScoringInfo  = function() { document.getElementById('scoringInfoModal').style.display = 'flex' }
   window.closeScoringInfo = function() { document.getElementById('scoringInfoModal').style.display = 'none' }
+
+  window.closeBadgeHistory = function() { document.getElementById('badgeHistoryModal').style.display = 'none' }
+
+  const BH_DEFS = [
+    { key:'efsane_plus', icon:'🦈', label:'Efsane Kaptan',   n:30, pct:95, color:'rgba(251,191,36,.14)',  border:'rgba(251,191,36,.45)',  dot:'#fbbf24' },
+    { key:'efsane',      icon:'🌊', label:'Deniz Kurdu',     n:24, pct:88, color:'rgba(52,211,153,.12)',  border:'rgba(52,211,153,.4)',   dot:'#34d399' },
+    { key:'elmas',       icon:'🏛️', label:'İskele Reisi',    n:18, pct:80, color:'rgba(168,85,247,.12)', border:'rgba(168,85,247,.4)',   dot:'#a855f7' },
+    { key:'altin',       icon:'⛵', label:'Kıdemli Kaptan',  n:12, pct:72, color:'rgba(129,140,248,.12)', border:'rgba(129,140,248,.4)', dot:'#818cf8' },
+    { key:'gumus',       icon:'🧭', label:'Lostromo',        n:8,  pct:62, color:'rgba(34,211,238,.1)',   border:'rgba(34,211,238,.35)',  dot:'#22d3ee' },
+    { key:'bronz',       icon:'🪢', label:'Güverte Tayfası', n:4,  pct:50, color:'rgba(96,165,250,.1)',   border:'rgba(96,165,250,.3)',   dot:'#60a5fa' },
+    { key:'yeni',        icon:'⚓', label:'Stajyer Tayfa',   n:0,  pct:0,  color:'rgba(255,255,255,.02)', border:'rgba(255,255,255,.06)', dot:'#475569' },
+  ]
+
+  function _calcBadgeKey(entries, pct) {
+    if (entries >= 30 && pct >= 95) return 'efsane_plus'
+    if (entries >= 24 && pct >= 88) return 'efsane'
+    if (entries >= 18 && pct >= 80) return 'elmas'
+    if (entries >= 12 && pct >= 72) return 'altin'
+    if (entries >= 8  && pct >= 62) return 'gumus'
+    if (entries >= 4  && pct >= 50) return 'bronz'
+    return 'yeni'
+  }
+
+  window.showBadgeHistory = async function() {
+    document.getElementById('badgeHistoryModal').style.display = 'flex'
+    const el = document.getElementById('badgeHistoryContent')
+    el.innerHTML = '<div style="text-align:center;padding:36px;color:var(--txt2);font-size:13px;">Yükleniyor…</div>'
+
+    try {
+      const { data: reports, error } = await supabase
+        .from('daily_reports')
+        .select('date, points_earned')
+        .eq('cashier_id', _currentCashierId)
+        .neq('kasa', 'iki_kasa')
+        .order('date', { ascending: true })
+
+      if (error) throw error
+
+      if (!reports?.length) {
+        el.innerHTML = '<div style="text-align:center;padding:36px;color:var(--txt2);font-size:13px;">Henüz kayıt yok.</div>'
+        return
+      }
+
+      // Ay bazında grupla
+      const monthMap = {}
+      reports.forEach(r => {
+        const m = r.date.substring(0, 7)
+        if (!monthMap[m]) monthMap[m] = { points: 0, entries: 0 }
+        monthMap[m].points  += parseInt(r.points_earned) || 0
+        monthMap[m].entries += 1
+      })
+
+      // Her ay hangi rozeti kazandı?
+      const counts = {}
+      BH_DEFS.forEach(b => counts[b.key] = 0)
+      let totalMonths = 0
+      const monthList = Object.entries(monthMap).sort()
+      monthList.forEach(([, { points, entries }]) => {
+        if (!entries) return
+        totalMonths++
+        const pct = Math.round((points / (entries * 100)) * 100)
+        counts[_calcBadgeKey(entries, pct)]++
+      })
+
+      // En yüksek kazanılan rozet
+      const topDef = BH_DEFS.find(b => counts[b.key] > 0) || BH_DEFS[BH_DEFS.length - 1]
+
+      // Kart HTML
+      const MAX_DOTS = 6
+      const cards = BH_DEFS.map(b => {
+        const c = counts[b.key]
+        const earned = c > 0
+        const isBest = earned && b.key === topDef.key
+        const dotsOn  = Math.min(c, MAX_DOTS)
+        const dotsOff = Math.max(0, MAX_DOTS - dotsOn)
+        const dots = earned
+          ? `<div class="bh-dots">${'<span class="bh-dot bh-dot-on" style="color:'+b.dot+'"></span>'.repeat(dotsOn)}${'<span class="bh-dot bh-dot-off"></span>'.repeat(dotsOff)}</div>`
+          : ''
+        return `
+          <div class="bh-card ${earned ? 'bh-achieved' : 'bh-locked'} ${isBest ? 'bh-best' : ''}"
+               style="${earned ? `background:${b.color};border-color:${b.border};box-shadow:0 6px 28px ${b.color};` : ''}">
+            ${isBest ? '<div class="bh-crown">👑</div>' : ''}
+            <div class="bh-icon">${b.icon}</div>
+            <div class="bh-name">${b.label}</div>
+            <div class="bh-count ${earned ? 'bh-count-active' : ''}">${earned ? c : '—'}</div>
+            ${earned ? '<div class="bh-month-label">ay</div>' : ''}
+            ${dots}
+          </div>`
+      }).join('')
+
+      // En iyi ay hesabı
+      let bestMonthStr = '—'
+      let bestPct = 0
+      monthList.forEach(([ym, { points, entries }]) => {
+        if (!entries) return
+        const pct = Math.round((points / (entries * 100)) * 100)
+        if (pct > bestPct) { bestPct = pct; bestMonthStr = ym }
+      })
+      const [by, bm] = bestMonthStr !== '—' ? bestMonthStr.split('-') : ['', '']
+      const bestLabel = bestMonthStr !== '—'
+        ? new Date(+by, +bm - 1, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+        : '—'
+
+      el.innerHTML = `
+        <div class="bh-summary">
+          <span>📅 <strong>${totalMonths}</strong> ay aktif</span>
+          <span>🏆 En yüksek: <strong>${topDef.icon} ${topDef.label}</strong></span>
+          <span>⭐ En iyi ay: <strong>${bestLabel}</strong> (%${bestPct})</span>
+        </div>
+        <div class="bh-grid">${cards}</div>`
+
+    } catch (e) {
+      el.innerHTML = `<div style="text-align:center;padding:36px;color:var(--red);font-size:13px;">Veri yüklenemedi: ${e.message}</div>`
+    }
+  }
 </script>
 
 <!-- SCORING MODAL -->
@@ -1358,6 +1538,29 @@
       </div>
     </div>
     <div class="scoring-actions"><button class="scoring-btn" onclick="closeScoringInfo()">Anladım 👍</button></div>
+  </div>
+</div>
+
+<!-- BADGE HISTORY MODAL -->
+<div class="bh-modal" id="badgeHistoryModal" style="display:none">
+  <div class="bh-box">
+    <div class="bh-header">
+      <div class="bh-header-row">
+        <div>
+          <h2>🎖️ Onur Tablosum</h2>
+          <p>Aylık performansa göre kazanılan unvanlar</p>
+        </div>
+        <button class="scoring-close-btn" onclick="closeBadgeHistory()">✕</button>
+      </div>
+    </div>
+    <div class="bh-body">
+      <div id="badgeHistoryContent">
+        <div style="text-align:center;padding:36px;color:var(--txt2);font-size:13px;">Yükleniyor…</div>
+      </div>
+    </div>
+    <div class="bh-actions">
+      <button class="scoring-btn" style="background:linear-gradient(135deg,var(--gold),var(--coral,#f97316))" onclick="closeBadgeHistory()">Harika! 🎖️</button>
+    </div>
   </div>
 </div>
 
