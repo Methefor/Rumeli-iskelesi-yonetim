@@ -3392,8 +3392,8 @@
 
                 const { data: rows } = await supabase
                     .from('daily_reports')
-                    .select('date, kasa, shift, rumeli_z1, rumeli_z2, balik_ekmek, dondurma')
-                    .in('kasa', ['restoran', 'cafetarya'])
+                    .select('date, kasa, shift, rumeli_z1, balik_ekmek, dondurma')
+                    .in('kasa', ['ana_kasa', 'iki_kasa'])
                     .gte('date', monthStart)
                     .lte('date', monthEnd)
                     .order('date', { ascending: true })
@@ -3403,10 +3403,7 @@
                     return
                 }
 
-                // Kasa+gün bazında doğru satırı seç:
-                //  - aksam, sabaha tercih edilir
-                //  - İki aksam varsa (çift giriş), Z değeri yüksek olan seçilir
-                //    (Z kümülatif olduğundan yüksek = gerçek gün sonu okuması)
+                // Her tarih+kasa için akşam > sabah, akşam eşitse rumeli_z1 yüksek olan
                 const kasaDayMap = {}
                 rows.forEach(r => {
                     const key = `${r.date}-${r.kasa}`
@@ -3414,49 +3411,45 @@
                         kasaDayMap[key] = r
                     } else {
                         const cur = kasaDayMap[key]
-                        const rZ   = r.kasa === 'restoran'   ? parseFloat(r.rumeli_z2)   : parseFloat(r.rumeli_z1)
-                        const curZ = cur.kasa === 'restoran' ? parseFloat(cur.rumeli_z2) : parseFloat(cur.rumeli_z1)
-                        // Aksam her zaman sabahın önüne geçer
                         if (cur.shift !== 'aksam' && r.shift === 'aksam') {
                             kasaDayMap[key] = r
                         } else if (cur.shift === 'aksam' && r.shift === 'aksam') {
-                            // İki aksam satırı → en yüksek Z (gerçek gün sonu)
-                            if (rZ > curZ) kasaDayMap[key] = r
+                            if ((parseFloat(r.rumeli_z1) || 0) > (parseFloat(cur.rumeli_z1) || 0)) kasaDayMap[key] = r
                         }
-                        // Yeni satır sabah, mevcut aksam → dokunma
                     }
                 })
 
-                // Günlük kasa bazlı toplamlar: restoran=z2, cafetarya=z1, balık+dondurma ayrı
+                // Günlük kasa bazlı toplamlar
                 const dayMap = {}
                 Object.values(kasaDayMap).forEach(r => {
-                    if (!dayMap[r.date]) dayMap[r.date] = { restoran: 0, cafetarya: 0, balik: 0, dondurma: 0 }
-                    if (r.kasa === 'restoran')       dayMap[r.date].restoran  = parseFloat(r.rumeli_z2) || 0
-                    else if (r.kasa === 'cafetarya') dayMap[r.date].cafetarya = parseFloat(r.rumeli_z1) || 0
-                    // Balık ekmek ve dondurma her kasadan ayrı topla
-                    dayMap[r.date].balik    += parseFloat(r.balik_ekmek) || 0
-                    dayMap[r.date].dondurma += parseFloat(r.dondurma)    || 0
+                    if (!dayMap[r.date]) dayMap[r.date] = { anaKasa: 0, ikiKasa: 0, balik: 0, dondurma: 0 }
+                    const z1    = parseFloat(r.rumeli_z1)   || 0
+                    const balik = parseFloat(r.balik_ekmek) || 0
+                    const dond  = parseFloat(r.dondurma)    || 0
+                    if (r.kasa === 'ana_kasa') {
+                        dayMap[r.date].anaKasa = z1 + balik + dond
+                        dayMap[r.date].balik   += balik
+                        dayMap[r.date].dondurma += dond
+                    } else {
+                        dayMap[r.date].ikiKasa = z1
+                    }
                 })
 
-                // Günlük toplam (restoran + cafetarya + balık + dondurma)
                 const dailyTotals = Object.entries(dayMap).map(([date, v]) => ({
                     date,
-                    // Toplam = sadece Restoran + Cafetarya (balık ayrı panel)
-                    total:     (v.restoran || 0) + (v.cafetarya || 0),
-                    restoran:  v.restoran  || 0,
-                    cafetarya: v.cafetarya || 0,
-                    balik:     v.balik     || 0,
-                    dondurma:  v.dondurma  || 0
+                    total:    (v.anaKasa || 0) + (v.ikiKasa || 0),
+                    anaKasa:  v.anaKasa  || 0,
+                    ikiKasa:  v.ikiKasa  || 0,
+                    balik:    v.balik    || 0,
+                    dondurma: v.dondurma || 0
                 })).sort((a, b) => a.date.localeCompare(b.date))
 
                 const grandTotal = dailyTotals.reduce((s, d) => s + d.total, 0)
                 const dayCount   = dailyTotals.length
                 const dailyAvgV  = dayCount > 0 ? grandTotal / dayCount : 0
 
-                // En çok para yapılan gün (Restoran+Cafetarya bazlı)
                 const maxDay = dailyTotals.reduce((m, d) => d.total > m.total ? d : m, dailyTotals[0])
 
-                // Haftanın günlerine göre ortalama (Restoran+Cafetarya bazlı)
                 const weekdayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi']
                 const weekdaySum = {}
                 const weekdayCount = {}
@@ -3467,7 +3460,6 @@
                     weekdayCount[wd] = (weekdayCount[wd] || 0) + 1
                 })
 
-                // Balık ekmek günlük özeti (sadece veri olan günler)
                 const balikDetay = dailyTotals.filter(d => d.balik > 0)
                 const weekdayAvg = [0,1,2,3,4,5,6]
                     .filter(i => weekdayCount[i])
@@ -3475,7 +3467,6 @@
                     .sort((a, b) => b.avg - a.avg)
 
                 const maxWdAvg = weekdayAvg.length > 0 ? weekdayAvg[0].avg : 1
-
                 const monthLabel = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
 
                 body.innerHTML = `
@@ -3493,7 +3484,7 @@
                         <div class="ver-stat-card">
                             <div class="ver-stat-label">📊 Günlük Ortalama</div>
                             <div class="ver-stat-value">${formatCurrency(dailyAvgV)}</div>
-                            <div class="ver-stat-sub">Restoran + Cafetarya ortalaması</div>
+                            <div class="ver-stat-sub">Ana Kasa + 2. Kasa ortalaması</div>
                         </div>
                         <div class="ver-stat-card" style="border-color:var(--orange);">
                             <div class="ver-stat-label">🏆 En İyi Gün</div>
@@ -3523,8 +3514,8 @@
                                 <tr>
                                     <th>Tarih</th>
                                     <th>Gün</th>
-                                    <th>Restoran</th>
-                                    <th>Cafetarya</th>
+                                    <th>Ana Kasa</th>
+                                    <th>2. Kasa</th>
                                     <th>Toplam</th>
                                 </tr>
                             </thead>
@@ -3536,8 +3527,8 @@
                                     return `<tr${isMax ? ' class="top-row"' : ''}>
                                         <td>${String(_d).padStart(2,'0')+'/'+String(_m).padStart(2,'0')}</td>
                                         <td style="color:var(--txt2);font-family:sans-serif;font-size:12px;">${dayName}</td>
-                                        <td>${formatCurrency(d.restoran)}</td>
-                                        <td>${formatCurrency(d.cafetarya)}</td>
+                                        <td>${formatCurrency(d.anaKasa)}</td>
+                                        <td>${formatCurrency(d.ikiKasa)}</td>
                                         <td style="font-weight:700;${isMax ? 'color:var(--orange);' : ''}">${formatCurrency(d.total)}</td>
                                     </tr>`
                                 }).join('')}
