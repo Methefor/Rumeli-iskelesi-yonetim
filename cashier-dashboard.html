@@ -11,6 +11,7 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon-192.png">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <title>Kasiyer — İskele Defteri</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -746,7 +747,95 @@
       .avatar-upload-overlay { border-radius: 18px; }
       .aurora::before { width: 400px; height: 400px; filter: blur(60px); }
       .aurora::after  { width: 350px; height: 350px; filter: blur(60px); }
+      .ring-wrap { width: 100px; height: 100px; }
+      .ring-pct { font-size: 18px; }
     }
+
+    /* ═══════════════════════════════════════════════════
+       SKELETON LOADING
+    ═══════════════════════════════════════════════════ */
+    @keyframes shimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position:  600px 0; }
+    }
+    .skel {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,.04) 0%,
+        rgba(255,255,255,.09) 40%,
+        rgba(255,255,255,.04) 80%);
+      background-size: 600px 100%;
+      animation: shimmer 1.6s ease-in-out infinite;
+      border-radius: 10px;
+    }
+    .skel-page { padding: 0 16px; max-width: 680px; margin: 0 auto; }
+    .skel-hero {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px; padding: 28px 24px; margin-bottom: 14px;
+      display: flex; gap: 20px;
+    }
+    .skel-avatar { width: 92px; height: 92px; border-radius: 22px; flex-shrink: 0; }
+    .skel-info { flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
+    .skel-name  { height: 22px; width: 60%; }
+    .skel-role  { height: 12px; width: 40%; }
+    .skel-badge { height: 28px; width: 50%; border-radius: 50px; }
+    .skel-ring  { height: 120px; width: 120px; border-radius: 50%; margin: 0 auto 12px; }
+    .skel-line  { height: 13px; }
+    .skel-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+    .skel-stat  {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px; padding: 20px 12px; display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+    .skel-stat-icon { height: 24px; width: 24px; border-radius: 50%; }
+    .skel-stat-num  { height: 26px; width: 55%; }
+    .skel-stat-lbl  { height: 10px; width: 70%; }
+    .skel-panel {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px; padding: 20px; margin-bottom: 14px;
+    }
+    .skel-panel-title { height: 16px; width: 35%; margin-bottom: 16px; }
+    .skel-row { height: 48px; border-radius: 14px; margin-bottom: 8px; }
+
+    /* ═══════════════════════════════════════════════════
+       CIRCULAR PROGRESS RING
+    ═══════════════════════════════════════════════════ */
+    .ring-wrap {
+      position: relative; width: 120px; height: 120px;
+      margin: 0 auto 14px; flex-shrink: 0;
+    }
+    .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 8; }
+    .ring-fill {
+      fill: none; stroke: url(#ringGrad); stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 327; stroke-dashoffset: 327;
+      transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1);
+    }
+    .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .ring-pct   { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; letter-spacing: -1px; }
+    .ring-label { font-size: 8px; color: var(--txt3); text-transform: uppercase; letter-spacing: .1em; margin-top: 1px; }
+
+    /* ═══════════════════════════════════════════════════
+       MILESTONE TOAST
+    ═══════════════════════════════════════════════════ */
+    .milestone-toast {
+      position: fixed; bottom: 32px; left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(10,16,34,.97);
+      border: 1px solid rgba(251,191,36,.45);
+      border-radius: 18px; padding: 16px 26px;
+      font-size: 15px; font-weight: 700; color: var(--txt);
+      z-index: 9999; backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.8), 0 0 40px rgba(251,191,36,.15);
+      transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .45s;
+      opacity: 0; white-space: nowrap; pointer-events: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .milestone-toast.mt-show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .mt-icon { font-size: 22px; }
   </style>
 </head>
 <body>
@@ -763,9 +852,32 @@
     <div class="app-logo">⚓ <span>İskele</span> Defteri</div>
   </div>
 
-  <div id="loading" class="loading">
-    <div class="loader"></div>
-    <div style="font-size:14px;font-weight:500;color:var(--txt2)">Yükleniyor…</div>
+  <div id="loading" class="skel-page">
+    <div class="skel-hero">
+      <div class="skel skel-avatar"></div>
+      <div class="skel-info">
+        <div class="skel skel-name"></div>
+        <div class="skel skel-role"></div>
+        <div class="skel skel-badge"></div>
+        <div class="skel skel-ring" style="width:80px;height:80px;border-radius:50%;margin-top:4px"></div>
+      </div>
+    </div>
+    <div class="skel-stats">
+      <div class="skel-stat"><div class="skel skel-stat-icon"></div><div class="skel skel-stat-num"></div><div class="skel skel-stat-lbl"></div></div>
+      <div class="skel-stat"><div class="skel skel-stat-icon"></div><div class="skel skel-stat-num"></div><div class="skel skel-stat-lbl"></div></div>
+      <div class="skel-stat"><div class="skel skel-stat-icon"></div><div class="skel skel-stat-num"></div><div class="skel skel-stat-lbl"></div></div>
+    </div>
+    <div class="skel-panel">
+      <div class="skel skel-panel-title"></div>
+      <div class="skel skel-row"></div>
+      <div class="skel skel-row" style="width:90%"></div>
+      <div class="skel skel-row" style="width:80%"></div>
+    </div>
+    <div class="skel-panel">
+      <div class="skel skel-panel-title"></div>
+      <div class="skel skel-row"></div>
+      <div class="skel skel-row" style="width:85%"></div>
+    </div>
   </div>
 
   <div id="error" class="error-box" style="display:none"></div>
@@ -794,14 +906,27 @@
         </div>
       </div>
 
-      <!-- PROGRESS -->
+      <!-- PROGRESS RING -->
       <div class="progress-card">
-        <div class="progress-header">
-          <span>Sonraki: <strong id="nextBadge">Güverte Tayfası 🪢</strong></span>
-          <span id="pointsNeeded" style="color:var(--violet)">—</span>
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="100%" stop-color="#818cf8"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg"   cx="60" cy="60" r="52"/>
+            <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"/>
+          </svg>
+          <div class="ring-center">
+            <div id="ringPct" class="ring-pct">—</div>
+            <div class="ring-label">Performans</div>
+          </div>
         </div>
-        <div class="progress-track">
-          <div id="progressFill" class="progress-fill" style="width:0%"></div>
+        <div class="progress-header" style="margin-bottom:0">
+          <span style="font-size:11px">Sonraki: <strong id="nextBadge">Güverte Tayfası 🪢</strong></span>
+          <span id="pointsNeeded" style="color:var(--violet);font-size:11px">—</span>
         </div>
         <div class="trigger-row">
           <button class="scoring-trigger-btn" onclick="showScoringInfo()">🏆 Puan Sistemi Nasıl Çalışır?</button>
@@ -1092,7 +1217,15 @@
     const badge = getBadge(cashier.badge_level, pct, monthStats.entries)
     document.getElementById('badgeIcon').textContent  = badge.icon
     document.getElementById('badgeLabel').textContent = badge.label
-    document.getElementById('totalPoints').textContent = monthStats.entries > 0 ? `%${pct}` : '—'
+
+    // Animated ring + counter
+    if (monthStats.entries > 0) {
+      setTimeout(() => setProgressRing(pct), 300)
+      animateCounter(document.getElementById('totalPoints'), pct, 1100, v => `%${Math.round(v)}`)
+    } else {
+      document.getElementById('ringPct').textContent  = '—'
+      document.getElementById('totalPoints').textContent = '—'
+    }
 
     const nextBadge = getNextBadge(pct, monthStats.entries, cashier.badge_level)
     document.getElementById('nextBadge').textContent = nextBadge.label
@@ -1100,14 +1233,64 @@
     if (nextBadge.pctLeft > 0) needParts.push(`%${nextBadge.pctLeft} daha`)
     if (nextBadge.entriesLeft > 0) needParts.push(`${nextBadge.entriesLeft} giriş daha`)
     document.getElementById('pointsNeeded').textContent = needParts.length > 0 ? needParts.join(' · ') : 'Tamamlandı!'
-    document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%'
 
-    document.getElementById('statEntries').textContent = monthStats.entries
-    document.getElementById('statOnTime').textContent  = monthStats.onTime
-    document.getElementById('statRevenue').textContent = formatCurrency(monthStats.revenue)
+    // Animated stat counters
+    animateCounter(document.getElementById('statEntries'), monthStats.entries)
+    animateCounter(document.getElementById('statOnTime'),  monthStats.onTime)
+    animateCounter(document.getElementById('statRevenue'), monthStats.revenue, 1000, v => formatCurrency(v))
+
+    // Milestone: badge upgrade detection
+    const BADGE_KEY = 'rumeli_badge_' + cashierId
+    const prevBadge = localStorage.getItem(BADGE_KEY)
+    const curBadge  = badge.label
+    if (prevBadge && prevBadge !== curBadge && monthStats.entries > 0) {
+      setTimeout(() => {
+        if (typeof confetti !== 'undefined') {
+          confetti({ particleCount: 140, spread: 90, origin: { y: 0.45 },
+            colors: ['#22d3ee','#818cf8','#fbbf24','#f97316','#34d399','#f87171'] })
+        }
+        showMilestoneToast(badge.icon, `Yeni Unvan: ${badge.label}`)
+      }, 900)
+    }
+    localStorage.setItem(BADGE_KEY, curBadge)
 
     renderLeaderboard(leaders.slice(0, 4), cashierId)
     renderHistory(history)
+  }
+
+  function animateCounter(el, to, duration, formatter) {
+    if (!el) return
+    duration = duration || 900
+    const start = performance.now()
+    function tick(now) {
+      const t = Math.min((now - start) / duration, 1)
+      const ease = 1 - Math.pow(1 - t, 3)
+      const v = to * ease
+      el.textContent = formatter ? formatter(v) : Math.round(v).toString()
+      if (t < 1) requestAnimationFrame(tick)
+      else el.textContent = formatter ? formatter(to) : Math.round(to).toString()
+    }
+    requestAnimationFrame(tick)
+  }
+
+  function setProgressRing(pct) {
+    const circ   = 2 * Math.PI * 52
+    const offset = circ - (Math.min(pct, 100) / 100) * circ
+    const fill   = document.getElementById('ringFill')
+    if (fill) fill.style.strokeDashoffset = offset.toFixed(2)
+    animateCounter(document.getElementById('ringPct'), pct, 1400, v => Math.round(v) + '%')
+  }
+
+  function showMilestoneToast(icon, text) {
+    const t = document.createElement('div')
+    t.className = 'milestone-toast'
+    t.innerHTML = `<span class="mt-icon">${icon}</span><span>${text}</span>`
+    document.body.appendChild(t)
+    requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('mt-show')))
+    setTimeout(() => {
+      t.classList.remove('mt-show')
+      setTimeout(() => t.remove(), 500)
+    }, 4500)
   }
 
   function renderSkillTags(allSkills, selected) {
