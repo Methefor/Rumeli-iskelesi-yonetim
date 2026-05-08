@@ -89,7 +89,7 @@ export async function insertShiftEntry(data) {
   const extraFields = [
     data.balikEkmek, data.dondurmaZ,
     data.kahve, data.meyveSuyu, data.sicakIcecek, data.sogukIcecek, data.tatli,
-    data.gida, data.kahvalti, data.salata, data.dondurmaKategori,
+    data.gida, data.kahvalti, data.salata, data.dondurmaKategori, data.borekCorek,
   ]
   // Her iki kasa için de rapor + en az 2 kategori alanı dolu olmalı
   const hasCompleteData =
@@ -127,6 +127,7 @@ export async function insertShiftEntry(data) {
     salata:       parseFloat(data.salata)      || 0,
 
     dondurma_kategori: parseFloat(data.dondurmaKategori) || 0,
+    borek_corek:       parseFloat(data.borekCorek)       || 0,
     depo: 0,
 
     notlar:             data.notlar || '',
@@ -202,6 +203,7 @@ export async function updateShiftEntry(reportId, formData, cashierId) {
       kahvalti:          parseFloat(formData.kahvalti)         || 0,
       salata:            parseFloat(formData.salata)            || 0,
       dondurma_kategori: parseFloat(formData.dondurmaKategori) || 0,
+      borek_corek:       parseFloat(formData.borekCorek)       || 0,
       notlar:            formData.notlar || '',
       total_revenue:      totalRevenue,
       individual_revenue: totalRevenue,
