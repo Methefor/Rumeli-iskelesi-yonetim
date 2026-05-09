@@ -4760,12 +4760,16 @@
                     </div>`
                     const initials = r.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
                     const gumusPill = ps.rank === 1 ? `<div class="sp-gumus-pill">🥈 Gümüş Hediye</div>` : ''
+                    const revK = r.rev_per_shift >= 1000 ? (r.rev_per_shift/1000).toFixed(1)+'K' : Math.round(r.rev_per_shift)
                     return `<div class="sp-pod-col ${ps.rankCls}">
                         <div class="sp-pod-rank">${ps.medal}</div>
                         <div class="sp-pod-avatar">${initials}</div>
                         <div class="sp-pod-name">${r.name}</div>
-                        <div class="sp-pod-pct">${r.performance_pct}%</div>
-                        <div class="sp-pod-sub">${r.on_time_count} zamanında · ${r.entry_count} giriş</div>
+                        <div class="sp-pod-pct">${r.final_score}%</div>
+                        <div class="sp-pod-sub" style="font-size:10px;margin-top:3px;">
+                            Perf <b>${r.performance_pct}%</b> · Ciro <b>${r.revenue_pct}%</b>
+                        </div>
+                        <div class="sp-pod-sub">~${revK}₺/vardiya · ${r.on_time_count} zamanında</div>
                         ${gumusPill}
                     </div>`
                 }).join('')
@@ -4774,36 +4778,42 @@
             // Table
             const tableHtml = `
                 <div style="margin-bottom:10px;font-size:12px;color:var(--txt3);">
-                    ✅ Uygun: Atanan vardiyaların ≥%80'inde giriş yapıldı. Şampiyon: en yüksek performans %.
+                    🏆 Final Skor = <b>%60 Performans</b> (zamanında + eksiksiz) + <b>%40 Ciro</b> (vardiya başına ortalama, gruba göre normalize).
+                    ✅ Uygun: Atanan vardiyaların ≥%80'inde giriş.
                 </div>
                 <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--brd);">
                 <table class="sp-table">
                     <thead><tr>
-                        <th>Sıra</th><th>Kasiyer</th><th>Atanan</th><th>Çalışılan</th>
-                        <th>Katılım</th><th>Performans %</th><th>Puan</th><th>Zamanında</th><th>Durum</th>
+                        <th>Sıra</th><th>Kasiyer</th><th>Katılım</th>
+                        <th>Perf %</th><th>Ciro %</th>
+                        <th style="color:var(--orange);">Final Skor</th>
+                        <th>Ciro/Vardiya</th><th>Zamanında</th><th>Durum</th>
                     </tr></thead>
                     <tbody>${results.map(r => {
-                        const rowCls = r.rank===1 ? 'champ-row' : r.rank===2 ? 'silver-row' : !r.is_eligible ? 'ineligible' : ''
+                        const rowCls    = r.rank===1 ? 'champ-row' : r.rank===2 ? 'silver-row' : !r.is_eligible ? 'ineligible' : ''
                         const rankBadge = r.rank ? (['🥇','🥈','🥉'][r.rank-1] || r.rank+'.') : '—'
                         const attColor  = r.attendance_pct >= 80 ? '#34d399' : r.attendance_pct >= 50 ? '#fbbf24' : '#f87171'
-                        const pfColor   = r.performance_pct >= 80 ? '#34d399' : r.performance_pct >= 60 ? '#fbbf24' : '#f87171'
+                        const fsColor   = r.final_score >= 80 ? '#34d399' : r.final_score >= 60 ? '#fbbf24' : '#f87171'
+                        const revFmt    = r.rev_per_shift >= 1000
+                            ? (r.rev_per_shift/1000).toFixed(1)+'K₺'
+                            : Math.round(r.rev_per_shift)+'₺'
                         const status    = r.is_eligible
                             ? `<span style="color:#34d399;font-weight:700;">✅ Uygun</span>`
                             : r.assigned_slots === 0
                             ? `<span style="color:var(--txt3);">Atanmamış</span>`
-                            : `<span style="color:#f87171;">❌ %${r.attendance_pct} katılım</span>`
-                        const gumusTag = r.rank===1 ? ` <span class="sp-gumus-pill" style="font-size:10px;padding:2px 8px;">🥈</span>` : ''
+                            : `<span style="color:#f87171;">❌ %${r.attendance_pct}</span>`
+                        const gumusTag  = r.rank===1 ? ` <span class="sp-gumus-pill" style="font-size:10px;padding:2px 8px;">🥈</span>` : ''
                         return `<tr class="${rowCls}">
                             <td><span class="sp-rank-badge">${rankBadge}</span></td>
                             <td style="font-weight:600;">${r.name}${gumusTag}</td>
-                            <td>${r.assigned_slots}</td>
-                            <td>${r.worked_slots}</td>
                             <td>
                                 <span style="color:${attColor};font-weight:700;">%${r.attendance_pct}</span>
-                                <span class="sp-att-bar"><span class="sp-att-fill" style="width:${r.attendance_pct}%;background:${attColor}"></span></span>
+                                <span style="font-size:10px;color:var(--txt3);"> ${r.worked_slots}/${r.assigned_slots}</span>
                             </td>
-                            <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pfColor};">%${r.performance_pct}</td>
-                            <td>${r.total_points}</td>
+                            <td style="font-weight:600;">%${r.performance_pct}</td>
+                            <td style="font-weight:600;">%${r.revenue_pct}</td>
+                            <td style="font-family:'JetBrains Mono',monospace;font-weight:800;font-size:15px;color:${fsColor};">%${r.final_score}</td>
+                            <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${revFmt}</td>
                             <td>${r.on_time_count}</td>
                             <td>${status}</td>
                         </tr>`

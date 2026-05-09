@@ -336,7 +336,7 @@ export async function getChampionData(year, month) {
   const { start, end } = _monthRange(year, month)
   const [schedRes, reportsRes, cashiersRes] = await Promise.all([
     supabase.from('shift_schedule').select('cashier_id').gte('date', start).lte('date', end).not('cashier_id', 'is', null),
-    supabase.from('daily_reports').select('cashier_id, points_earned, is_on_time').neq('kasa', 'iki_kasa').gte('date', start).lte('date', end),
+    supabase.from('daily_reports').select('cashier_id, points_earned, is_on_time, total_revenue').neq('kasa', 'iki_kasa').gte('date', start).lte('date', end),
     supabase.from('cashiers').select('*').order('name')
   ])
   if (cashiersRes.error) return { data: [], error: cashiersRes.error }
@@ -346,28 +346,42 @@ export async function getChampionData(year, month) {
 
   const reportMap = {}
   ;(reportsRes.data || []).forEach(r => {
-    if (!reportMap[r.cashier_id]) reportMap[r.cashier_id] = { total_points: 0, entry_count: 0, on_time_count: 0 }
-    reportMap[r.cashier_id].total_points += parseInt(r.points_earned) || 0
-    reportMap[r.cashier_id].entry_count  += 1
+    if (!reportMap[r.cashier_id]) reportMap[r.cashier_id] = { total_points: 0, entry_count: 0, on_time_count: 0, total_revenue: 0 }
+    reportMap[r.cashier_id].total_points  += parseInt(r.points_earned)       || 0
+    reportMap[r.cashier_id].total_revenue += parseFloat(r.total_revenue)     || 0
+    reportMap[r.cashier_id].entry_count   += 1
     if (r.is_on_time) reportMap[r.cashier_id].on_time_count += 1
   })
 
+  // İlk geçiş: temel metrikler
   const results = (cashiersRes.data || []).map(c => {
-    const assigned = assignedMap[c.id] || 0
-    const rm       = reportMap[c.id]  || { total_points: 0, entry_count: 0, on_time_count: 0 }
-    const att_pct  = assigned > 0 ? Math.round((rm.entry_count / assigned) * 100) : 0
-    const perf_pct = rm.entry_count > 0 ? Math.round((rm.total_points / (rm.entry_count * 100)) * 100) : 0
+    const assigned    = assignedMap[c.id] || 0
+    const rm          = reportMap[c.id]   || { total_points: 0, entry_count: 0, on_time_count: 0, total_revenue: 0 }
+    const att_pct     = assigned > 0 ? Math.round((rm.entry_count / assigned) * 100) : 0
+    const perf_pct    = rm.entry_count > 0 ? Math.round((rm.total_points / (rm.entry_count * 100)) * 100) : 0
+    const rev_per_shift = rm.entry_count > 0 ? rm.total_revenue / rm.entry_count : 0
     return {
       cashier_id: c.id, name: c.name, badge_level: c.badge_level,
       assigned_slots: assigned, worked_slots: rm.entry_count,
       attendance_pct: att_pct, is_eligible: assigned > 0 && att_pct >= 80,
       entry_count: rm.entry_count, total_points: rm.total_points,
-      performance_pct: perf_pct, on_time_count: rm.on_time_count, rank: null
+      total_revenue: rm.total_revenue, rev_per_shift,
+      performance_pct: perf_pct, on_time_count: rm.on_time_count,
+      revenue_pct: 0, final_score: 0, rank: null
     }
   })
 
+  // Ciro puanı: grubun en yüksek vardiya-başına-cirosu 100 puan → normalize
+  const maxRevPerShift = Math.max(...results.map(r => r.rev_per_shift), 1)
+  results.forEach(r => {
+    r.revenue_pct  = Math.round((r.rev_per_shift / maxRevPerShift) * 100)
+    // Final skor: %60 performans + %40 ciro
+    r.final_score  = Math.round(r.performance_pct * 0.6 + r.revenue_pct * 0.4)
+  })
+
+  // Sıralama: uygunlar arasında final_score'a göre, eşitlikte on_time_count
   const eligible = results.filter(r => r.is_eligible)
-    .sort((a, b) => b.performance_pct - a.performance_pct || b.on_time_count - a.on_time_count)
+    .sort((a, b) => b.final_score - a.final_score || b.on_time_count - a.on_time_count)
   eligible.forEach((r, i) => { r.rank = i + 1 })
 
   return {
