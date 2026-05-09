@@ -819,6 +819,125 @@
     .ring-label { font-size: 8px; color: var(--txt3); text-transform: uppercase; letter-spacing: .1em; margin-top: 1px; }
 
     /* ═══════════════════════════════════════════════════
+       AY YARIŞI KARTI
+    ═══════════════════════════════════════════════════ */
+    .race-card {
+      border-radius: 20px;
+      border: 1px solid rgba(251,191,36,.22);
+      background: linear-gradient(145deg, rgba(120,53,15,.18) 0%, rgba(12,20,42,.92) 60%);
+      padding: 20px;
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .race-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 90% 10%, rgba(251,191,36,.08), transparent);
+      pointer-events: none;
+    }
+    .race-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .race-title {
+      font-size: 11px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 3px;
+    }
+    .race-subtitle {
+      font-size: 12px; color: var(--txt2);
+    }
+    .race-prize {
+      display: flex; align-items: center; gap: 5px;
+      background: linear-gradient(135deg,rgba(100,116,139,.25),rgba(148,163,184,.15));
+      border: 1px solid rgba(148,163,184,.3);
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 11px; font-weight: 700; color: #94a3b8;
+      white-space: nowrap;
+    }
+    .race-score-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .race-rank-badge {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-weight: 800; font-family: 'JetBrains Mono', monospace;
+      background: rgba(251,191,36,.12);
+      border: 1px solid rgba(251,191,36,.25);
+      flex-shrink: 0;
+    }
+    .race-rank-badge .rank-num { font-size: 20px; color: var(--gold); line-height: 1; }
+    .race-rank-badge .rank-lbl { font-size: 9px; color: var(--txt3); font-weight: 600; margin-top: 1px; }
+    .race-score-center { min-width: 0; }
+    .race-score-label { font-size: 10px; color: var(--txt3); text-transform: uppercase; letter-spacing:.06em; margin-bottom:2px; }
+    .race-bar-wrap {
+      height: 6px; background: rgba(255,255,255,.07);
+      border-radius: 3px; overflow: hidden; margin-top: 6px;
+    }
+    .race-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--coral));
+      transition: width 1.2s cubic-bezier(.22,1,.36,1);
+      width: 0%;
+    }
+    .race-score-num {
+      font-size: 32px; font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--gold); line-height: 1;
+    }
+    .race-score-unit { font-size: 14px; color: var(--txt2); }
+    .race-breakdown {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-bottom: 14px;
+    }
+    .race-metric {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 12px; padding: 10px 12px;
+    }
+    .race-metric-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 5px;
+    }
+    .race-metric-label { font-size: 10px; font-weight: 700; color: var(--txt3); text-transform: uppercase; letter-spacing:.05em; }
+    .race-metric-weight {
+      font-size: 10px; font-weight: 700;
+      background: rgba(255,255,255,.06);
+      border-radius: 6px; padding: 1px 6px; color: var(--txt2);
+    }
+    .race-metric-value { font-size: 22px; font-weight: 800; font-family:'JetBrains Mono',monospace; line-height:1; }
+    .race-metric-desc { font-size: 10px; color: var(--txt3); margin-top: 3px; }
+    .race-metric.m-perf .race-metric-value { color: var(--teal); }
+    .race-metric.m-ciro .race-metric-value { color: var(--violet); }
+    .race-rules {
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding-top: 12px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .race-rules-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .race-rules-text { font-size: 11px; color: var(--txt2); line-height: 1.5; }
+    .race-rules-text strong { color: var(--txt); }
+    .race-tip {
+      margin-top: 8px;
+      background: rgba(34,211,238,.07);
+      border: 1px solid rgba(34,211,238,.15);
+      border-radius: 10px; padding: 8px 12px;
+      font-size: 11px; color: var(--txt2); line-height: 1.5;
+    }
+    .race-tip strong { color: var(--teal); }
+    .race-1st { border-color: rgba(251,191,36,.4); background: linear-gradient(145deg,rgba(120,53,15,.28) 0%,rgba(12,20,42,.95) 60%); }
+
+    /* ═══════════════════════════════════════════════════
        MILESTONE TOAST
     ═══════════════════════════════════════════════════ */
     .milestone-toast {
@@ -973,9 +1092,12 @@
       </div>
     </div>
 
+    <!-- AY YARIŞI -->
+    <div id="raceCard" class="race-card reveal" style="transition-delay:.12s;display:none"></div>
+
     <!-- LEADERBOARD -->
     <div class="glass panel glow-violet reveal" style="transition-delay:.16s">
-      <div class="panel-title">🏆 Lider Tablosu</div>
+      <div class="panel-title">🏆 Aylık Sıralama</div>
       <div id="leaderboard"></div>
     </div>
 
@@ -1103,7 +1225,7 @@
       const monthStart = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
       const monthEnd   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
 
-      const [cashierRes, monthlyRes, allMonthlyRes, historyRes] = await Promise.all([
+      const [cashierRes, monthlyRes, allMonthlyRes, historyRes, schedRes] = await Promise.all([
         supabase.from('cashiers').select('*').eq('id', cashierId).single(),
         supabase.from('daily_reports').select('*')
           .eq('cashier_id', cashierId)
@@ -1115,7 +1237,10 @@
           .gte('date', monthStart).lte('date', monthEnd),
         supabase.from('entry_history').select('*')
           .eq('cashier_id', cashierId)
-          .order('entry_time', { ascending: false }).limit(10)
+          .order('entry_time', { ascending: false }).limit(10),
+        supabase.from('shift_schedule').select('id')
+          .eq('cashier_id', cashierId)
+          .gte('date', monthStart).lte('date', monthEnd)
       ])
 
       if (cashierRes.error) throw cashierRes.error
@@ -1124,6 +1249,7 @@
       const monthlyReports = monthlyRes.data   || []
       const allMonthly     = allMonthlyRes.data || []
       const history        = historyRes.data   || []
+      const assignedSlots  = (schedRes.data    || []).length
 
       const totalScore = monthlyReports.reduce((s, r) => s + (parseInt(r.points_earned) || 0), 0)
       const entryCount = monthlyReports.length
@@ -1135,22 +1261,46 @@
         performancePct: entryCount > 0 ? Math.round((totalScore / (entryCount * 100)) * 100) : 0,
       }
 
-      const leaderMap = {}
+      // Tüm kasiyerler için ciro-başına-vardiya hesabı (final skor için)
+      const revMap = {}
       allMonthly.forEach(r => {
         const id   = r.cashier_id
         const name = r.cashiers?.name || 'Bilinmiyor'
-        if (!leaderMap[id]) leaderMap[id] = { cashier_id: id, cashier_name: name, total_score: 0, total_entries: 0, on_time_entries: 0 }
-        const score = parseInt(r.points_earned) || 0
-        leaderMap[id].total_score   += score
-        leaderMap[id].total_entries += 1
-        if (r.is_on_time) leaderMap[id].on_time_entries += 1
+        if (!revMap[id]) revMap[id] = { name, total_score: 0, total_entries: 0, on_time_entries: 0, total_revenue: 0 }
+        revMap[id].total_score    += parseInt(r.points_earned)   || 0
+        revMap[id].total_revenue  += parseFloat(r.total_revenue) || 0
+        revMap[id].total_entries  += 1
+        if (r.is_on_time) revMap[id].on_time_entries += 1
       })
+      const maxRevPerShift = Math.max(
+        ...Object.values(revMap).map(v => v.total_entries > 0 ? v.total_revenue / v.total_entries : 0), 1
+      )
+      const leaders = Object.entries(revMap).map(([id, v]) => {
+        const perf_pct    = v.total_entries > 0 ? Math.round((v.total_score / (v.total_entries * 100)) * 100) : 0
+        const rev_per     = v.total_entries > 0 ? v.total_revenue / v.total_entries : 0
+        const revenue_pct = Math.round((rev_per / maxRevPerShift) * 100)
+        const final_score = Math.round(perf_pct * 0.6 + revenue_pct * 0.4)
+        return { cashier_id: id, cashier_name: v.name, total_score: v.total_score,
+          total_entries: v.total_entries, on_time_entries: v.on_time_entries,
+          performance_pct: perf_pct, revenue_pct, final_score }
+      }).sort((a, b) => b.final_score - a.final_score || b.total_entries - a.total_entries)
 
-      const leaders = Object.values(leaderMap)
-        .map(l => ({ ...l, performance_pct: l.total_entries > 0 ? Math.round((l.total_score / (l.total_entries * 100)) * 100) : 0 }))
-        .sort((a, b) => b.performance_pct !== a.performance_pct ? b.performance_pct - a.performance_pct : b.total_entries - a.total_entries)
+      // Kendi verilerimi bul
+      const myEntry       = leaders.find(l => l.cashier_id === cashierId)
+      const myRevPerShift = revMap[cashierId]?.total_entries > 0
+        ? revMap[cashierId].total_revenue / revMap[cashierId].total_entries : 0
+      const raceData = {
+        rank:           leaders.findIndex(l => l.cashier_id === cashierId) + 1,
+        total:          leaders.length,
+        performancePct: myEntry?.performance_pct ?? monthStats.performancePct,
+        revenuePct:     myEntry?.revenue_pct     ?? 0,
+        finalScore:     myEntry?.final_score     ?? 0,
+        revPerShift:    myRevPerShift,
+        assignedSlots,
+        attendancePct:  assignedSlots > 0 ? Math.round((entryCount / assignedSlots) * 100) : null,
+      }
 
-      renderDashboard(cashier, monthStats, leaders, history)
+      renderDashboard(cashier, monthStats, leaders, history, raceData)
       await fetchMyEntries(cashierId)
 
       document.getElementById('loading').style.display  = 'none'
@@ -1173,7 +1323,7 @@
     }
   }
 
-  function renderDashboard(cashier, monthStats, leaders, history) {
+  function renderDashboard(cashier, monthStats, leaders, history, raceData) {
     _currentCashierId = cashier.id
 
     const AVATAR = { 'Tuba Bozaklı':'av-t', 'Elif Yıldırım':'av-e', 'Melda Yılmaz':'av-m', 'Ceren Erdem':'av-c' }
@@ -1254,6 +1404,7 @@
     }
     localStorage.setItem(BADGE_KEY, curBadge)
 
+    renderRaceCard(raceData, monthStats)
     renderLeaderboard(leaders.slice(0, 4), cashierId)
     renderHistory(history)
   }
@@ -1291,6 +1442,121 @@
       t.classList.remove('mt-show')
       setTimeout(() => t.remove(), 500)
     }, 4500)
+  }
+
+  function renderRaceCard(raceData, monthStats) {
+    const card = document.getElementById('raceCard')
+    if (!card) return
+
+    if (!raceData || raceData.total === 0) { card.style.display = 'none'; return }
+    card.style.display = 'block'
+
+    const now       = new Date()
+    const monthName = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+    const { rank, total, performancePct, revenuePct, finalScore, revPerShift, assignedSlots, attendancePct } = raceData
+
+    const rankLabel  = rank === 1 ? '1.' : rank === 2 ? '2.' : rank === 3 ? '3.' : `${rank}.`
+    const is1st      = rank === 1
+    const revFmt     = revPerShift >= 1000 ? (revPerShift / 1000).toFixed(1) + 'K' : Math.round(revPerShift)
+
+    // Performans rengi
+    const perfColor = performancePct >= 85 ? '#22d3ee' : performancePct >= 65 ? '#fbbf24' : '#f87171'
+    const revColor  = revenuePct   >= 80 ? '#818cf8' : revenuePct >= 50 ? '#a78bfa' : '#94a3b8'
+    const fsColor   = finalScore   >= 80 ? '#fbbf24' : finalScore >= 60 ? '#fb923c' : '#f87171'
+
+    // İpucu: sadece kontrol edebildiği şeyi söyle
+    let tip = ''
+    if (monthStats.entries === 0) {
+      tip = `<div class="race-tip">Henüz bu ay giriş yapılmadı. İlk girişini yaptıktan sonra sıralaman burada görünecek.</div>`
+    } else if (performancePct < 80) {
+      const lateCount = monthStats.entries - monthStats.onTime
+      tip = `<div class="race-tip"><strong>Performansını artır:</strong> Bu ay ${lateCount > 0 ? `${lateCount} geç giriş var` : 'eksiksiz veri eksik'}. Zamanında ve eksiksiz giriş her vardiya 100 puan = %100 performans.</div>`
+    } else if (is1st) {
+      tip = `<div class="race-tip"><strong>Lidersin!</strong> Bu avantajı korumak için her girişte zamanında ve eksiksiz olmaya devam et.</div>`
+    } else {
+      tip = `<div class="race-tip"><strong>Fark kapatılabilir:</strong> Performans puanı senin kontrolündedir — zamanında ve eksiksiz her giriş sıralamanda yukarı taşır.</div>`
+    }
+
+    // Katılım uyarısı
+    let attendanceNote = ''
+    if (assignedSlots > 0) {
+      const eligible = attendancePct >= 80
+      const attColor = eligible ? '#34d399' : '#f87171'
+      attendanceNote = `<span style="color:${attColor};font-size:10px;font-weight:700;">
+        ${eligible ? '✅' : '⚠️'} Katılım: %${attendancePct} (${monthStats.entries}/${assignedSlots} vardiya)
+      </span>`
+    }
+
+    card.className = 'race-card reveal' + (is1st ? ' race-1st' : '')
+    card.innerHTML = `
+      <div class="race-header">
+        <div>
+          <div class="race-title">🏆 Ay Yarışı — ${monthName}</div>
+          <div class="race-subtitle">Final Skor = <strong>%60 Performans</strong> + <strong>%40 Ciro</strong></div>
+        </div>
+        <div class="race-prize">🥈 Gümüş Hediye</div>
+      </div>
+
+      <div class="race-score-row">
+        <div class="race-rank-badge">
+          <div class="rank-num">${rankLabel}</div>
+          <div class="rank-lbl">${total} kişi</div>
+        </div>
+        <div class="race-score-center">
+          <div class="race-score-label">Final Skor</div>
+          <div style="display:flex;align-items:baseline;gap:3px;">
+            <span class="race-score-num" id="raceScoreNum" style="color:${fsColor}">0</span>
+            <span class="race-score-unit">%</span>
+          </div>
+          <div class="race-bar-wrap">
+            <div class="race-bar-fill" id="raceBarFill"></div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          ${attendanceNote}
+        </div>
+      </div>
+
+      <div class="race-breakdown">
+        <div class="race-metric m-perf">
+          <div class="race-metric-top">
+            <div class="race-metric-label">Performans</div>
+            <div class="race-metric-weight">%60</div>
+          </div>
+          <div class="race-metric-value" style="color:${perfColor}" id="racePerfNum">0%</div>
+          <div class="race-metric-desc">Zamanında giriş + eksiksiz veri</div>
+        </div>
+        <div class="race-metric m-ciro">
+          <div class="race-metric-top">
+            <div class="race-metric-label">Ciro Puanı</div>
+            <div class="race-metric-weight">%40</div>
+          </div>
+          <div class="race-metric-value" style="color:${revColor}" id="raceCiroNum">0%</div>
+          <div class="race-metric-desc">~${revFmt}₺/vardiya · Gruba göre</div>
+        </div>
+      </div>
+
+      <div class="race-rules">
+        <div class="race-rules-icon">📋</div>
+        <div class="race-rules-text">
+          <strong>Ödül kuralı:</strong> Ay sonunda uygun kasiyerler arasında en yüksek Final Skor'u alan 🥈 Gümüş Hediye kazanır.
+          Uygunluk: Atanan vardiyaların <strong>en az %80'inde</strong> giriş yapılmış olması gerekir.
+          Ciro puanı, o aydaki grubun en yüksek ciro ortalaması baz alınarak hesaplanır — kendi kontrolündeki kısım <strong>Performans</strong>'tır.
+        </div>
+      </div>
+      ${tip}
+    `
+
+    // Sayaçları animate et
+    if (monthStats.entries > 0) {
+      setTimeout(() => {
+        animateCounter(document.getElementById('raceScoreNum'), finalScore, 1200)
+        animateCounter(document.getElementById('racePerfNum'), performancePct, 1000, v => Math.round(v) + '%')
+        animateCounter(document.getElementById('raceCiroNum'), revenuePct, 1000, v => Math.round(v) + '%')
+        const fill = document.getElementById('raceBarFill')
+        if (fill) fill.style.width = Math.min(finalScore, 100) + '%'
+      }, 350)
+    }
   }
 
   function renderSkillTags(allSkills, selected) {
@@ -1351,21 +1617,24 @@
     container.innerHTML = ''
     const AVATAR = { 'Tuba Bozaklı':'av-t', 'Elif Yıldırım':'av-e', 'Melda Yılmaz':'av-m', 'Ceren Erdem':'av-c' }
     leaders.forEach((leader, index) => {
-      const rank      = index + 1
-      const isCurrent = leader.cashier_id === currentCashierId
-      const initials  = leader.cashier_name ? leader.cashier_name.split(' ').map(n => n[0]).join('') : '??'
-      const pct       = leader.performance_pct ?? 0
-      const pctColor  = pct >= 85 ? 'var(--emerald)' : pct >= 65 ? 'var(--coral)' : 'var(--txt2)'
+      const rank       = index + 1
+      const isCurrent  = leader.cashier_id === currentCashierId
+      const initials   = leader.cashier_name ? leader.cashier_name.split(' ').map(n => n[0]).join('') : '??'
+      const fs         = leader.final_score    ?? 0
+      const perf       = leader.performance_pct ?? 0
+      const fsColor    = fs >= 80 ? 'var(--gold)' : fs >= 60 ? 'var(--coral)' : 'var(--txt2)'
+      const MEDAL      = ['🥇','🥈','🥉']
+      const rankLabel  = MEDAL[index] || `#${rank}`
       const item = document.createElement('div')
       item.className = 'lb-item' + (isCurrent ? ' current' : '')
       item.innerHTML = `
-        <div class="lb-rank rank-${rank}">#${rank}</div>
+        <div class="lb-rank rank-${rank}">${rankLabel}</div>
         <div class="lb-av ${AVATAR[leader.cashier_name] || 'av-t'}">${initials}</div>
         <div class="lb-info">
-          <div class="lb-name">${leader.cashier_name || 'Bilinmiyor'}${isCurrent ? ' · Sen' : ''}</div>
-          <div class="lb-sub">${leader.total_entries || 0} giriş · ${leader.on_time_entries || 0} zamanında</div>
+          <div class="lb-name">${leader.cashier_name || 'Bilinmiyor'}${isCurrent ? ' <span style="color:var(--teal);font-size:10px;">· Sen</span>' : ''}</div>
+          <div class="lb-sub">Perf %${perf} · Ciro %${leader.revenue_pct ?? 0} · ${leader.total_entries || 0} giriş</div>
         </div>
-        <div class="lb-pct" style="color:${pctColor}">%${pct}</div>`
+        <div class="lb-pct" style="color:${fsColor};font-size:18px;">%${fs}</div>`
       container.appendChild(item)
     })
   }
