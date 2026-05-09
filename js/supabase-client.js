@@ -292,3 +292,86 @@ export async function uploadCashierAvatar(cashierId, file) {
 
   return { url: cacheBusted, error: dbError }
 }
+
+// ─── VARDİYA PLANLAMASI ──────────────────────────────────────────────────────
+
+function _monthRange(year, month) {
+  const mm      = String(month).padStart(2, '0')
+  const lastDay = new Date(year, month, 0).getDate()
+  return { start: `${year}-${mm}-01`, end: `${year}-${mm}-${String(lastDay).padStart(2,'0')}` }
+}
+
+export async function getMonthSchedule(year, month) {
+  const { start, end } = _monthRange(year, month)
+  return await supabase
+    .from('shift_schedule')
+    .select('*, cashiers(name)')
+    .gte('date', start)
+    .lte('date', end)
+    .order('date', { ascending: true })
+    .order('shift', { ascending: true })
+}
+
+export async function upsertShiftSlot(date, shift, kasa, cashierId) {
+  return await supabase
+    .from('shift_schedule')
+    .upsert(
+      { date, shift, kasa, cashier_id: cashierId || null, updated_at: new Date().toISOString() },
+      { onConflict: 'date,shift,kasa' }
+    )
+    .select('*, cashiers(name)')
+    .single()
+}
+
+export async function deleteShiftSlot(date, shift, kasa) {
+  return await supabase
+    .from('shift_schedule')
+    .delete()
+    .eq('date', date)
+    .eq('shift', shift)
+    .eq('kasa', kasa)
+}
+
+export async function getChampionData(year, month) {
+  const { start, end } = _monthRange(year, month)
+  const [schedRes, reportsRes, cashiersRes] = await Promise.all([
+    supabase.from('shift_schedule').select('cashier_id').gte('date', start).lte('date', end).not('cashier_id', 'is', null),
+    supabase.from('daily_reports').select('cashier_id, points_earned, is_on_time').neq('kasa', 'iki_kasa').gte('date', start).lte('date', end),
+    supabase.from('cashiers').select('*').order('name')
+  ])
+  if (cashiersRes.error) return { data: [], error: cashiersRes.error }
+
+  const assignedMap = {}
+  ;(schedRes.data || []).forEach(s => { assignedMap[s.cashier_id] = (assignedMap[s.cashier_id] || 0) + 1 })
+
+  const reportMap = {}
+  ;(reportsRes.data || []).forEach(r => {
+    if (!reportMap[r.cashier_id]) reportMap[r.cashier_id] = { total_points: 0, entry_count: 0, on_time_count: 0 }
+    reportMap[r.cashier_id].total_points += parseInt(r.points_earned) || 0
+    reportMap[r.cashier_id].entry_count  += 1
+    if (r.is_on_time) reportMap[r.cashier_id].on_time_count += 1
+  })
+
+  const results = (cashiersRes.data || []).map(c => {
+    const assigned = assignedMap[c.id] || 0
+    const rm       = reportMap[c.id]  || { total_points: 0, entry_count: 0, on_time_count: 0 }
+    const att_pct  = assigned > 0 ? Math.round((rm.entry_count / assigned) * 100) : 0
+    const perf_pct = rm.entry_count > 0 ? Math.round((rm.total_points / (rm.entry_count * 100)) * 100) : 0
+    return {
+      cashier_id: c.id, name: c.name, badge_level: c.badge_level,
+      assigned_slots: assigned, worked_slots: rm.entry_count,
+      attendance_pct: att_pct, is_eligible: assigned > 0 && att_pct >= 80,
+      entry_count: rm.entry_count, total_points: rm.total_points,
+      performance_pct: perf_pct, on_time_count: rm.on_time_count, rank: null
+    }
+  })
+
+  const eligible = results.filter(r => r.is_eligible)
+    .sort((a, b) => b.performance_pct - a.performance_pct || b.on_time_count - a.on_time_count)
+  eligible.forEach((r, i) => { r.rank = i + 1 })
+
+  return {
+    data: results.sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99)),
+    error: reportsRes.error
+  }
+}

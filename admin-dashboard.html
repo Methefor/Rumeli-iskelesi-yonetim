@@ -1991,6 +1991,156 @@
         .badge-modal-box { border-top: 2px solid var(--teal); }
         .nicon { background: linear-gradient(135deg, var(--teal-d), var(--violet-d)); }
 
+        /* ── VARDİYA PLANLAMASI ──────────────────────────────────────────────── */
+        .vp-dist-bar {
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 8px;
+            margin-bottom: 20px;
+        }
+        .vp-dist-pill {
+            background: rgba(255,255,255,.05); border: 1px solid var(--brd);
+            border-radius: 10px; padding: 10px 12px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .vp-dist-pill.ok     { border-color: rgba(52,211,153,.4); }
+        .vp-dist-pill.warn   { border-color: rgba(251,191,36,.4); }
+        .vp-dist-pill.over   { border-color: rgba(248,113,113,.4); }
+        .vp-dist-name  { font-size: 12px; font-weight: 700; }
+        .vp-dist-count { font-size: 20px; font-weight: 800; font-family:'JetBrains Mono',monospace; }
+        .vp-dist-sub   { font-size: 11px; color: var(--txt3); }
+        .vp-dist-track { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; margin-top:4px; }
+        .vp-dist-fill  { height: 100%; border-radius: 2px; transition: width .5s ease; }
+
+        .vp-month-nav {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+        }
+        .vp-month-label { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+        .vp-nav-btn {
+            background: var(--input); border: 1px solid var(--brd); color: var(--txt);
+            border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 15px;
+            transition: all .15s;
+        }
+        .vp-nav-btn:hover { border-color: var(--acc); }
+
+        .vp-calendar {
+            display: grid; grid-template-columns: repeat(7,1fr);
+            gap: 6px; margin-bottom: 8px;
+        }
+        .vp-cal-header {
+            text-align: center; font-size: 11px; font-weight: 700;
+            color: var(--txt3); padding: 4px 0; letter-spacing:.04em;
+        }
+        .vp-day-cell {
+            background: rgba(255,255,255,.03); border: 1px solid var(--brd);
+            border-radius: 10px; padding: 8px 6px; min-height: 150px;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .vp-day-cell.weekend { border-color: rgba(251,191,36,.25); background: rgba(251,191,36,.03); }
+        .vp-day-cell.today   { border-color: rgba(34,211,238,.4);  background: rgba(34,211,238,.04); }
+        .vp-day-cell.empty   { background: transparent; border-color: transparent; }
+        .vp-day-num {
+            font-size: 11px; font-weight: 700; color: var(--txt2);
+            display: flex; align-items: center; gap: 4px; margin-bottom: 2px;
+        }
+        .vp-day-num .vp-we-badge {
+            font-size: 9px; background: rgba(251,191,36,.2); color: var(--orange);
+            border-radius: 4px; padding: 1px 4px; font-weight: 700;
+        }
+        .vp-day-num .vp-today-badge {
+            font-size: 9px; background: rgba(34,211,238,.15); color: var(--teal);
+            border-radius: 4px; padding: 1px 4px; font-weight: 700;
+        }
+        .vp-slot { display: flex; flex-direction: column; gap: 2px; }
+        .vp-slot-label {
+            font-size: 9px; font-weight: 700; color: var(--txt3);
+            letter-spacing: .04em; text-transform: uppercase;
+        }
+        .vp-slot-select {
+            width: 100%; font-size: 11px !important; padding: 3px 4px;
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+            border-radius: 5px; color: var(--txt); cursor: pointer;
+            appearance: none; -webkit-appearance: none;
+        }
+        .vp-slot-select:focus { outline: none; border-color: var(--acc); }
+        .vp-slot-select.assigned { border-color: rgba(34,211,238,.3); color: var(--teal); }
+        .vp-slot-divider {
+            height: 1px; background: rgba(255,255,255,.06); margin: 2px 0;
+        }
+
+        /* ── AY ŞAMPİYONU ─────────────────────────────────────────────────── */
+        .sp-podyum {
+            display: grid; grid-template-columns: 1fr 1.15fr 1fr;
+            gap: 10px; margin-bottom: 28px; align-items: end;
+        }
+        .sp-pod-col {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 20px 12px 16px; border-radius: 14px; text-align: center;
+            border: 1px solid var(--brd); background: rgba(255,255,255,.04);
+            position: relative;
+        }
+        .sp-pod-col.rank1 {
+            background: linear-gradient(160deg,rgba(251,191,36,.12),rgba(249,115,22,.08));
+            border-color: rgba(251,191,36,.4);
+            box-shadow: 0 0 32px rgba(251,191,36,.1);
+        }
+        .sp-pod-col.rank2 {
+            background: linear-gradient(160deg,rgba(148,163,184,.1),rgba(100,116,139,.06));
+            border-color: rgba(148,163,184,.35);
+        }
+        .sp-pod-col.rank3 {
+            background: linear-gradient(160deg,rgba(205,127,50,.1),rgba(180,83,9,.06));
+            border-color: rgba(205,127,50,.3);
+        }
+        .sp-pod-col.empty { opacity: .35; }
+        .sp-pod-rank {
+            font-size: 26px; margin-bottom: 8px;
+        }
+        .sp-pod-avatar {
+            width: 56px; height: 56px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 800; margin-bottom: 10px;
+            border: 2px solid rgba(255,255,255,.15);
+        }
+        .sp-pod-col.rank1 .sp-pod-avatar { background: linear-gradient(135deg,#b45309,#f59e0b); color:#fff; }
+        .sp-pod-col.rank2 .sp-pod-avatar { background: linear-gradient(135deg,#475569,#94a3b8); color:#fff; }
+        .sp-pod-col.rank3 .sp-pod-avatar { background: linear-gradient(135deg,#92400e,#d97706); color:#fff; }
+        .sp-pod-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+        .sp-pod-pct  { font-size: 28px; font-weight: 800; font-family:'JetBrains Mono',monospace; }
+        .sp-pod-col.rank1 .sp-pod-pct { color: var(--orange); }
+        .sp-pod-col.rank2 .sp-pod-pct { color: #94a3b8; }
+        .sp-pod-col.rank3 .sp-pod-pct { color: #d97706; }
+        .sp-pod-sub  { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+        .sp-gumus-pill {
+            margin-top: 10px; padding: 5px 12px; border-radius: 20px;
+            background: linear-gradient(135deg,#64748b,#94a3b8);
+            color: #fff; font-size: 12px; font-weight: 700;
+            box-shadow: 0 2px 12px rgba(148,163,184,.3);
+        }
+        .sp-table {
+            width: 100%; border-collapse: collapse; font-size: 13px;
+        }
+        .sp-table th {
+            padding: 8px 10px; text-align: left; font-size: 10px;
+            font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+            color: var(--txt3); border-bottom: 1px solid var(--brd);
+        }
+        .sp-table td {
+            padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,.04);
+            vertical-align: middle;
+        }
+        .sp-table tr.champ-row td { background: rgba(251,191,36,.07); }
+        .sp-table tr.silver-row td { background: rgba(148,163,184,.06); }
+        .sp-table tr.ineligible td { opacity: .5; }
+        .sp-rank-badge {
+            width: 24px; height: 24px; border-radius: 6px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 800;
+        }
+        .sp-att-bar {
+            height: 5px; background: rgba(255,255,255,.07); border-radius: 3px;
+            width: 80px; display: inline-block; vertical-align: middle; margin-left: 6px;
+        }
+        .sp-att-fill { height: 100%; border-radius: 3px; }
+
         /* ── SPOTLIGHT SEARCH ─────────────────────────────────────────────── */
         .spotlight-backdrop {
             position: fixed; inset: 0; z-index: 9000;
@@ -2104,7 +2254,9 @@
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <div id="lastUpdate" style="font-size:12px;color:var(--txt2)">Yükleniyor...</div>
                 <button class="nb sp-kbd-btn" id="spotlightNavBtn" onclick="openSpotlight()" title="Hızlı Arama (Ctrl+K)" style="border-color:rgba(34,211,238,.3);color:var(--txt2);">🔍 <kbd>Ctrl</kbd><kbd>K</kbd></button>
-                <button class="nb" onclick="showVerimlilik()" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-color:#3b82f6;">📊 Operasyonel Verimlilik</button>
+                <button class="nb" onclick="showVerimlilik()" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-color:#3b82f6;">📊 Verimlilik</button>
+                <button class="nb" onclick="showVardiyaPlani()" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);border-color:#8b5cf6;">📅 Vardiya Planı</button>
+                <button class="nb" onclick="showAySampiyonu()" style="background:linear-gradient(135deg,#78350f,#b45309);border-color:#f59e0b;">🏆 Şampiyon</button>
                 <button class="nb" onclick="showKasiyerYonetimi()" style="background:linear-gradient(135deg,#065f46,#059669);border-color:#10b981;">👥 Kasiyerler</button>
                 <button id="refreshBtn" class="nb">🔄 Yenile</button>
                 <a href="index.html" class="nb">← Çıkış</a>
@@ -2158,6 +2310,32 @@
             </div>
             <div class="verimlilik-body" id="verimlilikBody">
                 <div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Veriler hesaplanıyor...</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARDİYA PLANI MODAL -->
+    <div class="verimlilik-overlay" id="vardiyaPlaniModal" style="display:none;">
+        <div class="verimlilik-box" style="max-width:980px;">
+            <div class="verimlilik-header">
+                <h2>📅 Vardiya Planı</h2>
+                <button onclick="closeVardiyaPlani()" style="background:none;border:none;font-size:22px;color:var(--txt2);cursor:pointer;line-height:1;">✕</button>
+            </div>
+            <div class="verimlilik-body" id="vardiyaPlaniBody">
+                <div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Yükleniyor...</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AY ŞAMPİYONU MODAL -->
+    <div class="verimlilik-overlay" id="sampiyonModal" style="display:none;">
+        <div class="verimlilik-box" style="max-width:720px;">
+            <div class="verimlilik-header">
+                <h2 id="sampiyonBaslik">🏆 Ay Şampiyonu</h2>
+                <button onclick="closeAySampiyonu()" style="background:none;border:none;font-size:22px;color:var(--txt2);cursor:pointer;line-height:1;">✕</button>
+            </div>
+            <div class="verimlilik-body" id="sampiyonBody">
+                <div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Hesaplanıyor...</div></div>
             </div>
         </div>
     </div>
@@ -2332,10 +2510,7 @@
                     map[id] = { cashier_id: id, name, badge_level: null,
                         total_score: 0, entry_count: 0, on_time_count: 0 }
                 }
-                // Her girişi 0-100 üzerinden normalize et (yeni sistem)
-                const score = (r.is_on_time ? 50 : 0) +
-                    (parseFloat(r.rumeli_z1 || 0) > 0 ||
-                     parseFloat(r.total_revenue || 0) > 0 ? 50 : 0)
+                const score = parseInt(r.points_earned) || 0
                 map[id].total_score  += score
                 map[id].entry_count  += 1
                 if (r.is_on_time) map[id].on_time_count += 1
@@ -4318,6 +4493,335 @@
         }
     </script>
 
+    <!-- VARDİYA PLANI + AY ŞAMPİYONU JS -->
+    <script type="module">
+        import { getAllCashiers, getMonthSchedule, upsertShiftSlot, deleteShiftSlot, getChampionData } from '/js/supabase-client.js'
+
+        const TR_MONTHS = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
+        const DAYS_TR   = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt']
+
+        // ── State ────────────────────────────────────────────────────────────
+        let _vpYear, _vpMonth, _vpSlots = [], _vpCashiers = []
+        let _spYear, _spMonth
+
+        function _now() { const n = new Date(); return { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() } }
+        function _todayStr() { const n=_now(); return `${n.y}-${String(n.m).padStart(2,'0')}-${String(n.d).padStart(2,'0')}` }
+        function _dateStr(y,m,d) { return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}` }
+        function _isWeekend(y,m,d) { const w=new Date(y,m-1,d).getDay(); return w===0||w===6 }
+
+        // ── Vardiya Planı ────────────────────────────────────────────────────
+        window.showVardiyaPlani = async function() {
+            const n = _now()
+            _vpYear = n.y; _vpMonth = n.m
+            document.getElementById('vardiyaPlaniModal').style.display = 'flex'
+            await _renderVP()
+        }
+        window.closeVardiyaPlani = function() {
+            document.getElementById('vardiyaPlaniModal').style.display = 'none'
+        }
+        document.getElementById('vardiyaPlaniModal').addEventListener('click', function(e) {
+            if (e.target === this) closeVardiyaPlani()
+        })
+
+        window.vpAyDegistir = async function(delta) {
+            _vpMonth += delta
+            if (_vpMonth > 12) { _vpMonth = 1; _vpYear++ }
+            if (_vpMonth < 1)  { _vpMonth = 12; _vpYear-- }
+            await _renderVP()
+        }
+
+        async function _renderVP() {
+            const body = document.getElementById('vardiyaPlaniBody')
+            body.innerHTML = '<div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Yükleniyor...</div></div>'
+
+            const [schedRes, cashRes] = await Promise.all([
+                getMonthSchedule(_vpYear, _vpMonth),
+                getAllCashiers()
+            ])
+            _vpSlots    = schedRes.data   || []
+            _vpCashiers = (cashRes.data   || []).filter(c => c.active !== false)
+
+            body.innerHTML = _buildVPHtml()
+            _bindSlotSelects()
+        }
+
+        function _buildVPHtml() {
+            const label = `${TR_MONTHS[_vpMonth-1]} ${_vpYear}`
+            const lastDay = new Date(_vpYear, _vpMonth, 0).getDate()
+            const today = _todayStr()
+
+            // Distribution stats
+            const distMap = {}
+            _vpCashiers.forEach(c => { distMap[c.id] = { name: c.name, count: 0 } })
+            _vpSlots.forEach(s => { if (s.cashier_id && distMap[s.cashier_id]) distMap[s.cashier_id].count++ })
+            const totalSlots = _vpSlots.filter(s => s.cashier_id).length
+            const fairShare  = _vpCashiers.length > 0 ? Math.round(totalSlots / _vpCashiers.length) : 0
+
+            const distHtml = `<div class="vp-dist-bar">${
+                _vpCashiers.map(c => {
+                    const cnt   = distMap[c.id]?.count || 0
+                    const delta = cnt - fairShare
+                    const cls   = delta <= 0 ? 'ok' : delta <= 2 ? 'warn' : 'over'
+                    const color = delta <= 0 ? '#34d399' : delta <= 2 ? '#fbbf24' : '#f87171'
+                    const pct   = fairShare > 0 ? Math.min(Math.round((cnt / (fairShare * 1.5)) * 100), 100) : 0
+                    const deltaLbl = delta === 0 ? 'Adil' : (delta > 0 ? `+${delta} fazla` : `${delta} eksik`)
+                    return `<div class="vp-dist-pill ${cls}" data-cid="${c.id}">
+                        <div class="vp-dist-name">${c.name}</div>
+                        <div class="vp-dist-count" style="color:${color}">${cnt}</div>
+                        <div class="vp-dist-sub">Adil pay ≈ ${fairShare} · <span style="color:${color}">${deltaLbl}</span></div>
+                        <div class="vp-dist-track"><div class="vp-dist-fill" style="width:${pct}%;background:${color}"></div></div>
+                    </div>`
+                }).join('')
+            }</div>`
+
+            // Calendar
+            const slotMap = {}
+            _vpSlots.forEach(s => {
+                const key = `${s.date}-${s.shift}-${s.kasa}`
+                slotMap[key] = s
+            })
+
+            const optionsHtml = `<option value="">— Atanmamış —</option>` +
+                _vpCashiers.map(c => `<option value="${c.id}">${c.name}</option>`).join('')
+
+            // 7-col grid: Mon=0 index, we adjust firstDayOfWeek (JS Sun=0)
+            const firstDow = new Date(_vpYear, _vpMonth-1, 1).getDay() // 0=Sun
+            const offset   = firstDow === 0 ? 6 : firstDow - 1         // Mon-based offset
+
+            let calHtml = `<div class="vp-calendar">`
+            // Headers Mon→Sun
+            ;['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'].forEach(d => {
+                calHtml += `<div class="vp-cal-header">${d}</div>`
+            })
+            // Empty cells before day 1
+            for (let i = 0; i < offset; i++) calHtml += `<div class="vp-day-cell empty"></div>`
+
+            for (let d = 1; d <= lastDay; d++) {
+                const dateStr = _dateStr(_vpYear, _vpMonth, d)
+                const isWe    = _isWeekend(_vpYear, _vpMonth, d)
+                const isToday = dateStr === today
+                let cls = 'vp-day-cell'
+                if (isWe)    cls += ' weekend'
+                if (isToday) cls += ' today'
+
+                const badges = `${isToday ? '<span class="vp-today-badge">Bugün</span>' : ''}${isWe ? '<span class="vp-we-badge">HF</span>' : ''}`
+
+                const slots = [
+                    { shift:'sabah', kasa:'ana_kasa', label:'☀ Ana' },
+                    { shift:'sabah', kasa:'iki_kasa', label:'☀ 2.' },
+                    { shift:'aksam', kasa:'ana_kasa', label:'🌙 Ana' },
+                    { shift:'aksam', kasa:'iki_kasa', label:'🌙 2.' },
+                ]
+
+                const slotsHtml = slots.map((sl, i) => {
+                    const key  = `${dateStr}-${sl.shift}-${sl.kasa}`
+                    const slot = slotMap[key]
+                    const val  = slot?.cashier_id || ''
+                    const asgn = val ? ' assigned' : ''
+                    const div  = i === 2 ? '<div class="vp-slot-divider"></div>' : ''
+                    const opts = _vpCashiers.map(c =>
+                        `<option value="${c.id}"${c.id === val ? ' selected' : ''}>${c.name}</option>`
+                    ).join('')
+                    return `${div}<div class="vp-slot">
+                        <div class="vp-slot-label">${sl.label}</div>
+                        <select class="vp-slot-select${asgn}" data-date="${dateStr}" data-shift="${sl.shift}" data-kasa="${sl.kasa}">
+                            <option value="">— —</option>${opts}
+                        </select>
+                    </div>`
+                }).join('')
+
+                calHtml += `<div class="${cls}">
+                    <div class="vp-day-num">${d}${badges}</div>
+                    ${slotsHtml}
+                </div>`
+            }
+            calHtml += `</div>` // close calendar
+
+            return `
+                <div class="vp-month-nav">
+                    <button class="vp-nav-btn" onclick="vpAyDegistir(-1)">◀</button>
+                    <div class="vp-month-label">${label}</div>
+                    <button class="vp-nav-btn" onclick="vpAyDegistir(1)">▶</button>
+                </div>
+                <div style="font-size:12px;color:var(--txt3);margin-bottom:14px;">
+                    Toplam ${totalSlots} atanmış vardiya · Her kasiyer için adil pay ≈ ${fairShare}
+                </div>
+                ${distHtml}
+                ${calHtml}
+            `
+        }
+
+        function _bindSlotSelects() {
+            document.querySelectorAll('.vp-slot-select').forEach(sel => {
+                sel.addEventListener('change', async function() {
+                    const date    = this.dataset.date
+                    const shift   = this.dataset.shift
+                    const kasa    = this.dataset.kasa
+                    const cid     = this.value || null
+
+                    this.disabled = true
+                    const { error } = await upsertShiftSlot(date, shift, kasa, cid)
+                    this.disabled = false
+
+                    if (error) {
+                        showToast?.('❌ Kayıt hatası: ' + error.message, 'error')
+                        return
+                    }
+                    this.className = 'vp-slot-select' + (cid ? ' assigned' : '')
+
+                    // Sync _vpSlots in memory
+                    const key = `${date}-${shift}-${kasa}`
+                    const idx = _vpSlots.findIndex(s => s.date===date && s.shift===shift && s.kasa===kasa)
+                    const cashierName = _vpCashiers.find(c=>c.id===cid)?.name || null
+                    if (idx >= 0) { _vpSlots[idx].cashier_id = cid; _vpSlots[idx].cashiers = cashierName ? { name: cashierName } : null }
+                    else if (cid) { _vpSlots.push({ date, shift, kasa, cashier_id: cid, cashiers: { name: cashierName } }) }
+
+                    // Re-render only distribution bar
+                    _rerenderDistBar()
+                })
+            })
+        }
+
+        function _rerenderDistBar() {
+            const distMap = {}
+            _vpCashiers.forEach(c => { distMap[c.id] = { name: c.name, count: 0 } })
+            _vpSlots.forEach(s => { if (s.cashier_id && distMap[s.cashier_id]) distMap[s.cashier_id].count++ })
+            const totalSlots = _vpSlots.filter(s => s.cashier_id).length
+            const fairShare  = _vpCashiers.length > 0 ? Math.round(totalSlots / _vpCashiers.length) : 0
+
+            _vpCashiers.forEach(c => {
+                const pill = document.querySelector(`.vp-dist-pill[data-cid="${c.id}"]`)
+                if (!pill) return
+                const cnt   = distMap[c.id]?.count || 0
+                const delta = cnt - fairShare
+                const color = delta <= 0 ? '#34d399' : delta <= 2 ? '#fbbf24' : '#f87171'
+                const pct   = fairShare > 0 ? Math.min(Math.round((cnt / (fairShare * 1.5)) * 100), 100) : 0
+                const deltaLbl = delta === 0 ? 'Adil' : (delta > 0 ? `+${delta} fazla` : `${delta} eksik`)
+                pill.querySelector('.vp-dist-count').textContent = cnt
+                pill.querySelector('.vp-dist-count').style.color = color
+                pill.querySelector('.vp-dist-sub').innerHTML = `Adil pay ≈ ${fairShare} · <span style="color:${color}">${deltaLbl}</span>`
+                pill.querySelector('.vp-dist-fill').style.width = pct + '%'
+                pill.querySelector('.vp-dist-fill').style.background = color
+            })
+        }
+
+        // ── Ay Şampiyonu ─────────────────────────────────────────────────────
+        window.showAySampiyonu = async function() {
+            const n = _now()
+            _spYear = n.y; _spMonth = n.m
+            document.getElementById('sampiyonModal').style.display = 'flex'
+            await _renderSampiyon()
+        }
+        window.closeAySampiyonu = function() {
+            document.getElementById('sampiyonModal').style.display = 'none'
+        }
+        document.getElementById('sampiyonModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAySampiyonu()
+        })
+
+        async function _renderSampiyon() {
+            const body = document.getElementById('sampiyonBody')
+            body.innerHTML = '<div class="loading" style="padding:40px 0;"><div class="spinner"></div><div>Hesaplanıyor...</div></div>'
+
+            const { data: results, error } = await getChampionData(_spYear, _spMonth)
+            const monthLabel = `${TR_MONTHS[_spMonth-1]} ${_spYear}`
+            document.getElementById('sampiyonBaslik').textContent = `🏆 Ay Şampiyonu — ${monthLabel}`
+
+            if (error || !results?.length) {
+                body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--txt2);">Veri yüklenemedi.</div>`
+                return
+            }
+
+            const eligible = results.filter(r => r.is_eligible)
+            const noSchedule = results.every(r => r.assigned_slots === 0)
+
+            if (noSchedule) {
+                body.innerHTML = `<div style="text-align:center;padding:48px 20px;">
+                    <div style="font-size:48px;margin-bottom:16px;">📅</div>
+                    <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Vardiya planı henüz girilmemiş</div>
+                    <div style="color:var(--txt3);font-size:14px;">Şampiyon belirleyebilmek için önce Vardiya Planı'ndan kasiyer atamaları yapın.</div>
+                    <button onclick="closeAySampiyonu();showVardiyaPlani()" style="margin-top:20px;padding:10px 24px;background:linear-gradient(135deg,#4c1d95,#7c3aed);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">📅 Vardiya Planına Git</button>
+                </div>`
+                return
+            }
+
+            // Podium
+            const podSlots = [
+                { rank: 2, rankCls: 'rank2', medal: '🥈', emptyIcon: '—' },
+                { rank: 1, rankCls: 'rank1', medal: '🥇', emptyIcon: '—' },
+                { rank: 3, rankCls: 'rank3', medal: '🥉', emptyIcon: '—' },
+            ]
+            const podyumHtml = `<div class="sp-podyum">${
+                podSlots.map(ps => {
+                    const r = results.find(x => x.rank === ps.rank)
+                    if (!r) return `<div class="sp-pod-col ${ps.rankCls} empty">
+                        <div class="sp-pod-rank">${ps.medal}</div>
+                        <div style="color:var(--txt3);font-size:13px;">${ps.rank}. sıra boş</div>
+                    </div>`
+                    const initials = r.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()
+                    const gumusPill = ps.rank === 1 ? `<div class="sp-gumus-pill">🥈 Gümüş Hediye</div>` : ''
+                    return `<div class="sp-pod-col ${ps.rankCls}">
+                        <div class="sp-pod-rank">${ps.medal}</div>
+                        <div class="sp-pod-avatar">${initials}</div>
+                        <div class="sp-pod-name">${r.name}</div>
+                        <div class="sp-pod-pct">${r.performance_pct}%</div>
+                        <div class="sp-pod-sub">${r.on_time_count} zamanında · ${r.entry_count} giriş</div>
+                        ${gumusPill}
+                    </div>`
+                }).join('')
+            }</div>`
+
+            // Table
+            const tableHtml = `
+                <div style="margin-bottom:10px;font-size:12px;color:var(--txt3);">
+                    ✅ Uygun: Atanan vardiyaların ≥%80'inde giriş yapıldı. Şampiyon: en yüksek performans %.
+                </div>
+                <div style="overflow-x:auto;border-radius:10px;border:1px solid var(--brd);">
+                <table class="sp-table">
+                    <thead><tr>
+                        <th>Sıra</th><th>Kasiyer</th><th>Atanan</th><th>Çalışılan</th>
+                        <th>Katılım</th><th>Performans %</th><th>Puan</th><th>Zamanında</th><th>Durum</th>
+                    </tr></thead>
+                    <tbody>${results.map(r => {
+                        const rowCls = r.rank===1 ? 'champ-row' : r.rank===2 ? 'silver-row' : !r.is_eligible ? 'ineligible' : ''
+                        const rankBadge = r.rank ? (['🥇','🥈','🥉'][r.rank-1] || r.rank+'.') : '—'
+                        const attColor  = r.attendance_pct >= 80 ? '#34d399' : r.attendance_pct >= 50 ? '#fbbf24' : '#f87171'
+                        const pfColor   = r.performance_pct >= 80 ? '#34d399' : r.performance_pct >= 60 ? '#fbbf24' : '#f87171'
+                        const status    = r.is_eligible
+                            ? `<span style="color:#34d399;font-weight:700;">✅ Uygun</span>`
+                            : r.assigned_slots === 0
+                            ? `<span style="color:var(--txt3);">Atanmamış</span>`
+                            : `<span style="color:#f87171;">❌ %${r.attendance_pct} katılım</span>`
+                        const gumusTag = r.rank===1 ? ` <span class="sp-gumus-pill" style="font-size:10px;padding:2px 8px;">🥈</span>` : ''
+                        return `<tr class="${rowCls}">
+                            <td><span class="sp-rank-badge">${rankBadge}</span></td>
+                            <td style="font-weight:600;">${r.name}${gumusTag}</td>
+                            <td>${r.assigned_slots}</td>
+                            <td>${r.worked_slots}</td>
+                            <td>
+                                <span style="color:${attColor};font-weight:700;">%${r.attendance_pct}</span>
+                                <span class="sp-att-bar"><span class="sp-att-fill" style="width:${r.attendance_pct}%;background:${attColor}"></span></span>
+                            </td>
+                            <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pfColor};">%${r.performance_pct}</td>
+                            <td>${r.total_points}</td>
+                            <td>${r.on_time_count}</td>
+                            <td>${status}</td>
+                        </tr>`
+                    }).join('')}</tbody>
+                </table></div>`
+
+            body.innerHTML = podyumHtml + tableHtml
+
+            // Confetti for champion
+            if (eligible.length > 0 && typeof confetti !== 'undefined') {
+                setTimeout(() => confetti({
+                    particleCount: 120, spread: 80, origin: { y: 0.4 },
+                    colors: ['#fbbf24','#f59e0b','#94a3b8','#64748b','#34d399']
+                }), 400)
+            }
+        }
+    </script>
+
     <!-- SPOTLIGHT SEARCH OVERLAY -->
     <div id="spotlightBackdrop" class="spotlight-backdrop" role="dialog" aria-modal="true" aria-label="Hızlı Arama">
         <div class="spotlight-box" id="spotlightBox">
@@ -4365,9 +4869,10 @@
     (function () {
         const QUICK_ACTIONS = [
             { icon: '🔄', label: 'Yenile',                 sub: 'Verileri yenile',                  action: () => document.getElementById('refreshBtn')?.click() },
-            { icon: '📊', label: 'Operasyonel Verimlilik', sub: 'Performans analizi',                action: () => showVerimlilik?.() },
+            { icon: '📅', label: 'Vardiya Planı',          sub: 'Aylık vardiya takvimi',             action: () => showVardiyaPlani?.() },
+            { icon: '🏆', label: 'Ay Şampiyonu',           sub: 'Performans sıralaması + ödül',      action: () => showAySampiyonu?.() },
+            { icon: '📊', label: 'Operasyonel Verimlilik', sub: 'Ciro analizi',                      action: () => showVerimlilik?.() },
             { icon: '👥', label: 'Kasiyer Yönetimi',       sub: 'Kasiyerleri yönet / düzenle',       action: () => showKasiyerYonetimi?.() },
-            { icon: '🏆', label: 'Sıralama Tablosu',       sub: 'Aylık puan sıralaması',             action: () => { const el = document.querySelector('.section-title'); if(el) el.scrollIntoView({behavior:'smooth'}); } },
             { icon: '🚪', label: 'Çıkış Yap',              sub: 'Ana sayfaya dön',                   action: () => location.href='index.html' },
         ]
 
