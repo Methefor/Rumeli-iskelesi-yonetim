@@ -2870,19 +2870,23 @@
                 kahve:             { name: 'Kahve',          icon: '☕', total: 0, color: '#8b5cf6' },
                 meyvesuyu:         { name: 'Meyve Suyu',     icon: '🧃', total: 0, color: '#ec4899' },
                 salata:            { name: 'Salata',         icon: '🥙', total: 0, color: '#06b6d4' },
+                borek_corek:       { name: 'Börek & Çörek',  icon: '🥐', total: 0, color: '#d97706' },
                 dondurma_kategori: { name: 'Dondurma',       icon: '🍦', total: 0, color: '#fb923c' },
                 sicak_icecek:      { name: 'Sıcak İçecek',  icon: '🔥', total: 0, color: '#ef4444' },
                 soguk_icecek:      { name: 'Soğuk İçecek',  icon: '🥤', total: 0, color: '#3b82f6' },
                 tatli:             { name: 'Tatlı',          icon: '🍰', total: 0, color: '#a855f7' }
             }
 
-            // Her gün+kasa için sadece akşam vardiyasını al (çift sayım önleme)
+            // calcKasaCiros ile aynı mantık: herhangi bir kasa için akşam varsa o tarihin
+            // tüm sabah kayıtlarını yoksay (X raporu = ara, Z raporu = günlük toplam)
+            const dateHasAksam = {}
+            reports.forEach(r => { if (r.shift === 'aksam') dateHasAksam[r.date] = true })
+
             const dailyReports = {}
             reports.forEach(r => {
+                if (dateHasAksam[r.date] && r.shift !== 'aksam') return
                 const key = `${r.date}-${r.kasa}`
-                if (!dailyReports[key] || r.shift === 'aksam') {
-                    dailyReports[key] = r
-                }
+                if (!dailyReports[key] || r.shift === 'aksam') dailyReports[key] = r
             })
 
             Object.values(dailyReports).forEach(r => {
@@ -2891,6 +2895,7 @@
                 categories.kahve.total             += parseFloat(r.kahve)             || 0
                 categories.meyvesuyu.total         += parseFloat(r.meyvesuyu)         || 0
                 categories.salata.total            += parseFloat(r.salata)            || 0
+                categories.borek_corek.total       += parseFloat(r.borek_corek)       || 0
                 categories.dondurma_kategori.total += parseFloat(r.dondurma_kategori) || 0
                 categories.sicak_icecek.total      += parseFloat(r.sicak_icecek)      || 0
                 categories.soguk_icecek.total      += parseFloat(r.soguk_icecek)      || 0
@@ -2972,7 +2977,7 @@
                     <div class="summary-icon">💰</div>
                     <div class="summary-label">Kategori Toplamı</div>
                     <div class="summary-value">${formatCurrencyShort(categorySales.total)}</div>
-                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">9 kategori</div>
+                    <div style="font-size:12px;color:var(--txt2);margin-top:4px;">10 kategori</div>
                 </div>
             `
         }
