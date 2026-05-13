@@ -1045,6 +1045,128 @@
             transform: scale(1.05);
         }
 
+        /* ÖZEL VURGULU GÜNLÜK ORTALAMA KARTLARI */
+        .avg-spotlight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .avg-card {
+            position: relative;
+            border-radius: 20px;
+            padding: 26px 22px;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease;
+            cursor: default;
+        }
+
+        .avg-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.18);
+            pointer-events: none;
+        }
+
+        .avg-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -15%;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.07);
+            pointer-events: none;
+        }
+
+        .avg-card:hover {
+            transform: translateY(-5px) scale(1.025);
+        }
+
+        .avg-card.rumeli {
+            background: linear-gradient(135deg, #0c4a6e 0%, #0284c7 55%, #38bdf8 100%);
+            box-shadow: 0 8px 36px rgba(14,165,233,.4), 0 0 0 1px rgba(56,189,248,.15);
+        }
+
+        .avg-card.rumeli:hover {
+            box-shadow: 0 18px 52px rgba(14,165,233,.6), 0 0 0 1px rgba(56,189,248,.3);
+        }
+
+        .avg-card.balik {
+            background: linear-gradient(135deg, #064e3b 0%, #059669 55%, #34d399 100%);
+            box-shadow: 0 8px 36px rgba(16,185,129,.4), 0 0 0 1px rgba(52,211,153,.15);
+        }
+
+        .avg-card.balik:hover {
+            box-shadow: 0 18px 52px rgba(16,185,129,.6), 0 0 0 1px rgba(52,211,153,.3);
+        }
+
+        .avg-card.dondurma {
+            background: linear-gradient(135deg, #3b0764 0%, #7c3aed 55%, #c4b5fd 100%);
+            box-shadow: 0 8px 36px rgba(124,58,237,.4), 0 0 0 1px rgba(196,181,253,.15);
+        }
+
+        .avg-card.dondurma:hover {
+            box-shadow: 0 18px 52px rgba(124,58,237,.6), 0 0 0 1px rgba(196,181,253,.3);
+        }
+
+        .avg-card-icon {
+            font-size: 30px;
+            display: block;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .avg-card-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            opacity: .75;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .avg-card-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 10px;
+            letter-spacing: -.02em;
+            color: #fff;
+        }
+
+        .avg-card-sub {
+            font-size: 11px;
+            opacity: .6;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .avg-card-divider {
+            height: 1px;
+            background: rgba(255,255,255,.15);
+            margin: 12px 0;
+        }
+
+        .avg-card-total {
+            font-size: 12px;
+            opacity: .7;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        @media(max-width:768px) {
+            .avg-spotlight-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .particles-bg {
             position: fixed;
             inset: 0;
@@ -2462,8 +2584,14 @@
             const tekKasaDaily = {}   // key = date → en iyi kayıt
             let oldZ = 0, oldBalik = 0, oldDond = 0
 
+            // Hangi tarihlerde akşam girişi var?
+            const _dateHasAksam = {}
+            reports.forEach(r => { if (r.shift === 'aksam') _dateHasAksam[r.date] = true })
+
             reports.forEach(r => {
                 if (r.kasa === 'ana_kasa' || r.kasa === 'iki_kasa') {
+                    // O tarihe ait Z raporu (aksam) varken X raporunu (sabah) yoksay
+                    if (_dateHasAksam[r.date] && r.shift !== 'aksam') return
                     const key = `${r.date}-${r.kasa}`
                     if (!newKasaDaily[key] || r.shift === 'aksam') newKasaDaily[key] = r
                 } else if (r.kasa === 'tek_kasa') {
@@ -2476,24 +2604,41 @@
                 }
             })
 
+            const datesWithBalik = new Set()
+            const datesWithDond  = new Set()
+
             const sumNew = Object.values(newKasaDaily).reduce((acc, r) => {
                 acc.z     += parseFloat(r.rumeli_z1 || 0)
-                acc.balik += parseFloat(r.balik_ekmek || 0)
-                acc.dond  += parseFloat(r.dondurma || 0)
+                const b = parseFloat(r.balik_ekmek || 0)
+                const d = parseFloat(r.dondurma || 0)
+                acc.balik += b
+                acc.dond  += d
+                if (b > 0) datesWithBalik.add(r.date)
+                if (d > 0) datesWithDond.add(r.date)
                 return acc
             }, { z: 0, balik: 0, dond: 0 })
 
             const sumTek = Object.values(tekKasaDaily).reduce((acc, r) => {
                 acc.z     += parseFloat(r.rumeli_z1 || 0)
-                acc.balik += parseFloat(r.balik_ekmek || 0)
-                acc.dond  += parseFloat(r.dondurma || 0)
+                const b = parseFloat(r.balik_ekmek || 0)
+                const d = parseFloat(r.dondurma || 0)
+                acc.balik += b
+                acc.dond  += d
+                if (b > 0) datesWithBalik.add(r.date)
+                if (d > 0) datesWithDond.add(r.date)
                 return acc
             }, { z: 0, balik: 0, dond: 0 })
 
             const zRaporu  = sumNew.z     + sumTek.z     + oldZ
             const balik    = sumNew.balik + sumTek.balik + oldBalik
             const dondurma = sumNew.dond  + sumTek.dond  + oldDond
-            return { zRaporu, balik, dondurma, total: zRaporu + balik + dondurma, restoran: 0, cafetarya: 0 }
+            return {
+                zRaporu, balik, dondurma,
+                total: zRaporu + balik + dondurma,
+                restoran: 0, cafetarya: 0,
+                daysWithBalik: datesWithBalik.size,
+                daysWithDond:  datesWithDond.size
+            }
         }
 
         // Adil liderboard: puan toplamı değil, performans oranı (%) bazlı sıralama
@@ -2669,7 +2814,7 @@
         function animateCards() {
             if (typeof anime === 'undefined') return
             anime({
-                targets: '.kasa-card, .sc, .total-hero-card',
+                targets: '.kasa-card, .sc, .avg-card, .total-hero-card',
                 opacity: [0, 1],
                 translateY: [40, 0],
                 delay: anime.stagger(100),
@@ -2966,6 +3111,32 @@
                 </div>
             </div>
 
+            <!-- ÖZEL VURGULU GÜNLÜK ORTALAMA KARTLARI -->
+            <div class="section-title">⭐ Günlük Ortalama</div>
+            <div class="avg-spotlight-grid">
+                <div class="avg-card rumeli">
+                    <span class="avg-card-icon">🏪</span>
+                    <div class="avg-card-label">Rumeli İskelesi Günlük Ort.</div>
+                    <div class="avg-card-value">${formatCurrency(uniqueDays > 0 ? kasaCiros.zRaporu / uniqueDays : 0)}</div>
+                    <div class="avg-card-divider"></div>
+                    <div class="avg-card-total">${uniqueDays} gün · Toplam ${formatCurrency(kasaCiros.zRaporu)}</div>
+                </div>
+                <div class="avg-card balik">
+                    <span class="avg-card-icon">🐟</span>
+                    <div class="avg-card-label">Balık Ekmek Günlük Ort.</div>
+                    <div class="avg-card-value">${formatCurrency(kasaCiros.daysWithBalik > 0 ? kasaCiros.balik / kasaCiros.daysWithBalik : 0)}</div>
+                    <div class="avg-card-divider"></div>
+                    <div class="avg-card-total">${kasaCiros.daysWithBalik > 0 ? kasaCiros.daysWithBalik + ' satış günü' : 'Henüz veri yok'} · Toplam ${formatCurrency(kasaCiros.balik)}</div>
+                </div>
+                <div class="avg-card dondurma">
+                    <span class="avg-card-icon">🍦</span>
+                    <div class="avg-card-label">Dondurma Günlük Ort.</div>
+                    <div class="avg-card-value">${formatCurrency(kasaCiros.daysWithDond > 0 ? kasaCiros.dondurma / kasaCiros.daysWithDond : 0)}</div>
+                    <div class="avg-card-divider"></div>
+                    <div class="avg-card-total">${kasaCiros.daysWithDond > 0 ? kasaCiros.daysWithDond + ' satış günü' : 'Henüz veri yok'} · Toplam ${formatCurrency(kasaCiros.dondurma)}</div>
+                </div>
+            </div>
+
             <!-- ÖZET İSTATİSTİKLER -->
             <div class="section-title">📊 Özet İstatistikler</div>
             <div class="summary-grid">
@@ -2982,16 +3153,6 @@
                     <div class="sc-l">Günlük Ortalama (Tüm)</div>
                     <div class="sc-v">${formatCurrency(dailyAvg)}</div>
                     <div class="sc-s">Son ${uniqueDays} gün</div>
-                </div>
-                <div class="sc emerald">
-                    <div class="sc-l">🏪 Rumeli İskelesi Toplam</div>
-                    <div class="sc-v">${formatCurrency(kasaCiros.zRaporu)}</div>
-                    <div class="sc-s">Kasa toplamı</div>
-                </div>
-                <div class="sc cyan">
-                    <div class="sc-l">🏪 Rumeli İskelesi Günlük Ort.</div>
-                    <div class="sc-v">${formatCurrency(uniqueDays > 0 ? kasaCiros.zRaporu / uniqueDays : 0)}</div>
-                    <div class="sc-s">${uniqueDays} günlük ortalama</div>
                 </div>
                 <div class="sc orange">
                     <div class="sc-l">Zamanında Giriş</div>
@@ -3578,23 +3739,25 @@
                     return
                 }
 
-                // Her tarih+kasa için akşam > sabah, akşam eşitse rumeli_z1 yüksek olan
+                // Hangi tarihlerde akşam girişi var? → O tarihlerde sabah girişlerini yoksay
+                // (Sabah = X Raporu; Akşam = Z Raporu. Z varken X toplanmaz.)
+                const dateHasAksam = {}
+                rows.forEach(r => { if (r.shift === 'aksam') dateHasAksam[r.date] = true })
+
+                // Tarih+kasa başına tek kayıt: akşam varsa akşam, yoksa sabah
+                // Ama o tarihe ait başka bir kasada akşam varsa sabah tamamen dışlanır.
                 const kasaDayMap = {}
                 rows.forEach(r => {
+                    if (dateHasAksam[r.date] && r.shift !== 'aksam') return // Bu tarihte Z var → X'i atla
                     const key = `${r.date}-${r.kasa}`
                     if (!kasaDayMap[key]) {
                         kasaDayMap[key] = r
-                    } else {
-                        const cur = kasaDayMap[key]
-                        if (cur.shift !== 'aksam' && r.shift === 'aksam') {
-                            kasaDayMap[key] = r
-                        } else if (cur.shift === 'aksam' && r.shift === 'aksam') {
-                            if ((parseFloat(r.rumeli_z1) || 0) > (parseFloat(cur.rumeli_z1) || 0)) kasaDayMap[key] = r
-                        }
+                    } else if ((parseFloat(r.rumeli_z1) || 0) > (parseFloat(kasaDayMap[key].rumeli_z1) || 0)) {
+                        kasaDayMap[key] = r // Aynı kasa için yüksek Z değerini al
                     }
                 })
 
-                // Günlük kasa bazlı toplamlar
+                // Günlük kasa bazlı toplamlar — Ana Kasa sütunu sadece rumeli_z1 (balık/dondurma ayrı)
                 const dayMap = {}
                 Object.values(kasaDayMap).forEach(r => {
                     if (!dayMap[r.date]) dayMap[r.date] = { anaKasa: 0, ikiKasa: 0, balik: 0, dondurma: 0 }
@@ -3602,8 +3765,8 @@
                     const balik = parseFloat(r.balik_ekmek) || 0
                     const dond  = parseFloat(r.dondurma)    || 0
                     if (r.kasa === 'ana_kasa') {
-                        dayMap[r.date].anaKasa = z1 + balik + dond
-                        dayMap[r.date].balik   += balik
+                        dayMap[r.date].anaKasa   = z1        // Sadece kasa toplamı, balık/dondurma hariç
+                        dayMap[r.date].balik    += balik
                         dayMap[r.date].dondurma += dond
                     } else {
                         dayMap[r.date].ikiKasa = z1
