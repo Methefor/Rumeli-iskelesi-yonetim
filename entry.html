@@ -698,7 +698,26 @@
         // ── KAYDET ─────────────────────────────────────────────
         $('submitButton').addEventListener('click', async () => {
             const z1 = fv('kasa1_z1'), z2 = fv('kasa2_z1')
-            // Tüm alanlar opsiyonel — girilmezse 0 sayılır
+
+            // Kategori toplamı validasyonu (soft — sadece uyarır, bloklamaz)
+            if (z1 > 0) {
+                const catSum = fv('kahve') + fv('meyveSuyu') + fv('sicakIcecek') +
+                    fv('sogukIcecek') + fv('tatli') + fv('gida') + fv('kahvalti') +
+                    fv('salata') + fv('dondurmaKategori') + fv('borekCorek')
+                const diff = Math.abs(catSum - z1)
+                if (catSum > 0 && diff > 1) {
+                    const fmt = n => n.toLocaleString('tr-TR', { minimumFractionDigits: 2 })
+                    const dir = catSum > z1 ? `${fmt(catSum - z1)} ₺ fazla girildi` : `${fmt(z1 - catSum)} ₺ eksik`
+                    const ok = confirm(
+                        `⚠️ Kategori toplamı Z raporuyla uyuşmuyor!\n\n` +
+                        `Z Raporu:        ${fmt(z1)} ₺\n` +
+                        `Kategori Toplamı: ${fmt(catSum)} ₺\n` +
+                        `Fark: ${dir}\n\n` +
+                        `Yine de kaydetmek istiyor musunuz?`
+                    )
+                    if (!ok) return
+                }
+            }
 
             const btn = $('submitButton')
             btn.disabled = true; btn.textContent = 'Kaydediliyor...'
