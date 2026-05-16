@@ -334,12 +334,27 @@ export async function deleteShiftSlot(date, shift, kasa) {
 
 export async function getChampionData(year, month) {
   const { start, end } = _monthRange(year, month)
-  const [schedRes, reportsRes, cashiersRes] = await Promise.all([
+  // 3-month historical baseline (month-4 to month-1 inclusive)
+  const histStartDate = new Date(year, month - 4, 1)
+  const histEndDate   = new Date(year, month - 1, 0)
+  const _fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  const histStart = _fmt(histStartDate)
+  const histEnd   = _fmt(histEndDate)
+  const [schedRes, reportsRes, cashiersRes, historicalRes] = await Promise.all([
     supabase.from('shift_schedule').select('cashier_id').gte('date', start).lte('date', end).not('cashier_id', 'is', null),
     supabase.from('daily_reports').select('cashier_id, points_earned, is_on_time, total_revenue').neq('kasa', 'iki_kasa').gte('date', start).lte('date', end),
-    supabase.from('cashiers').select('*').order('name')
+    supabase.from('cashiers').select('*').order('name'),
+    supabase.from('daily_reports').select('total_revenue').neq('kasa', 'iki_kasa').gte('date', histStart).lte('date', histEnd)
   ])
   if (cashiersRes.error) return { data: [], error: cashiersRes.error }
+
+  // Historical avg revenue per shift (3 months prior) — seasonal fairness baseline
+  const historicalData = historicalRes.data || []
+  let historicalAvgRevPerShift = 0
+  if (historicalData.length >= 10) {
+    const histTotal = historicalData.reduce((s, r) => s + (parseFloat(r.total_revenue) || 0), 0)
+    historicalAvgRevPerShift = histTotal / historicalData.length
+  }
 
   const assignedMap = {}
   ;(schedRes.data || []).forEach(s => { assignedMap[s.cashier_id] = (assignedMap[s.cashier_id] || 0) + 1 })
@@ -371,10 +386,11 @@ export async function getChampionData(year, month) {
     }
   })
 
-  // Ciro puanı: grubun en yüksek vardiya-başına-cirosu 100 puan → normalize
+  // Ciro puanı: 3 aylık tarihsel ortalama baz (sezon adaleti); fallback: grup içi max
   const maxRevPerShift = Math.max(...results.map(r => r.rev_per_shift), 1)
+  const revBaseline = historicalAvgRevPerShift > 0 ? historicalAvgRevPerShift : maxRevPerShift
   results.forEach(r => {
-    r.revenue_pct  = Math.round((r.rev_per_shift / maxRevPerShift) * 100)
+    r.revenue_pct  = Math.min(100, Math.round((r.rev_per_shift / revBaseline) * 100))
     // Final skor: %60 performans + %40 ciro
     r.final_score  = Math.round(r.performance_pct * 0.6 + r.revenue_pct * 0.4)
   })

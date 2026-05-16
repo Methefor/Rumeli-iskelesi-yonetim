@@ -250,6 +250,20 @@
         .iw input::placeholder { color: var(--txt3); }
         .iw .sfx { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--txt3); font-weight: 600; }
 
+        /* TAG CHIPS */
+        .tag-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .tag-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--brd);
+            background: var(--input); color: var(--txt2); font-size: 12px; font-weight: 600;
+            cursor: pointer; transition: all .18s; white-space: nowrap;
+        }
+        .tag-chip:hover { border-color: var(--acc); color: var(--txt); }
+        .tag-chip.active {
+            border-color: var(--acc); background: rgba(34,211,238,.14);
+            color: var(--acc); box-shadow: 0 0 0 3px var(--glow);
+        }
+
         .notes-area {
             width: 100%; background: var(--input); border: 1.5px solid var(--brd);
             color: var(--txt); padding: 11px 13px; border-radius: 10px;
@@ -436,8 +450,16 @@
         </div>
 
         <div class="card">
-            <div class="card-t">📝 Notlar <span style="font-size:12px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
-            <textarea id="notlar" class="notes-area" placeholder="Varsa günle ilgili not ekleyin..."></textarea>
+            <div class="card-t">📝 Vardiya Notu <span style="font-size:12px;font-weight:400;color:var(--txt3);">(opsiyonel)</span></div>
+            <div class="tag-chips" id="tagChips">
+                <button type="button" class="tag-chip" data-tag="yoğun_gün">🌊 Yoğun Gün</button>
+                <button type="button" class="tag-chip" data-tag="sakin_gün">😴 Sakin Gün</button>
+                <button type="button" class="tag-chip" data-tag="arıza">🔧 Arıza/Sorun</button>
+                <button type="button" class="tag-chip" data-tag="promosyon">🎯 Promosyon</button>
+                <button type="button" class="tag-chip" data-tag="hava">🌧️ Hava Durumu</button>
+                <button type="button" class="tag-chip" data-tag="özel_etkinlik">🎪 Özel Etkinlik</button>
+            </div>
+            <textarea id="notlar" class="notes-area" placeholder="Ek not (opsiyonel)..." style="min-height:55px"></textarea>
         </div>
 
         <button id="submitButton" class="btn-submit">💾 Kaydet ve Puan Kazan!</button>
@@ -657,7 +679,7 @@
                         setVal('salata',           e1.salata)
                         setVal('dondurmaKategori', e1.dondurma_kategori)
                         setVal('borekCorek',       e1.borek_corek)
-                        $('notlar').value = e1.notlar || ''
+                        setTagsAndNote(e1.notlar || '')
                         editCurrentPoints = parseInt(e1.points_earned) || 0
                         $('currentPoints').textContent =
                             `${editCurrentPoints} puan → düzenleme sonrası ${Math.max(0, editCurrentPoints - 5)} puan`
@@ -689,8 +711,35 @@
             }
         })
 
+        // Tag chip seçimi
+        document.querySelectorAll('#tagChips .tag-chip').forEach(btn => {
+            btn.addEventListener('click', () => btn.classList.toggle('active'))
+        })
+
+        function getTagsAndNote() {
+            const tags = [...document.querySelectorAll('#tagChips .tag-chip.active')]
+                .map(b => '#' + b.dataset.tag)
+            const note = $('notlar').value.trim()
+            return [...tags, ...(note ? [note] : [])].join(' ')
+        }
+
+        function setTagsAndNote(val) {
+            const parts = (val || '').split(' ')
+            const tagSet = new Set()
+            const freeWords = []
+            parts.forEach(p => {
+                if (p.startsWith('#')) tagSet.add(p.slice(1))
+                else if (p) freeWords.push(p)
+            })
+            document.querySelectorAll('#tagChips .tag-chip').forEach(btn => {
+                btn.classList.toggle('active', tagSet.has(btn.dataset.tag))
+            })
+            $('notlar').value = freeWords.join(' ')
+        }
+
         function clearForm() {
             document.querySelectorAll('#mainScreen input[type="number"]').forEach(el => el.value = '')
+            document.querySelectorAll('#tagChips .tag-chip').forEach(b => b.classList.remove('active'))
             $('notlar').value = ''
             $('pointsDisplay').textContent = '+0'
         }
@@ -745,7 +794,7 @@
                 salata:           fv('salata'),
                 dondurmaKategori: fv('dondurmaKategori'),
                 borekCorek:       fv('borekCorek'),
-                notlar:           $('notlar').value,
+                notlar:           getTagsAndNote(),
             }
 
             const kasa2Data = {

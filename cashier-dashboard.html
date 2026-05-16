@@ -1224,8 +1224,10 @@
       const today      = new Date()
       const monthStart = localDateStr(new Date(today.getFullYear(), today.getMonth(), 1))
       const monthEnd   = localDateStr(new Date(today.getFullYear(), today.getMonth() + 1, 0))
+      const histStart  = localDateStr(new Date(today.getFullYear(), today.getMonth() - 3, 1))
+      const histEnd    = localDateStr(new Date(today.getFullYear(), today.getMonth(), 0))
 
-      const [cashierRes, monthlyRes, allMonthlyRes, historyRes, schedRes] = await Promise.all([
+      const [cashierRes, monthlyRes, allMonthlyRes, historyRes, schedRes, historicalRes] = await Promise.all([
         supabase.from('cashiers').select('*').eq('id', cashierId).single(),
         supabase.from('daily_reports').select('*')
           .eq('cashier_id', cashierId)
@@ -1240,7 +1242,10 @@
           .order('entry_time', { ascending: false }).limit(10),
         supabase.from('shift_schedule').select('id')
           .eq('cashier_id', cashierId)
-          .gte('date', monthStart).lte('date', monthEnd)
+          .gte('date', monthStart).lte('date', monthEnd),
+        supabase.from('daily_reports').select('total_revenue')
+          .neq('kasa', 'iki_kasa')
+          .gte('date', histStart).lte('date', histEnd)
       ])
 
       if (cashierRes.error) throw cashierRes.error
@@ -1250,6 +1255,23 @@
       const allMonthly     = allMonthlyRes.data || []
       const history        = historyRes.data   || []
       const assignedSlots  = (schedRes.data    || []).length
+      const historicalData = historicalRes.data || []
+
+      // 3-month baseline revenue per shift (all cashiers) for fair seasonal normalization
+      let historicalAvgRevPerShift = 0
+      if (historicalData.length >= 10) {
+        const histTotal = historicalData.reduce((s, r) => s + (parseFloat(r.total_revenue) || 0), 0)
+        historicalAvgRevPerShift = histTotal / historicalData.length
+      }
+
+      // Most recent shift entry this month (for Son Vardiyam section)
+      const lastShiftEntry = monthlyReports.length > 0
+        ? [...monthlyReports].sort((a, b) => {
+            const d = new Date(b.date) - new Date(a.date)
+            if (d !== 0) return d
+            return (b.shift === 'aksam' ? 1 : 0) - (a.shift === 'aksam' ? 1 : 0)
+          })[0]
+        : null
 
       const totalScore = monthlyReports.reduce((s, r) => s + (parseInt(r.points_earned) || 0), 0)
       const entryCount = monthlyReports.length
@@ -1275,10 +1297,11 @@
       const maxRevPerShift = Math.max(
         ...Object.values(revMap).map(v => v.total_entries > 0 ? v.total_revenue / v.total_entries : 0), 1
       )
+      const revBaseline = historicalAvgRevPerShift > 0 ? historicalAvgRevPerShift : maxRevPerShift
       const leaders = Object.entries(revMap).map(([id, v]) => {
         const perf_pct    = v.total_entries > 0 ? Math.round((v.total_score / (v.total_entries * 100)) * 100) : 0
         const rev_per     = v.total_entries > 0 ? v.total_revenue / v.total_entries : 0
-        const revenue_pct = Math.round((rev_per / maxRevPerShift) * 100)
+        const revenue_pct = Math.min(100, Math.round((rev_per / revBaseline) * 100))
         const final_score = Math.round(perf_pct * 0.6 + revenue_pct * 0.4)
         return { cashier_id: id, cashier_name: v.name, total_score: v.total_score,
           total_entries: v.total_entries, on_time_entries: v.on_time_entries,
@@ -1298,6 +1321,7 @@
         revPerShift:    myRevPerShift,
         assignedSlots,
         attendancePct:  assignedSlots > 0 ? Math.round((entryCount / assignedSlots) * 100) : null,
+        lastShiftEntry,
       }
 
       renderDashboard(cashier, monthStats, leaders, history, raceData)
@@ -1453,7 +1477,7 @@
 
     const now       = new Date()
     const monthName = now.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
-    const { rank, total, performancePct, revenuePct, finalScore, revPerShift, assignedSlots, attendancePct } = raceData
+    const { rank, total, performancePct, revenuePct, finalScore, revPerShift, assignedSlots, attendancePct, lastShiftEntry } = raceData
 
     const rankLabel  = rank === 1 ? '1.' : rank === 2 ? '2.' : rank === 3 ? '3.' : `${rank}.`
     const is1st      = rank === 1
@@ -1475,6 +1499,28 @@
       tip = `<div class="race-tip"><strong>Lidersin!</strong> Bu avantajı korumak için her girişte zamanında ve eksiksiz olmaya devam et.</div>`
     } else {
       tip = `<div class="race-tip"><strong>Fark kapatılabilir:</strong> Performans puanı senin kontrolündedir — zamanında ve eksiksiz her giriş sıralamanda yukarı taşır.</div>`
+    }
+
+    // Son Vardiyam özeti
+    let lastShiftHTML = ''
+    if (lastShiftEntry) {
+      const d        = new Date(lastShiftEntry.date + 'T00:00:00')
+      const dateStr  = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })
+      const shiftLbl = lastShiftEntry.shift === 'aksam' ? '🌙 Akşam' : '🌅 Sabah'
+      const pts      = parseInt(lastShiftEntry.points_earned) || 0
+      const onTime   = lastShiftEntry.is_on_time
+      const ptsClr   = pts >= 90 ? '#34d399' : pts >= 70 ? '#fbbf24' : '#f87171'
+      const otClr    = onTime ? '#34d399' : '#f97316'
+      lastShiftHTML = `
+        <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:12px;margin-top:12px;">
+          <div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">Son Vardiyam</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--txt2);">📅 ${dateStr}</span>
+            <span style="font-size:12px;color:var(--txt2);">${shiftLbl}</span>
+            <span style="font-size:13px;font-weight:800;color:${ptsClr};font-family:'JetBrains Mono',monospace;">+${pts} puan</span>
+            <span style="font-size:12px;font-weight:700;color:${otClr};">${onTime ? '✅ Zamanında' : '⚠️ Geç Giriş'}</span>
+          </div>
+        </div>`
     }
 
     // Katılım uyarısı
@@ -1536,12 +1582,14 @@
         </div>
       </div>
 
+      ${lastShiftHTML}
+
       <div class="race-rules">
         <div class="race-rules-icon">📋</div>
         <div class="race-rules-text">
           <strong>Ödül kuralı:</strong> Ay sonunda uygun kasiyerler arasında en yüksek Final Skor'u alan 🥈 Gümüş Hediye kazanır.
           Uygunluk: Atanan vardiyaların <strong>en az %80'inde</strong> giriş yapılmış olması gerekir.
-          Ciro puanı, o aydaki grubun en yüksek ciro ortalaması baz alınarak hesaplanır — kendi kontrolündeki kısım <strong>Performans</strong>'tır.
+          Ciro puanı, son 3 aylık tarihsel ortalamaya oranla hesaplanır — sezon farkı gözetilir, kendi kontrolündeki kısım <strong>Performans</strong>'tır.
         </div>
       </div>
       ${tip}
