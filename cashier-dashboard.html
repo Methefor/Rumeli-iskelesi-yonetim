@@ -732,6 +732,27 @@
     .reveal.visible { opacity: 1; transform: translateY(0); }
 
     /* ═══════════════════════════════════════════════════
+       ANIMATIONS
+    ═══════════════════════════════════════════════════ */
+    /* Avatar gentle float */
+    .avatar { animation: avatar-float 3.5s ease-in-out infinite; }
+    @keyframes avatar-float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-5px); }
+    }
+    /* Stat card spring on tap */
+    .stat-card { transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .25s, box-shadow .25s; }
+    .stat-card:active { transform: scale(0.94); }
+    /* Progress ring glow */
+    #ringFill { filter: drop-shadow(0 0 5px rgba(34,211,238,.55)); }
+    /* 1st place rank badge pulse */
+    .race-1st .race-rank-badge { animation: badge-gold-pulse 1.6s ease-in-out infinite; }
+    @keyframes badge-gold-pulse {
+      0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,.4), 0 0 0 0 rgba(251,191,36,0); }
+      50%       { box-shadow: 0 8px 24px rgba(251,191,36,.25), 0 0 0 8px rgba(251,191,36,.22); }
+    }
+
+    /* ═══════════════════════════════════════════════════
        RESPONSIVE
     ═══════════════════════════════════════════════════ */
     @media (max-width: 480px) {
@@ -1188,6 +1209,50 @@
   })()
 </script>
 
+<!-- GSAP ANIMATIONS -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+(function () {
+  if (typeof gsap === 'undefined') return
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var dashEl = document.getElementById('dashboard')
+    if (!dashEl) return
+
+    var obs = new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
+        if (m.attributeName === 'style' && dashEl.style.display !== 'none') {
+          obs.disconnect()
+          // Mark all CSS reveals visible — GSAP takes over animation
+          document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('visible') })
+
+          // Hero: scale + spring entrance
+          gsap.from('.hero-card', { y: 60, opacity: 0, scale: 0.92, duration: 0.9, ease: 'back.out(1.7)', delay: 0.06 })
+          // Stats: staggered pop with overshoot
+          gsap.from('.stat-card', { y: 44, opacity: 0, scale: 0.76, duration: 0.65, stagger: 0.11, ease: 'back.out(2.5)', delay: 0.3 })
+          // Race card
+          gsap.from('#raceCard', { y: 36, opacity: 0, duration: 0.7, ease: 'back.out(1.8)', delay: 0.52 })
+          // Leaderboard + history panels
+          gsap.from('.glass.panel', { y: 28, opacity: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.64 })
+          // Entries grid
+          gsap.from('.entries-grid', { y: 24, opacity: 0, duration: 0.5, ease: 'power3.out', delay: 0.85 })
+        }
+      })
+    })
+    obs.observe(dashEl, { attributes: true })
+  })
+
+  // Race card rank badge spring — exposed for renderRaceCard
+  window._animateRaceBadge = function (rank) {
+    setTimeout(function () {
+      var badge = document.querySelector('.race-rank-badge')
+      if (!badge) return
+      gsap.from(badge, { scale: 0.04, rotation: 540, opacity: 0, duration: 1.1, ease: 'back.out(3.2)', clearProps: 'all' })
+    }, 120)
+  }
+})()
+</script>
+
 <script>
   var _cashierLoadTimer = setTimeout(function () {
     var el = document.getElementById('loading')
@@ -1604,6 +1669,7 @@
         const fill = document.getElementById('raceBarFill')
         if (fill) fill.style.width = Math.min(finalScore, 100) + '%'
       }, 350)
+      if (typeof window._animateRaceBadge === 'function') window._animateRaceBadge(rank)
     }
   }
 
