@@ -2691,8 +2691,13 @@
             const days = {}
             Object.values(bestPerDateKasa).forEach(r => {
                 if (!days[r.date]) days[r.date] = 0
-                days[r.date] += parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0) +
-                    parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
+                // rumeli_z2 yalnızca eski 'restoran'/'cafetarya' kayıtlarında anlamlı;
+                // ana_kasa/iki_kasa için iki_kasa ayrı kayıt olarak gelir — z2 ekleme (çift sayma önleme)
+                const isOldStyle = r.kasa === 'restoran' || r.kasa === 'cafetarya'
+                const z = isOldStyle
+                    ? parseFloat(r.rumeli_z1 || 0) + parseFloat(r.rumeli_z2 || 0)
+                    : parseFloat(r.rumeli_z1 || 0)
+                days[r.date] += z + parseFloat(r.balik_ekmek || 0) + parseFloat(r.dondurma || 0)
             })
 
             const sorted = Object.keys(days).sort()
@@ -2703,28 +2708,63 @@
         }
 
         function calcShiftCiros(reports) {
-            // Aynı tarih+kasa için akşam Z'yi tercih et (sabah X'ini atla — double-count önleme)
-            const best = {}
+            // Aynı tarih+kasa çifti için sabah=X, akşam=Z-X hesapla.
+            // Akşam Z gerçek günlük toplam (X dahil); sabah şefine X, akşam şefine kalan (Z-X) atanır.
+            const byKey = {}
             reports.forEach(r => {
                 const key = `${r.date}-${r.kasa || 'x'}`
-                if (!best[key] || r.shift === 'aksam') best[key] = r
+                if (!byKey[key]) byKey[key] = {}
+                byKey[key][r.shift] = r
             })
             const shifts = { sabah: 0, aksam: 0 }
-            Object.values(best).forEach(r => {
-                const revenue = parseFloat(r.individual_revenue || 0)
-                if (r.shift === 'sabah') shifts.sabah += revenue
-                else if (r.shift === 'aksam') shifts.aksam += revenue
+            Object.values(byKey).forEach(pair => {
+                const s = pair['sabah']
+                const a = pair['aksam']
+                if (s && a) {
+                    const sv = parseFloat(s.individual_revenue || 0)
+                    const av = parseFloat(a.individual_revenue || 0)
+                    shifts.sabah += sv
+                    shifts.aksam += Math.max(0, av - sv)
+                } else if (a) {
+                    shifts.aksam += parseFloat(a.individual_revenue || 0)
+                } else if (s) {
+                    shifts.sabah += parseFloat(s.individual_revenue || 0)
+                }
             })
             return shifts
         }
 
         function calcCashierCiros(reports, cashiers) {
-            // Kasiyer performansı için individual_revenue kullan
-            const ciros = {}
+            // Sabah X + akşam (Z-X) mantığıyla her kasiyere doğru ciro ata.
+            // Akşam kasiyerinin Z değeri sabah cirosunu içerdiğinden çift saymayı önle.
+            const byKey = {}
             reports.forEach(r => {
-                const name = r.cashiers?.name || 'Bilinmiyor'
-                if (!ciros[name]) ciros[name] = 0
-                ciros[name] += parseFloat(r.individual_revenue || 0)
+                const key = `${r.date}-${r.kasa || 'x'}`
+                if (!byKey[key]) byKey[key] = {}
+                byKey[key][r.shift] = r
+            })
+            const ciros = {}
+            Object.values(byKey).forEach(pair => {
+                const s = pair['sabah']
+                const a = pair['aksam']
+                if (s && a) {
+                    const sv = parseFloat(s.individual_revenue || 0)
+                    const av = parseFloat(a.individual_revenue || 0)
+                    const sn = s.cashiers?.name || 'Bilinmiyor'
+                    const an = a.cashiers?.name || 'Bilinmiyor'
+                    if (!ciros[sn]) ciros[sn] = 0
+                    if (!ciros[an]) ciros[an] = 0
+                    ciros[sn] += sv
+                    ciros[an] += Math.max(0, av - sv)
+                } else if (a) {
+                    const name = a.cashiers?.name || 'Bilinmiyor'
+                    if (!ciros[name]) ciros[name] = 0
+                    ciros[name] += parseFloat(a.individual_revenue || 0)
+                } else if (s) {
+                    const name = s.cashiers?.name || 'Bilinmiyor'
+                    if (!ciros[name]) ciros[name] = 0
+                    ciros[name] += parseFloat(s.individual_revenue || 0)
+                }
             })
             return ciros
         }
@@ -4435,7 +4475,8 @@
                 const updatePayload = {
                     points_earned: newPuan,
                     is_on_time: newDurum,
-                    total_revenue: newTotal
+                    total_revenue: newTotal,
+                    individual_revenue: newTotal
                 }
                 if (newDate)          updatePayload.date          = newDate
                 if (newZ1    !== null) updatePayload.rumeli_z1    = newZ1

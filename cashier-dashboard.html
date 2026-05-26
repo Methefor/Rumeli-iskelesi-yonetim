@@ -12,7 +12,6 @@
   <link rel="icon" href="/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <title>Kasiyer — İskele Defteri</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -848,7 +847,7 @@
       border: 1px solid rgba(251,191,36,.22);
       background: linear-gradient(145deg, rgba(120,53,15,.18) 0%, rgba(12,20,42,.92) 60%);
       padding: 20px;
-      margin-bottom: 14px;
+      margin: 0 16px 14px;
       position: relative;
       overflow: hidden;
     }
@@ -1235,6 +1234,8 @@
   })()
 </script>
 
+<!-- Chart.js — non-blocking, loaded at end of body -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <!-- GSAP ANIMATIONS -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script>
@@ -1249,19 +1250,10 @@
       muts.forEach(function (m) {
         if (m.attributeName === 'style' && dashEl.style.display !== 'none') {
           obs.disconnect()
-          // Mark all CSS reveals visible — GSAP takes over animation
-          document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('visible') })
-
-          // Hero: scale + spring entrance
-          gsap.from('.hero-card', { y: 60, opacity: 0, scale: 0.92, duration: 0.9, ease: 'back.out(1.7)', delay: 0.06 })
-          // Stats: staggered pop with overshoot
-          gsap.from('.stat-card', { y: 44, opacity: 0, scale: 0.76, duration: 0.65, stagger: 0.11, ease: 'back.out(2.5)', delay: 0.3 })
-          // Race card
-          gsap.from('#raceCard', { y: 36, opacity: 0, duration: 0.7, ease: 'back.out(1.8)', delay: 0.52 })
-          // Leaderboard + history panels
-          gsap.from('.glass.panel', { y: 28, opacity: 0, duration: 0.55, stagger: 0.1, ease: 'power3.out', delay: 0.64 })
-          // Entries grid
-          gsap.from('.entries-grid', { y: 24, opacity: 0, duration: 0.5, ease: 'power3.out', delay: 0.85 })
+          // Hero: spring entrance (no opacity — CSS reveal handles visibility)
+          gsap.from('.hero-card', { y: 30, scale: 0.96, duration: 0.6, ease: 'back.out(1.5)' })
+          // Stats: staggered pop (no opacity)
+          gsap.from('.stat-card', { scale: 0.82, y: 20, duration: 0.5, stagger: 0.08, ease: 'back.out(2.2)', delay: 0.1 })
         }
       })
     })
@@ -1761,10 +1753,27 @@
     if (!panel || typeof Chart === 'undefined' || monthlyReports.length === 0) return
     panel.style.display = 'block'
 
-    const sabahRev   = monthlyReports.filter(r => r.shift === 'sabah').reduce((s, r) => s + (parseFloat(r.individual_revenue) || 0), 0)
-    const aksamRev   = monthlyReports.filter(r => r.shift === 'aksam').reduce((s, r) => s + (parseFloat(r.individual_revenue) || 0), 0)
-    const sabahCount = monthlyReports.filter(r => r.shift === 'sabah').length
-    const aksamCount = monthlyReports.filter(r => r.shift === 'aksam').length
+    // Aynı günde hem sabah hem akşam varsa: sabah=X, akşam=Z-X (çift sayma önleme)
+    const byDate = {}
+    monthlyReports.forEach(r => {
+      if (!byDate[r.date]) byDate[r.date] = {}
+      byDate[r.date][r.shift] = r
+    })
+    let sabahRev = 0, aksamRev = 0, sabahCount = 0, aksamCount = 0
+    Object.values(byDate).forEach(pair => {
+      const s = pair['sabah']
+      const a = pair['aksam']
+      if (s && a) {
+        const sv = parseFloat(s.individual_revenue || 0)
+        const av = parseFloat(a.individual_revenue || 0)
+        sabahRev += sv;   sabahCount++
+        aksamRev += Math.max(0, av - sv); aksamCount++
+      } else if (a) {
+        aksamRev += parseFloat(a.individual_revenue || 0); aksamCount++
+      } else if (s) {
+        sabahRev += parseFloat(s.individual_revenue || 0); sabahCount++
+      }
+    })
 
     Chart.defaults.color       = '#64748b'
     Chart.defaults.font.family = 'Inter, system-ui'
