@@ -133,6 +133,7 @@ export async function insertShiftEntry(data) {
     notlar:             data.notlar || '',
     total_revenue:      totalRevenue,
     individual_revenue: totalRevenue,
+    kategori_devri:     parseFloat(data.kategoriDevri) || 0,
     entry_time:         now.toISOString(),
     is_on_time:         isOnTime,
     points_earned:      pointsEarned,
@@ -207,6 +208,7 @@ export async function updateShiftEntry(reportId, formData, cashierId) {
       notlar:            formData.notlar || '',
       total_revenue:      totalRevenue,
       individual_revenue: totalRevenue,
+      kategori_devri:     parseFloat(formData.kategoriDevri) || 0,
       points_earned:      newPoints,
     })
     .eq('id', reportId)

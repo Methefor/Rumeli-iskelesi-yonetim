@@ -2939,16 +2939,23 @@
             })
 
             Object.values(dailyReports).forEach(r => {
-                categories.gida.total              += parseFloat(r.gida)              || 0
-                categories.kahvalti.total          += parseFloat(r.kahvalti)          || 0
-                categories.kahve.total             += parseFloat(r.kahve)             || 0
-                categories.meyvesuyu.total         += parseFloat(r.meyvesuyu)         || 0
-                categories.salata.total            += parseFloat(r.salata)            || 0
-                categories.borek_corek.total       += parseFloat(r.borek_corek)       || 0
-                categories.dondurma_kategori.total += parseFloat(r.dondurma_kategori) || 0
-                categories.sicak_icecek.total      += parseFloat(r.sicak_icecek)      || 0
-                categories.soguk_icecek.total      += parseFloat(r.soguk_icecek)      || 0
-                categories.tatli.total             += parseFloat(r.tatli)             || 0
+                const devri    = parseFloat(r.kategori_devri) || 0
+                const catGross = ['gida','kahvalti','kahve','meyvesuyu','salata','borek_corek',
+                    'dondurma_kategori','sicak_icecek','soguk_icecek','tatli']
+                    .reduce((s, k) => s + (parseFloat(r[k]) || 0), 0)
+                // Devir varsa: net = gross - devri; scale = net/gross
+                const scale = (devri > 0 && catGross > 0) ? Math.max(0, (catGross - devri) / catGross) : 1
+
+                categories.gida.total              += (parseFloat(r.gida)              || 0) * scale
+                categories.kahvalti.total          += (parseFloat(r.kahvalti)          || 0) * scale
+                categories.kahve.total             += (parseFloat(r.kahve)             || 0) * scale
+                categories.meyvesuyu.total         += (parseFloat(r.meyvesuyu)         || 0) * scale
+                categories.salata.total            += (parseFloat(r.salata)            || 0) * scale
+                categories.borek_corek.total       += (parseFloat(r.borek_corek)       || 0) * scale
+                categories.dondurma_kategori.total += (parseFloat(r.dondurma_kategori) || 0) * scale
+                categories.sicak_icecek.total      += (parseFloat(r.sicak_icecek)      || 0) * scale
+                categories.soguk_icecek.total      += (parseFloat(r.soguk_icecek)      || 0) * scale
+                categories.tatli.total             += (parseFloat(r.tatli)             || 0) * scale
             })
 
             const totalCategorySales = Object.values(categories).reduce((sum, c) => sum + c.total, 0)

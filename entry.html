@@ -308,6 +308,40 @@
 
         .hidden { display: none !important; }
 
+        /* ── DEVİR BÖLÜMÜ ── */
+        .devir-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; padding: 12px 14px; margin-bottom: 14px;
+            background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.2);
+            border-radius: 10px; cursor: pointer;
+        }
+        .devir-bar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .devir-bar-icon { font-size: 18px; flex-shrink: 0; }
+        .devir-bar-label { font-size: 12px; font-weight: 700; color: var(--orange); }
+        .devir-bar-sub { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+        .devir-toggle-wrap { position: relative; flex-shrink: 0; cursor: pointer; }
+        .devir-toggle-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .devir-track {
+            display: block; width: 40px; height: 22px; border-radius: 11px;
+            background: var(--brd); transition: background .2s;
+        }
+        .devir-toggle-wrap input:checked ~ .devir-track { background: var(--orange); }
+        .devir-thumb {
+            position: absolute; top: 3px; left: 3px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; transition: transform .2s;
+            pointer-events: none;
+        }
+        .devir-toggle-wrap input:checked ~ .devir-track .devir-thumb { transform: translateX(18px); }
+        .devir-input-area {
+            background: rgba(251,191,36,.05); border: 1px solid rgba(251,191,36,.15);
+            border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+        }
+        .devir-net-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; font-size: 12px; font-weight: 700;
+        }
+
         @media (max-width: 560px) {
             body { padding: 12px; }
             .shift-screen { padding: 22px 14px; margin: 10px auto; }
@@ -444,6 +478,35 @@
         <!-- Kategori Satışları — sadece 1. Kasa -->
         <div class="card">
             <div class="card-t">🍽️ Ürün Grubuna Göre Satışlar</div>
+
+            <!-- Devir toggle -->
+            <div class="devir-bar" id="devirBar" onclick="document.getElementById('devirToggle').click()">
+                <div class="devir-bar-left">
+                    <span class="devir-bar-icon">🔄</span>
+                    <div>
+                        <div class="devir-bar-label">POS Kategorileri Sıfırlanmadı</div>
+                        <div class="devir-bar-sub" id="devirBarSub">Önceki kapanış yükleniyor…</div>
+                    </div>
+                </div>
+                <label class="devir-toggle-wrap" onclick="event.stopPropagation()">
+                    <input type="checkbox" id="devirToggle">
+                    <div class="devir-track"><div class="devir-thumb"></div></div>
+                </label>
+            </div>
+
+            <!-- Devir giriş alanı (toggle açıksa) -->
+            <div id="devirInputArea" class="devir-input-area hidden">
+                <label class="fl">Devir Tutarı (önceki kapanış kümülatifi)</label>
+                <div class="iw">
+                    <input type="number" id="kategoriDevri" step="0.01" placeholder="0.00">
+                    <span class="sfx">₺</span>
+                </div>
+                <div class="devir-net-row">
+                    <span style="color:var(--txt3);">Net Bugünlük Kategori:</span>
+                    <span id="devirNetDisplay" style="color:var(--green);">—</span>
+                </div>
+            </div>
+
             <div class="fg">
                 <div><label class="fl">Gıda</label><div class="iw"><input type="number" id="gida" step="0.01" placeholder="0.00"><span class="sfx">₺</span></div></div>
                 <div><label class="fl">Kahvaltı</label><div class="iw"><input type="number" id="kahvalti" step="0.01" placeholder="0.00"><span class="sfx">₺</span></div></div>
@@ -656,6 +719,8 @@
                 $('editBanner').classList.add('hidden')
                 $('submitButton').textContent = '💾 Kaydet ve Puan Kazan!'
                 $('submitButton').classList.remove('edit-mode')
+                // Devir bilgisini yükle (yeni giriş)
+                await loadDevirInfo(dateVal)
             }
 
             // Bilgi banneri
@@ -693,6 +758,14 @@
                         editCurrentPoints = parseInt(e1.points_earned) || 0
                         $('currentPoints').textContent =
                             `${editCurrentPoints} puan → düzenleme sonrası ${Math.max(0, editCurrentPoints - 5)} puan`
+                        // Mevcut devir değerini yükle
+                        const existingDevri = parseFloat(e1.kategori_devri) || 0
+                        if (existingDevri > 0) {
+                            $('devirToggle').checked = true
+                            $('devirInputArea').classList.remove('hidden')
+                            $('kategoriDevri').value = existingDevri
+                            $('devirBarSub').textContent = `Kayıtlı devir: ${fmt(existingDevri)} ₺`
+                        }
                     }
                 }
                 // 2. Kasa (iki_kasa) — sadece Z/X raporu yükle
@@ -708,6 +781,65 @@
             const el = $(id)
             if (el) el.value = parseFloat(val) > 0 ? parseFloat(val) : ''
         }
+
+        // ── DEVİR ──────────────────────────────────────────────
+        let _prevCatGross = 0   // Önceki girişin brüt kategori toplamı
+
+        async function loadDevirInfo(dateVal) {
+            const subEl = $('devirBarSub')
+            try {
+                const { data: prev } = await supabase
+                    .from('daily_reports')
+                    .select('gida,kahve,sicak_icecek,soguk_icecek,tatli,meyvesuyu,kahvalti,salata,dondurma_kategori,borek_corek,date,shift')
+                    .eq('kasa', 'ana_kasa')
+                    .lt('date', dateVal)
+                    .order('date', { ascending: false })
+                    .order('shift', { ascending: false })
+                    .limit(1)
+                    .single()
+
+                if (prev) {
+                    _prevCatGross = ['gida','kahve','sicak_icecek','soguk_icecek','tatli','meyvesuyu','kahvalti','salata','dondurma_kategori','borek_corek']
+                        .reduce((s, k) => s + (parseFloat(prev[k]) || 0), 0)
+
+                    const d = new Date(prev.date)
+                    const label = `${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')} ${prev.shift === 'aksam' ? 'akşam' : 'sabah'}`
+                    if (_prevCatGross > 0) {
+                        subEl.textContent = `${label} kapanışı: ${fmt(_prevCatGross)} ₺ — Devir varsa aktifleştirin`
+                        $('kategoriDevri').value = _prevCatGross
+                    } else {
+                        subEl.textContent = `${label} kapanışı: kategori girilmemiş`
+                    }
+                } else {
+                    _prevCatGross = 0
+                    subEl.textContent = 'Önceki kayıt yok — ilk giriş'
+                }
+            } catch { subEl.textContent = 'Önceki kayıt yüklenemedi' }
+        }
+
+        $('devirToggle').addEventListener('change', () => {
+            const on = $('devirToggle').checked
+            $('devirInputArea').classList.toggle('hidden', !on)
+            if (on && _prevCatGross > 0 && !($('kategoriDevri').value)) {
+                $('kategoriDevri').value = _prevCatGross
+            }
+            updateDevirNet()
+        })
+
+        function updateDevirNet() {
+            if (!$('devirToggle').checked) return
+            const devri  = parseFloat($('kategoriDevri').value) || 0
+            const catSum = ['kahve','meyveSuyu','sicakIcecek','sogukIcecek','tatli','gida','kahvalti','salata','dondurmaKategori','borekCorek']
+                .reduce((s, id) => s + fv(id), 0)
+            const net = catSum - devri
+            const el  = $('devirNetDisplay')
+            el.textContent = catSum > 0 ? `${fmt(net)} ₺` : '—'
+            el.style.color = net >= 0 ? 'var(--green)' : 'var(--red)'
+        }
+
+        $('kategoriDevri').addEventListener('input', updateDevirNet)
+        document.querySelectorAll('#mainScreen .fg input').forEach(inp =>
+            inp.addEventListener('input', updateDevirNet))
 
         // ── GERİ BUTONU ────────────────────────────────────────
         $('shiftBackButton').addEventListener('click', () => { window.location.href = 'index.html' })
@@ -764,15 +896,19 @@
                 const catSum = fv('kahve') + fv('meyveSuyu') + fv('sicakIcecek') +
                     fv('sogukIcecek') + fv('tatli') + fv('gida') + fv('kahvalti') +
                     fv('salata') + fv('dondurmaKategori') + fv('borekCorek')
-                const diff = Math.abs(catSum - totalZ)
-                if (catSum > 0 && diff > 1) {
+                const devri = ($('devirToggle')?.checked) ? (parseFloat($('kategoriDevri')?.value) || 0) : 0
+                const netCatSum = catSum - devri
+                const diff = Math.abs(netCatSum - totalZ)
+                if (netCatSum > 0 && diff > 1) {
                     const fmt = n => n.toLocaleString('tr-TR', { minimumFractionDigits: 2 })
                     const kasaLabel = z2 > 0 ? `Z Raporu (1.+2. Kasa)` : `Z Raporu`
-                    const dir = catSum > totalZ ? `${fmt(catSum - totalZ)} ₺ fazla girildi` : `${fmt(totalZ - catSum)} ₺ eksik`
+                    const dir = netCatSum > totalZ ? `${fmt(netCatSum - totalZ)} ₺ fazla girildi` : `${fmt(totalZ - netCatSum)} ₺ eksik`
+                    const devirNote = devri > 0 ? `\nDevir (önceki kapanış): ${fmt(devri)} ₺\nNet Kategori: ${fmt(netCatSum)} ₺` : ''
                     const ok = confirm(
                         `⚠️ Kategori toplamı Z raporuyla uyuşmuyor!\n\n` +
                         `${kasaLabel}: ${fmt(totalZ)} ₺\n` +
-                        `Kategori Toplamı: ${fmt(catSum)} ₺\n` +
+                        `Kategori Toplamı (Giriş): ${fmt(catSum)} ₺` +
+                        `${devirNote}\n` +
                         `Fark: ${dir}\n\n` +
                         `Yine de kaydetmek istiyor musunuz?`
                     )
@@ -805,6 +941,7 @@
                 dondurmaKategori: fv('dondurmaKategori'),
                 borekCorek:       fv('borekCorek'),
                 notlar:           getTagsAndNote(),
+                kategoriDevri:    $('devirToggle')?.checked ? (parseFloat($('kategoriDevri')?.value) || 0) : 0,
             }
 
             const kasa2Data = {
