@@ -5,8 +5,6 @@
 
 # Dependencies
 node_modules/
-package.json
-package-lock.json
 dist/
 
 # Dev tools
