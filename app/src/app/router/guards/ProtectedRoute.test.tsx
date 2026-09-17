@@ -9,7 +9,16 @@ vi.mock('../../../hooks/useAuth')
 const mockedUseAuth = vi.mocked(useAuth)
 
 function authValue(status: AuthStatus): AuthContextValue {
-  return { status, session: null, user: null, roles: [], branchIds: [], signOut: vi.fn() }
+  return {
+    status,
+    session: null,
+    user: null,
+    roles: [],
+    branchIds: [],
+    signOut: vi.fn(),
+    isDemo: false,
+    signInDemo: vi.fn(),
+  }
 }
 
 function renderProtected(status: AuthStatus) {

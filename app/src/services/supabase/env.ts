@@ -28,3 +28,14 @@ function readEnv(): AppEnv {
 }
 
 export const env: AppEnv = readEnv()
+
+/**
+ * Preview-only demo mode (see DECISIONS.md). Read independently of `env`
+ * above so a Preview deployment can enable it without needing a real
+ * Supabase project configured — the point of demo mode is to let the UI
+ * boot and be navigated even when the backend is intentionally
+ * unavailable. Never true unless explicitly set; there is no default-on
+ * path, and nothing here inspects `import.meta.env.PROD` to guess intent —
+ * an operator sets this flag explicitly per environment.
+ */
+export const isDemoModeEnabled: boolean = import.meta.env.VITE_DEMO_MODE === 'true'

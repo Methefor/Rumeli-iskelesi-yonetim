@@ -15,6 +15,8 @@ function authValue(overrides: Partial<AuthContextValue>): AuthContextValue {
     roles: [],
     branchIds: [],
     signOut: vi.fn(),
+    isDemo: false,
+    signInDemo: vi.fn(),
     ...overrides,
   }
 }

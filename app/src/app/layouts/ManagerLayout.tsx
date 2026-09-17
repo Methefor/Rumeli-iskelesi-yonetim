@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { BottomNav, type BottomNavItem } from '../../components/navigation/BottomNav'
+import { DemoBadge } from '../../components/navigation/DemoBadge'
 import styles from './AppLayout.module.css'
 
 const navItems: BottomNavItem[] = [
@@ -14,6 +15,7 @@ const navItems: BottomNavItem[] = [
 export function ManagerLayout() {
   return (
     <div className={styles.layout}>
+      <DemoBadge />
       <main className={styles.content}>
         <Outlet />
       </main>
