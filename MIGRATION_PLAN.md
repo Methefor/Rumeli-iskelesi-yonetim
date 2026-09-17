@@ -16,6 +16,9 @@ authorize applying anything.
 | 006 | `006_rls_policies.sql` | RLS enable + policies for every table above | 001-005 |
 | 007 | `007_storage_policies.sql` | new `avatars-v4` bucket + policies | 001, 002 |
 | 008 | `008_admin_rpcs.sql` | audited RPCs: `assign_role`, `revoke_role`, `assign_branch_membership`, `remove_branch_membership`, `admin_set_employee_active`, `admin_reset_pin`, `admin_set_employee_code` | 001-005 |
+| 009 | `009_operational_core.sql` | `shift_definitions`, `registers`, `sales_categories` (+seed), `sales_category_branches` (+seed), `reconciliation_thresholds` (+seed), `shifts`, `shift_assignments`, `sales_reports`, `sales_report_items`, `sales_report_overrides` | 001, 003, 004 |
+| 010 | `010_operational_rls.sql` | RLS for every table in 009, plus `current_user_assigned_shift_ids()`/`shift_branch_id()` helpers | 001-005, 009 |
+| 011 | `011_operational_rpcs.sql` | audited RPCs: `schedule_shift`, `cancel_shift`, `reassign_shift_branch`, `assign_shift`, `update_shift_assignment_status`, `override_shift_lateness`, `create_sales_report`, `edit_sales_report`, `cancel_sales_report`, `override_reconciliation` | 001-005, 009 |
 
 Each file's own header comment repeats its dependencies and a rollback
 snippet — this table is a summary, the files are the source of truth.
@@ -25,13 +28,16 @@ snippet — this table is a summary, the files are the source of truth.
 - No change to any legacy table (`admins`, `cashiers`, `daily_reports`,
   `daily_revenue`, `entry_history`, `shift_schedule`, `targets`) or the
   existing `avatars` bucket.
-- No data migration (legacy `cashiers`/`admins` rows → `profiles`). That is
-  a separate, explicitly-approved script, written after 001-007 are
-  reviewed and applied to a staging project — not bundled here so a schema
-  review and a data-migration review can happen independently.
-- No Phase D operational tables (shifts, sales_reports, tasks, performance,
-  badges, inventory) — see `RLS_PLAN.md` "Future operational tables" for
-  the design template those will follow.
+- No data migration (legacy `cashiers`/`admins` rows → `profiles`, or any
+  historical `daily_reports` data). That is a separate, explicitly-approved
+  script, written after 001-011 are reviewed and applied to a staging
+  project — not bundled here so a schema review and a data-migration
+  review can happen independently. See `docs/LEGACY_RECONCILIATION.md`
+  "Legacy adapter strategy" for the documented-only column mapping.
+- `tasks`, `performance_events`/`performance_scores`, `badge_definitions`,
+  `employee_badges`, and İskele Dondurma inventory/waste/cost tables — see
+  `RLS_PLAN.md` "Future operational tables" for the design template those
+  will follow when built.
 - A `service_credentials` table — this design was reviewed and REJECTED
   (see `DECISIONS.md`); the `pin-login` Edge Function uses
   `generateLink`/`verifyOtp` instead and stores no password anywhere.
@@ -57,7 +63,7 @@ supabase db push
 ```
 
 `supabase db push` applies migration files in filename order, which is why
-they're numbered `001`-`008` rather than timestamped — the numeric prefixes
+they're numbered `001`-`011` rather than timestamped — the numeric prefixes
 enforce the dependency order in this table regardless of file creation
 date. After staging verification, repeat against the production project
 only with explicit sign-off.
@@ -70,9 +76,9 @@ editor does not track which migrations have run.
 
 Each file documents its own rollback (drop statements in dependency-safe
 reverse order). Applying and rolling back should be exercised on staging
-before production ever sees these files. Because 001-008 create entirely
+before production ever sees these files. Because 001-011 create entirely
 new tables/functions/policies with no foreign keys into any legacy table,
-a full rollback of all eight is non-destructive to legacy data by
+a full rollback of all eleven is non-destructive to legacy data by
 construction — but always confirm with `git diff`-style review of the
 actual staging schema state before trusting that in the moment.
 
@@ -85,10 +91,10 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 
 ## Sign-off checklist before applying to staging
 
-- [ ] Someone other than the author has read all 8 files.
-- [ ] `RLS_PLAN.md`'s policy table matches what's actually in `006`.
+- [ ] Someone other than the author has read all 11 files.
+- [ ] `RLS_PLAN.md`'s policy table matches what's actually in `006` and `010`.
 - [ ] Confirmed via `\d` or the dashboard schema view that no table/function
-      name in 001-008 collides with an existing legacy name.
+      name in 001-011 collides with an existing legacy name.
 - [ ] Staging project exists and is not the production project.
 - [ ] A rollback has been test-run on staging at least once.
 

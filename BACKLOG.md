@@ -45,9 +45,10 @@ in the original brief. Move items up when a phase actually starts.
       `RoleGuard`, `BranchGuard`, login UI shell, logout action, session
       restore, loading/unauthorized states — all in `app/`, unit-tested,
       not connected to a working backend yet.
-- [ ] Deploy `pin-login` Edge Function (blocked on one item — the
-      `generateLink`/`verifyOtp` staging smoke test above).
-- [ ] Apply migrations 001-008 to a staging Supabase project, run the
+- [ ] Deploy `pin-login` Edge Function to a real (cloud) Supabase project —
+      local staging passed (see above); a hosted-project run is
+      recommended, not blocking, before this.
+- [ ] Apply migrations 001-011 to a staging Supabase project, run the
       policy test plan in `RLS_PLAN.md`, then production (see
       `MIGRATION_PLAN.md` sign-off checklists).
 - [ ] Wire `LoginPage` to the real Edge Function + `supabase.auth.setSession`
@@ -63,14 +64,33 @@ in the original brief. Move items up when a phase actually starts.
       C prep: `profiles`, `roles`, `permissions`, `role_permissions`,
       `user_roles`, `branches`, `branch_memberships`, `audit_logs` — see
       `supabase/migrations/001-004`, not applied yet.
-- [ ] Remaining operational tables per the Phase A target model: `shifts`,
-      `shift_assignments`, `sales_reports`, `sales_report_items`, `tasks`*,
-      `performance_events`/`performance_scores` (rules live in app config
-      per `domain/scoring`), `badge_definitions`, `employee_badges`. RLS
-      design template for these already exists — see `RLS_PLAN.md` "Future
-      operational tables".
+- [x] Core operational tables (2026-09-17): `shift_definitions`,
+      `registers`, `sales_categories`, `sales_category_branches`,
+      `reconciliation_thresholds`, `shifts`, `shift_assignments`,
+      `sales_reports`, `sales_report_items`, `sales_report_overrides` —
+      `supabase/migrations/009-011`, RLS + audited RPCs, **local-staging-
+      validated (34/34 integration assertions + live browser drive-through)**,
+      not applied to any staging/production project. See
+      `CORE_DATA_MODEL.md`, `SHIFT_MODEL.md`, `SALES_MODEL.md`.
+- [x] Frontend feature scaffolding for shifts/sales (2026-09-17): seven
+      functional mobile-first screens (employee: My Shift, New Sales
+      Report, My Recent Reports; manager: Shift Overview, Assign Shift,
+      Sales Overview, Reconciliation Queue), `services/supabase/{shifts,
+      sales}.ts`. No analytics dashboard yet — matches the brief.
+- [ ] `tasks`, `performance_events`/`performance_scores` (rules live in app
+      config per `domain/scoring`), `badge_definitions`, `employee_badges`
+      — explicitly deferred past Phase D core; RLS design template exists,
+      see `RLS_PLAN.md` "Future operational tables".
+- [ ] İskele Dondurma inventory/waste/cost depth — explicitly deferred
+      until the core sales/shift model (just built) is validated in a real
+      environment, per the Phase D brief.
+- [ ] Balık Ekmek shift_definitions / sales_category_branches — not seeded
+      in this pass (lower priority per the brief); needs an explicit
+      follow-up once someone confirms its actual shift pattern.
 - [ ] Legacy adapter layer so `daily_reports` etc. remain readable/reproducible
-      without mixing legacy compatibility logic into new business logic.
+      without mixing legacy compatibility logic into new business logic —
+      mapping documented (not built) in `docs/LEGACY_RECONCILIATION.md`
+      "Legacy adapter strategy".
 - [ ] Data migration script: legacy `cashiers`/`admins` rows → `profiles` +
       `pin_credentials` (hash re-derived or PINs reset — plaintext PINs are
       never carried forward as plaintext). Separate, explicitly-approved

@@ -261,6 +261,55 @@ the class of defect `AUTH_ARCHITECTURE.md`'s "not live-verified" caveat
 was flagging, and exactly why the smoke test was required before treating
 the design as production-ready.
 
+## Phase D: cross-referencing RLS policies need SECURITY DEFINER helpers, not direct subqueries
+
+**Decision:** `shifts`' select policy checks `shift_assignments` (is the
+caller assigned to this shift?) and `shift_assignments`' select policy
+checks `shifts` (what branch is this assignment's shift in?) — both via new
+`SECURITY DEFINER` helpers (`current_user_assigned_shift_ids()`,
+`shift_branch_id()`, `010_operational_rls.sql`), not a direct subquery
+against the other table.
+**Why:** a direct subquery re-enters the other table's own RLS policy,
+which re-enters this one — Postgres detects this as infinite recursion
+(`42P17`) rather than looping forever, and every read on either table
+fails. This was found only by a live browser smoke test hitting
+`/rest/v1/shifts` (a 500 with that exact error code) — the SQL in both
+policies is individually valid and passed migration application without
+error; only combining them at query time exposes the cycle. `SECURITY
+DEFINER` functions run as the function owner and bypass RLS on their own
+internal query, the same mechanism Phase C's `current_user_branch_ids()`
+already relies on — this generalizes that fix to any future pair of tables
+whose RLS policies need to reference each other.
+
+## Phase D: reconciliation "expected/actual" means "declared total vs. item sum"
+
+**Decision:** `create_sales_report()`/`edit_sales_report()`
+(`011_operational_rpcs.sql`) compute `reconciliation_status` by comparing
+the report's declared `gross_revenue` (expected) against the sum of its
+`sales_report_items.amount` (actual), against per-branch thresholds in
+`reconciliation_thresholds`.
+**Why:** the brief's `expected/actual/difference/status` shape is generic
+by design (see `RLS_PLAN.md`'s original "Future operational tables"
+template), and needed one concrete interpretation to actually build. This
+one mirrors what the legacy app's own "kasa dağılımı" (cash distribution)
+checks were already informally verifying — a category breakdown should sum
+to the register total; anything else is either a data-entry mistake or a
+real cash discrepancy, and both deserve the same flag. See
+`SALES_MODEL.md`.
+
+## Phase D: `create_sales_report`'s duplicate check is both an explicit RPC pre-check AND a DB constraint
+
+**Decision:** the RPC raises a friendly, specific error before insert;
+`009_operational_core.sql`'s two partial unique indexes
+(`sales_reports_unique_no_register`/`_with_register`) are the actual
+authoritative guarantee.
+**Why:** the pre-check alone would have a TOCTOU gap under concurrent
+submissions (two requests both pass the check, both insert); the
+constraint alone would surface as a raw, unfriendly Postgres unique-
+violation error to the client. Both together: correct under concurrency,
+and a clear message in the common case. Same reasoning as `verify_pin()`'s
+`for update` row lock in Phase C, applied to a different concurrency shape.
+
 ## Phase C: guards fail closed on missing authorization data, not open
 
 **Decision:** `RoleGuard`/`BranchGuard` show `Unauthorized` when `roles`/

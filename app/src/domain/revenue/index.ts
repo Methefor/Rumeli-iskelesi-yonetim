@@ -5,3 +5,7 @@ export {
   calculateDailyRevenue,
   type DailyRevenueInput,
 } from './calculateShiftRevenue'
+export {
+  deriveShiftRevenueFromReports,
+  type ShiftReportSummary,
+} from './deriveShiftRevenueFromReports'

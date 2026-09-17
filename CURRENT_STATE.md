@@ -98,13 +98,61 @@ Also resolved: `profiles.employee_code` (format `^[A-Z][0-9]{2,4}$`, e.g.
 closing the previously-open "how does anyone log in" question. See
 `AUTH_ARCHITECTURE.md` "Login handle".
 
-**One item remains open, by design:** the `generateLink`/`verifyOtp`
-session-minting flow in `pin-login/index.ts` is believed correct from
-documented Supabase Auth behavior but has not been exercised against a real
-Supabase project (no project/DB access in this session). Treat deployment
-as blocked until that one staging smoke test passes — see
-`AUTH_ARCHITECTURE.md` and `MIGRATION_PLAN.md`'s production sign-off
-checklist.
+**Updated same day:** the `generateLink`/`verifyOtp` flow above was run
+against a real local Supabase stack (Docker: Postgres + GoTrue + Kong +
+Edge Runtime) and found two real defects (pgcrypto schema qualification;
+a `verifyOtp` argument conflict), both fixed — 39/39 backend assertions and
+the live `AuthProvider`/`ProtectedRoute`/`RoleGuard` chain pass. Result:
+**LOCAL PASS**; a real cloud staging project run is still recommended, not
+required, before production — see `AUTH_ARCHITECTURE.md` "Live-verified".
+
+### Phase D (2026-09-17): core operational data model, prepared and local-staging-validated
+
+Branch → Employee → Shift → Sales, normalized (no `rumeli_z1`/
+`balik_ekmek`/`dondurma`-style columns anywhere — branch/category/register
+are always a foreign key). See `CORE_DATA_MODEL.md`, `SHIFT_MODEL.md`,
+`SALES_MODEL.md` for the full design.
+
+- `supabase/migrations/009-011` — `shifts`, `shift_assignments`,
+  `sales_reports`, `sales_report_items`, plus config tables
+  (`shift_definitions`, `registers`, `sales_categories`,
+  `sales_category_branches`, `reconciliation_thresholds`) and an
+  append-only `sales_report_overrides` audit trail. RLS follows the exact
+  Phase C pattern (no anonymous access, RPC-only critical writes). Audited
+  RPCs: `schedule_shift`, `cancel_shift`, `reassign_shift_branch`,
+  `assign_shift`, `update_shift_assignment_status`,
+  `override_shift_lateness`, `create_sales_report`, `edit_sales_report`,
+  `cancel_sales_report`, `override_reconciliation`.
+- `app/src/domain/revenue/deriveShiftRevenueFromReports.ts` — new domain
+  glue bridging the `sales_reports` table shape to the existing (Phase B)
+  `calculateDailyRevenue`; `domain/revenue`/`domain/reconciliation`
+  themselves were already correct for this phase's needs and were not
+  rewritten.
+- `app/src/services/supabase/{shifts,sales}.ts` — the only place these
+  tables/RPCs are called from; no `supabase.from()` call exists inside any
+  UI component.
+- Seven functional (not placeholder) mobile-first screens: employee
+  `MyShiftPage`/`NewSalesReportPage`/`MyRecentReportsPage`, manager
+  `ShiftOverviewPage`/`AssignShiftPage`/`SalesOverviewPage`/
+  `ReconciliationQueuePage`. No analytics dashboard — matches the brief.
+- **Local-staging-validated, not just prepared:** applied migrations
+  001-011 to local Supabase from a fresh `db reset`, ran a 34-assertion
+  backend integration suite (schedule/assign/confirm, X/Z submission,
+  duplicate prevention, reconciliation OK/WARNING/ERROR, edit/cancel/
+  override with full audit verification, raw-write denial, cross-branch
+  RLS scoping, server-side timing enforcement, branch reassignment), and
+  drove all seven screens in a real browser against the same local stack.
+  Found and fixed **two** real defects this way, neither visible from
+  reading the SQL/TypeScript alone — see `DECISIONS.md`:
+  1. An RLS infinite-recursion (`42P17`) between `shifts` and
+     `shift_assignments`' policies, each referencing the other.
+  2. A wrong relative-path `navigate()` call after a successful report
+     submission, landing on the router's catch-all and showing the Login
+     page instead of "My Recent Reports."
+- Nothing applied to any staging/production Supabase project. No Edge
+  Function changes. No legacy table touched — see
+  `docs/LEGACY_RECONCILIATION.md` "Legacy adapter strategy" for the
+  documented-only (not built) mapping from legacy columns to this schema.
 
 See `AUTH_ARCHITECTURE.md`, `RLS_PLAN.md`, and `MIGRATION_PLAN.md` for the
 full design and the approval gates before any of this touches a real

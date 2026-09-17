@@ -57,6 +57,13 @@ parameter, so they can't be used to probe another user's data), granted to
   user. Returns a boolean only, never branch identities.
 - `write_audit_log(...)` — the only path by which `audit_logs` gets a row.
 
+Added in Phase D (`010_operational_rls.sql`), same pattern:
+
+- `current_user_assigned_shift_ids()` — shift ids the caller is assigned to.
+- `shift_branch_id(p_shift_id)` — a shift's branch_id, bypassing `shifts`' RLS.
+  Both exist specifically to break the `shifts`↔`shift_assignments` RLS
+  recursion described below — not general-purpose helpers.
+
 ## Identity/authorization tables (applied policies — `006_rls_policies.sql`, amended 2026-09-17)
 
 | Table | SELECT | INSERT/UPDATE/DELETE |
@@ -77,22 +84,36 @@ controls *which columns* — Postgres RLS has no per-column concept, so a raw
 `using (id = auth.uid())` policy alone would have let a user rewrite their
 own `is_active`. See `DECISIONS.md`.
 
-## Future operational tables (Phase D — design template, not yet a migration)
+## Operational tables (Phase D, 2026-09-17 — applied policies, `010_operational_rls.sql`)
 
-These tables don't exist yet. When Phase D creates them, their RLS should
-follow this shape (to become `0XX_operational_rls.sql` at that time):
+Built and local-staging-validated — see `CORE_DATA_MODEL.md`. All tables
+below use the exact `current_user_is_owner_or_manager()`/
+`current_user_has_permission()`/`current_user_branch_ids()` helpers from
+Phase C; no anonymous access anywhere.
 
-- **`shifts` / `shift_assignments`**: SELECT for org-wide roles, or branch
-  members (`branch_id in (select current_user_branch_ids())`), or the
-  assigned employee themselves. INSERT/UPDATE for `shift.manage` or the
-  branch's `branch_manager`.
-- **`sales_reports` / `sales_report_items`**: SELECT scoped like shifts.
-  INSERT requires `sales.create` and the submitter must be the authenticated
-  user (`submitted_by = auth.uid()`). UPDATE requires either
-  `sales.edit_own` + `submitted_by = auth.uid()`, or `sales.edit_all`. No
-  client DELETE — corrections happen via an audited edit RPC that preserves
-  history (mirrors the legacy `-5 point penalty on edit` intent, but as an
-  explicit audit trail instead of a silent point deduction).
+| Table | SELECT | INSERT/UPDATE/DELETE |
+|---|---|---|
+| `shift_definitions` / `registers` | any `authenticated` user | `shift.manage`, org-wide or branch-scoped |
+| `sales_categories` / `sales_category_branches` / `reconciliation_thresholds` | any `authenticated` user | `settings.manage`, org-wide only |
+| `shifts` | org-wide roles, branch members, or the assigned employee (via `current_user_assigned_shift_ids()`) | none — `schedule_shift`/`cancel_shift`/`reassign_shift_branch` (011) only |
+| `shift_assignments` | self, org-wide roles, or the shift's branch members (via `shift_branch_id()`) | none — `assign_shift`/`update_shift_assignment_status`/`override_shift_lateness` (011) only |
+| `sales_reports` / `sales_report_items` | submitter, org-wide roles, branch members, or `reports.read` | none — `create_sales_report`/`edit_sales_report`/`cancel_sales_report` (011) only |
+| `sales_report_overrides` | follows its parent report's visibility | none — `override_reconciliation` (011) only |
+
+**Cross-table RLS recursion (found by a live smoke test, not static
+review):** `shifts`' and `shift_assignments`' policies each need to check
+the other table. A direct subquery in either re-enters the other's RLS,
+which re-enters this one — Postgres reports this as `42P17` infinite
+recursion, not an infinite loop. Fixed with two more `SECURITY DEFINER`
+helpers, `current_user_assigned_shift_ids()` and `shift_branch_id(uuid)`,
+which bypass RLS on their own internal query — same mechanism as
+`current_user_branch_ids()` in Phase C. See `DECISIONS.md`.
+
+## Future operational tables (still design template, not yet a migration)
+
+`shifts`/`shift_assignments`/`sales_reports`/`sales_report_items` above are
+now built — this section is only what Phase D deliberately deferred:
+
 - **`tasks` / `task_assignments` / `task_completions`**: SELECT/write scoped
   to the assignee or `task.manage`-equivalent permission + branch scope.
 - **`performance_events`**: INSERT only via a `SECURITY DEFINER` RPC (never

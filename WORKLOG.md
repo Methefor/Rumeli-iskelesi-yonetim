@@ -2,6 +2,104 @@
 
 Reverse-chronological. One entry per work session.
 
+## 2026-09-17 (continuation 3) — Phase D: core operational data model, prepared and local-staging-validated
+
+Goal: the normalized operational core (Branch → Employee → Shift → Sales)
+per the Phase D brief, built and proven against local Supabase rather than
+left as untested design — same discipline as the Phase C smoke test.
+Production untouched throughout; `v4-2027` only.
+
+- Added `supabase/migrations/009_operational_core.sql`: `shift_definitions`,
+  `registers`, `sales_categories` (+ legacy category seed), 
+  `sales_category_branches`, `reconciliation_thresholds` (seeded 2%/5% for
+  the two primary branches), `shifts`, `shift_assignments`,
+  `sales_reports` (with two partial unique indexes for duplicate
+  prevention), `sales_report_items`, `sales_report_overrides`. A shared
+  `set_updated_at()` trigger keeps every table's `updated_at` column
+  correct without relying on every RPC to remember it. Seeded a generic
+  sabah/akşam `shift_definitions` pair for Rumeli İskelesi and İskele
+  Dondurma only — Balık Ekmek is lower priority per the brief and left
+  unseeded rather than guessed at.
+- Added `010_operational_rls.sql`: RLS for every new table, no anonymous
+  access, no direct client write on any lifecycle-critical table (`shifts`,
+  `shift_assignments`, `sales_reports`, `sales_report_items`,
+  `sales_report_overrides`) — same RPC-only rule Phase C established for
+  `user_roles`/`branch_memberships`.
+- Added `011_operational_rpcs.sql`: `schedule_shift`, `cancel_shift`,
+  `reassign_shift_branch` (org-wide only, reason mandatory),
+  `assign_shift`, `update_shift_assignment_status` (self-confirm allowed,
+  cancel is privileged), `override_shift_lateness`, `create_sales_report`
+  (shift ownership + allowed/active shift + server-side timing + duplicate
+  prevention + server-computed `reconciliation_status`), `edit_sales_report`,
+  `cancel_sales_report` (status lifecycle, never a raw DELETE),
+  `override_reconciliation` (writes both a `sales_report_overrides` row and
+  an `audit_logs` row). Every one audited.
+- Added `app/src/domain/revenue/deriveShiftRevenueFromReports.ts` (+ 6
+  unit tests) bridging `sales_reports` rows to the existing (Phase B)
+  `calculateDailyRevenue` — did NOT rewrite `domain/revenue` or
+  `domain/reconciliation`, both were already correct for this phase.
+- Added `app/src/services/supabase/shifts.ts` and `sales.ts` — every
+  Supabase call for the new tables/RPCs lives here; confirmed no
+  `supabase.from()` call exists inside any UI component.
+- Built seven functional (not placeholder) screens and wired them into
+  `router.tsx`, replacing the Phase B `ShiftsPage`/`ReportsPage`
+  placeholders (deleted, fully superseded): employee `MyShiftPage`,
+  `NewSalesReportPage`, `MyRecentReportsPage`; manager `ShiftOverviewPage`,
+  `AssignShiftPage`, `SalesOverviewPage`, `ReconciliationQueuePage`. Added
+  `hooks/useSelectedBranch.ts` (shared branch-picker logic for the four
+  manager screens — real duplication, not a premature abstraction).
+- **Local-staging-validated end to end:**
+  - `supabase db reset` applied migrations 001-011 cleanly from a fresh
+    database (repeated 3 times across this session as fixes landed).
+  - A 34-assertion Node integration suite against local Supabase covering
+    shift scheduling/assignment/confirmation, X/Z submission, duplicate
+    rejection, reconciliation OK/WARNING/ERROR, edit/cancel/override with
+    full `audit_logs` column verification, raw-write denial on every
+    RPC-only table, cross-branch RLS scoping, server-side submission
+    timing (ordinary employee denied past cutoff, manager privileged
+    bypass allowed), and branch reassignment (org-wide only, audited).
+    **34/34 pass** on a clean run.
+  - Drove all seven screens in a real browser (temporary, fully-reverted
+    `app/.env.local` + a one-line dev-only `window.__sb` exposure,
+    identical pattern to the Phase C smoke test) as M001 (manager), K001
+    (cashier), and D001 (employee): shift list/confirm, shift assignment,
+    a real sales report submission through the actual form, the sales
+    overview + reconciliation queue including a real override via button
+    click, and the server-side late-submission rejection surfacing
+    correctly in the UI. `git status` on `app/` confirmed clean before
+    finishing — no temporary test wiring left behind.
+  - **Found and fixed two real defects this way**, neither visible from
+    reading the code alone — see `DECISIONS.md`:
+    1. RLS infinite recursion (`42P17`) between `shifts` and
+       `shift_assignments`' policies. Fixed with two more `SECURITY
+       DEFINER` helpers, same fix class as Phase C's
+       `current_user_branch_ids()`.
+    2. `NewSalesReportPage`'s post-submit `navigate('../reports', {relative:
+       'path'})` resolved to an unmatched route, landing on the router's
+       catch-all (`<Navigate to="/" />`) and showing the Login page instead
+       of "My Recent Reports." Fixed to an absolute path.
+  - A lint rule (`react-hooks/set-state-in-effect`) caught three
+    data-fetching effects written as "call a named async function from the
+    effect body" (matching an existing pattern already in `AuthProvider`,
+    which turned out to still be lint-clean only because of a subtler
+    structural difference) — restructured to the documented React pattern:
+    the fetch + `setState` live directly inside the effect's `.then()`, a
+    `cancelled` flag guards against a stale response, and a `reloadKey`
+    state number triggers re-fetches after a write action rather than
+    calling the loader function directly.
+  - Verified: `npm run typecheck`, `npm run lint`, `npm test` (56/56 —
+    50 existing + 6 new `deriveShiftRevenueFromReports` tests), and
+    `npm run build` all pass clean after every fix, including after
+    reverting the temporary browser-test wiring.
+- Updated `docs/LEGACY_RECONCILIATION.md` with a documented-only (not
+  built) legacy-column → V4-row mapping table (Phase D brief: "only
+  document mapping strategy"). Did not touch any legacy table, did not
+  backfill or migrate 2026 data.
+- Created `CORE_DATA_MODEL.md`, `SHIFT_MODEL.md`, `SALES_MODEL.md`.
+- Did NOT: apply anything to production, deploy any Edge Function, modify
+  legacy HTML/JS, merge to `main`, or start Phase E/inventory/performance/
+  badges/analytics.
+
 ## 2026-09-17 (continuation 2) — Phase C local staging smoke test
 
 Goal: prove — not assume — that the prepared, never-executed Phase C design

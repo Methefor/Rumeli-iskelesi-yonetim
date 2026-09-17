@@ -78,3 +78,27 @@ that look rigorous but validate against the wrong scope.
 Requires live, read-only DB query access (not available in this session)
 to actually investigate the discrepancy — see `BACKLOG.md` "Immediate
 blocker" item, which already tracks the broader need for DB-side access.
+
+## Legacy adapter strategy (Phase D — documented only, not built)
+
+Phase D introduced the normalized operational core (`shifts`,
+`sales_reports`, `sales_report_items`, see `CORE_DATA_MODEL.md`). This is
+the mapping a **future, separately-approved** legacy-read adapter would
+follow to let V4 screens read historical `daily_reports` rows without a
+data migration. Nothing below is implemented — no adapter code, view, or
+function exists yet; this is a plan for Phase J.
+
+| Legacy (`daily_reports` column) | V4 equivalent | Mapping note |
+|---|---|---|
+| `cashier_id` | `sales_reports.submitted_by` | Requires the Phase D data-migration script (not built) to resolve legacy cashier ids to `profiles.id` — see `MIGRATION_PLAN.md`. |
+| `rumeli_z1` (branch column) | `sales_reports` row with `branch_id` = Rumeli İskelesi | Branch becomes a foreign key, never a column — see `DECISIONS.md` "no branch-specific columns". |
+| `rumeli_z2` | A second register's `Z` report (`sales_reports.register_id` pointing at a second `registers` row for that branch) | Only if Rumeli İskelesi is confirmed to track two physical registers; otherwise a duplicate reading of the same register. |
+| `balik_ekmek`, `dondurma` (revenue-by-branch columns) | `sales_reports.gross_revenue` for a row with the corresponding `branch_id` | Confirms the "branch is a row, not a column" rule applies retroactively too. |
+| `ana_kasa` / `iki_kasa` | `registers` rows (`key = 'ana_kasa'` / `'iki_kasa'`) referenced by `sales_reports.register_id` | Only meaningful once the register-count-per-branch question above is answered. |
+| `gida`, `kahvalti`, `kahve`, `salata`, `tatli`, `borek_corek`, etc. (per-category revenue columns) | `sales_report_items` rows, one per `sales_categories.key` | Exact 1:1 already — `009_operational_core.sql` seeded these same category keys for this reason. |
+| `total_revenue` | `sales_reports.gross_revenue`, or `domain/revenue.calculateDailyRevenue` over the shift's X/Z pair | Must resolve the discrepancy above first — do not assume this column matches the frozen totals without checking. |
+| `is_on_time`, `points_earned` | `shift_assignments.is_on_time`, future `performance_events`/`performance_scores` (Phase H, not built) | Scoring model is Phase H, not Phase D. |
+
+**This mapping does not resolve the discrepancy above.** It exists so a
+future adapter or migration script has a starting vocabulary, not to imply
+the discrepancy is understood or that migration is safe to start.
