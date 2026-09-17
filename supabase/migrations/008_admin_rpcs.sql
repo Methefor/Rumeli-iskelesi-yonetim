@@ -365,8 +365,12 @@ begin
     raise exception 'profile % not found', p_user_id using errcode = '22023';
   end if;
 
+  -- crypt()/gen_salt() live in the `extensions` schema on both local and
+  -- hosted Supabase projects, not `public` — must be schema-qualified inside
+  -- a SECURITY DEFINER function that pins `search_path = public` (see the
+  -- local staging smoke test note in 005_auth_helpers.sql).
   insert into public.pin_credentials (user_id, pin_hash, failed_attempts, locked_until, last_attempt_at, updated_at)
-  values (p_user_id, crypt(p_new_pin, gen_salt('bf')), 0, null, null, now())
+  values (p_user_id, extensions.crypt(p_new_pin, extensions.gen_salt('bf')), 0, null, null, now())
   on conflict (user_id) do update
     set pin_hash = excluded.pin_hash,
         failed_attempts = 0,

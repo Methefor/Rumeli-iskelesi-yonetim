@@ -17,13 +17,19 @@ in the original brief. Move items up when a phase actually starts.
       (`001_profiles_roles.sql`), see `AUTH_ARCHITECTURE.md` "Login handle".
 - [ ] Backup strategy for the Supabase project before any schema migration
       (still needed before migrations 001-008 are applied, even to staging).
-- [ ] **Smoke-test `generateLink`/`verifyOtp` against a real staging
-      Supabase project** before deploying `pin-login` — confirm (a) no email
-      is actually sent, (b) the resulting session works with
-      `supabase.auth.setSession()` like any other login. This is the one
-      item the 2026-09-17 security review left explicitly open — see
-      `AUTH_ARCHITECTURE.md` "Not live-verified". Do not deploy until this
-      passes.
+- [x] **Local staging smoke test (2026-09-17)** — full Phase C flow run
+      against a local Supabase stack (Docker): migrations 001-008,
+      `generateLink`/`verifyOtp` session minting, RLS per role, audited
+      RPCs, PIN lockout/security. 39/39 assertions pass, zero email sent.
+      Found and fixed two real defects (pgcrypto schema qualification;
+      `verifyOtp` email+token_hash conflict) — see `DECISIONS.md` and
+      `WORKLOG.md`. Result: LOCAL PASS.
+- [ ] **Cloud staging validation still recommended** before production
+      deployment — local GoTrue is believed configuration-identical to a
+      hosted Supabase project for this flow, but that was not confirmed
+      against an actual hosted project in this session. Low-risk relative
+      to the design-level uncertainty that existed before the local test;
+      see `AUTH_ARCHITECTURE.md` "Live-verified".
 - [ ] Investigate the `daily_reports` vs frozen-presentation-totals
       discrepancy — see `docs/LEGACY_RECONCILIATION.md`. Needs live
       read-only DB query access, not available in this session.

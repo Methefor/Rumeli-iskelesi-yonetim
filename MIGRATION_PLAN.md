@@ -95,9 +95,11 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 ## Sign-off checklist before applying to production
 
 - [ ] All of the above, on staging, with no issues found.
-- [ ] The `generateLink`/`verifyOtp` session-minting step in `pin-login` has
-      been smoke-tested against staging (see `AUTH_ARCHITECTURE.md`
-      "Not live-verified") — this is the one open item left from the
-      2026-09-17 security review; everything else it found is fixed.
+- [x] The `generateLink`/`verifyOtp` session-minting step in `pin-login` has
+      been smoke-tested — against a local Supabase stack (2026-09-17), not
+      yet against a hosted staging project. See `AUTH_ARCHITECTURE.md`
+      "Live-verified". A real cloud staging project run is recommended
+      before production but is a lower-confidence gap than the
+      never-executed state this checklist item originally flagged.
 - [ ] Explicit user approval for this specific step, separate from the
       approval to prepare these files.

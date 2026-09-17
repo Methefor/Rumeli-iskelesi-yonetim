@@ -2,6 +2,79 @@
 
 Reverse-chronological. One entry per work session.
 
+## 2026-09-17 (continuation 2) — Phase C local staging smoke test
+
+Goal: prove — not assume — that the prepared, never-executed Phase C design
+(commit e13c88c) actually works against a real Postgres/GoTrue instance.
+Production Supabase project (`iwikwbjsznjuefvuemdb`) was never touched;
+its credentials in the root `.env` were never read by any tool in this
+session (see below) and the file's content is byte-identical
+(sha256 `14a47bea...` before and after).
+
+- Confirmed Docker Desktop 29.8.0 running (`docker ps`); this session's
+  shell had a stale `PATH` from before Docker was installed, worked around
+  by invoking the discovered install path directly / exporting it per call.
+- `npx supabase init` (no prior `config.toml`) then `npx supabase start`:
+  the Supabase CLI reads the repo-root `.env` for its own variable
+  substitution and fails to parse it (a pre-existing UTF-8 BOM in that
+  file, unrelated to this work). Worked around by renaming `.env` aside for
+  the duration of each `supabase` CLI invocation only, verifying its
+  sha256 checksum unchanged immediately before and after every rename —
+  never touched its content, never let local Supabase read production
+  values.
+- Applied migrations 001-008 to the local stack: **all 8 succeeded on the
+  first attempt**, both the initial run and a full `supabase db reset`
+  (fresh database, chain re-verified from zero after the fixes below).
+- Seeded 3 minimal synthetic test identities (M001/manager/Rumeli İskelesi,
+  K001/cashier/Rumeli İskelesi, D001/employee/İskele Dondurma) via
+  `auth.admin.createUser` + direct service-role table inserts (profiles,
+  user_roles, branch_memberships, pin_credentials) — this is legitimate
+  seeding (mirrors how Phase D's data migration will provision accounts),
+  not a client-write path being tested.
+- Ran a 39-assertion Node test suite against the live stack covering:
+  full pin-login flow (valid/wrong code/PIN, inactive profile, PIN format
+  validation), concurrent-lockout behavior (6 parallel wrong attempts →
+  exactly one lockout, one audit row, no flooding), session mechanics
+  (`auth.uid()` resolution via RLS self-select, `/auth/v1/token?grant_type=
+  refresh_token`, session restore via `setSession` in a fresh client),
+  RLS enforcement per role (cashier/employee cannot read unrelated
+  profiles, cannot touch `pin_credentials`, cannot call admin RPCs; manager
+  can grant an allowed role but not `owner`; every raw `user_roles`/
+  `branch_memberships` write denied regardless of role), and an
+  audited-RPC round-trip (`admin_set_employee_code`) with full
+  `audit_logs` column verification. **Found and fixed two real defects**
+  that only a live run could surface — see `DECISIONS.md`:
+  (1) `verify_pin()`/`admin_reset_pin()` called unqualified `crypt()`/
+  `gen_salt()`, unresolvable under `search_path = public` because pgcrypto
+  lives in the `extensions` schema; (2) `pin-login`'s `verifyOtp` call
+  passed `email` alongside `token_hash`, which supabase-js rejects
+  outright. After both fixes, re-ran from a fresh `supabase db reset`:
+  **39/39 assertions pass**, migrations apply cleanly, zero Mailpit
+  messages (no email sent) across the run.
+- Verified the real frontend chain in a browser against the local stack
+  (temporary `app/.env.local` + a one-line, fully-reverted dev-only
+  `window.__sb` exposure in `client.ts`, both removed before finishing —
+  `git status` on `app/` is clean): unauthenticated → redirected to `/`;
+  M001 (manager) → `/app/manager` renders (`ProtectedRoute` + `RoleGuard`
+  pass, real roles/branchIds loaded via `fetchAuthorizationContext()` from
+  the live `user_roles`/`branch_memberships` tables); K001 (cashier) →
+  `/app/manager` shows the real `Unauthorized` component; K001 →
+  `/app/employee` renders normally. `BranchGuard` is not wired to any route
+  yet (documented, pre-existing gap — see `AUTH_ARCHITECTURE.md`), so it
+  was not exercised live; its allow/deny logic is already unit-tested.
+- Verified: `npm run typecheck`, `npm run lint`, `npm test` (50/50), and
+  `npm run build` all pass clean in `app/` after reverting the temporary
+  browser-test wiring.
+- Did NOT: apply anything to production, deploy the Edge Function to any
+  hosted project, modify production RLS/Auth/data, merge to `main`, or
+  start Phase D.
+- Result: **LOCAL PASS** for the full Phase C flow (auth, RLS, audited
+  RPCs, PIN security). The `generateLink`/`verifyOtp` session-minting
+  design itself is now proven correct in code — see
+  `AUTH_ARCHITECTURE.md`'s updated "Live-verified" note for the one
+  remaining caveat (a hosted project's own configuration is the last
+  unverified variable, not the design).
+
 ## 2026-09-17 (continuation) — Phase C security review: fixes applied to prepared files
 
 Continuing this project on a different machine after a git-history check

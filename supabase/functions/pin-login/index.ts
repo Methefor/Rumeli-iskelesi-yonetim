@@ -119,10 +119,15 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('SUPABASE_ANON_KEY')!,
   )
 
+  // Local staging smoke test finding (2026-09-17): supabase-js's verifyOtp
+  // REJECTS the call (400 "Only the token_hash and type should be provided")
+  // if `email` is passed alongside `token_hash` — they are mutually
+  // exclusive verification paths in the SDK, not additive. Passing both (the
+  // original design) failed on every call. token_hash + type is sufficient
+  // on its own; the email was already resolved and is not needed again.
   const { data: verifyData, error: verifyOtpError } = await anonClient.auth.verifyOtp({
     type: 'magiclink',
     token_hash: linkData.properties.hashed_token,
-    email: authUser.user.email,
   })
 
   if (verifyOtpError || !verifyData.session) {

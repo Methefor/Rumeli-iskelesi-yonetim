@@ -229,6 +229,38 @@ D's data migration may need to remap or leave null for accounts that never
 existed in the legacy system (e.g. a newly hired owner/manager account
 created directly in V4).
 
+## Local staging smoke test (2026-09-17): schema-qualify pgcrypto calls inside SECURITY DEFINER functions
+
+**Decision:** `verify_pin()` (`005_auth_helpers.sql`) and `admin_reset_pin()`
+(`008_admin_rpcs.sql`) now call `extensions.crypt(...)`/`extensions.gen_salt(...)`
+instead of the unqualified `crypt`/`gen_salt`.
+**Why:** running the prepared migrations against a real local Supabase stack
+(not just reading the SQL) surfaced a genuine failure: pgcrypto is installed
+into the `extensions` schema on Supabase (local and hosted alike), and both
+functions pin `search_path = public` as a SECURITY DEFINER hardening
+measure — which excludes `extensions`, so `crypt()` was unresolvable and
+every PIN check failed with `function crypt(text, text) does not exist`.
+This was invisible to static review because the SQL is syntactically valid
+and only fails at call time against a real Supabase-shaped database. Lesson
+generalized in the code comment: never rely on `search_path` for extension
+functions inside a `SECURITY DEFINER` body — always schema-qualify.
+
+## Local staging smoke test (2026-09-17): `verifyOtp` must be called with only `token_hash` + `type`
+
+**Decision:** `pin-login/index.ts`'s `verifyOtp` call no longer passes
+`email` alongside `token_hash`.
+**Why:** the live smoke test showed supabase-js's `verifyOtp` rejects the
+call outright (400, "Only the token_hash and type should be provided") when
+both `token_hash` and `email` are given — they are alternative, mutually
+exclusive verification inputs in the SDK, not additive fields. The original
+design (written from documented behavior, never executed) passed both,
+so every login attempt failed at the last step with a generic
+`sign_in_failed`. Confirmed by isolating the call: `token_hash` + `type`
+alone mints a correct session; adding `email` breaks it. This is exactly
+the class of defect `AUTH_ARCHITECTURE.md`'s "not live-verified" caveat
+was flagging, and exactly why the smoke test was required before treating
+the design as production-ready.
+
 ## Phase C: guards fail closed on missing authorization data, not open
 
 **Decision:** `RoleGuard`/`BranchGuard` show `Unauthorized` when `roles`/

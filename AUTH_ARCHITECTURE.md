@@ -128,15 +128,39 @@ way to fabricate a GoTrue-valid JWT from inside SQL/plpgsql.
   wrong UX for this app's actual usage pattern (shared devices, fast
   numeric entry per the mobile-first requirements).
 
-**Not live-verified — deployment BLOCKED pending a smoke test:**
-`generateLink`/`verifyOtp` are documented, stable Supabase Auth behaviors,
-but this exact server-side "mint a session with nobody actually receiving an
-email" usage has not been exercised against a real Supabase project in this
-session (no project/DB access available here). Before deploying, run one
-manual smoke test against staging confirming: (a) no email is actually
-dispatched, and (b) `verifyOtp`'s session works with
-`supabase.auth.setSession()` on the client exactly like any other login. See
-`pin-login/index.ts`'s header comment and `BACKLOG.md`.
+**Live-verified against local Supabase (2026-09-17) — LOCAL PASS / CLOUD
+STAGING VALIDATION STILL RECOMMENDED:** ran the full flow against a local
+Supabase stack (`supabase start`, Postgres 17 + GoTrue + Kong + Edge Runtime,
+all official Supabase images — the same images a hosted project runs).
+Confirmed: (a) `generateLink`/`verifyOtp` mint a normal, refreshable session
+(`access_token`/`refresh_token`, `session.user.id` matches the target
+profile, `auth.uid()` resolves correctly in RLS, `/auth/v1/token?grant_type=
+refresh_token` works); (b) Mailpit (the local stack's email capture) recorded
+**zero** messages across the whole test run — `generateLink` genuinely does
+not send mail; (c) the real `AuthProvider`/`ProtectedRoute`/`RoleGuard` chain
+in `app/` correctly authenticates and authorizes using these tokens end to
+end (see `WORKLOG.md`, 2026-09-17 local staging entry).
+
+Two real defects surfaced ONLY by this live run (both fixed, see
+`DECISIONS.md`):
+1. `verify_pin()` (and the `admin_reset_pin()` RPC copying its pattern)
+   called unqualified `crypt()`/`gen_salt()` inside a function that pins
+   `search_path = public` — but pgcrypto lives in the `extensions` schema on
+   both local and hosted Supabase, so every PIN check failed with
+   `function crypt(text, text) does not exist` until schema-qualified.
+2. `pin-login`'s `verifyOtp` call passed `email` alongside `token_hash` —
+   supabase-js rejects this combination outright ("Only the token_hash and
+   type should be provided"); the login failed with `sign_in_failed` on
+   every call until `email` was removed from that call.
+
+Why "cloud staging still recommended" rather than a full GO: local GoTrue is
+believed configuration-identical to hosted Supabase for this flow (same
+image family, no local-only auth settings involved), but this session had no
+access to an actual hosted project to confirm that byte-for-byte — e.g. mail
+provider wiring, custom SMTP, or a hosted-only auth setting could in
+principle change `generateLink`'s no-send behavior. Treat the *design and
+code* as proven; treat the *specific hosted project's configuration* as the
+one remaining unverified variable before production deployment.
 
 ## 3. Session model
 

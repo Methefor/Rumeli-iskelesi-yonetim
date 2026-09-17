@@ -204,6 +204,15 @@ grant execute on function public.write_audit_log(text, text, text, jsonb, jsonb,
 -- zero policies on this table, so it is unreachable via PostgREST for both
 -- anon and authenticated roles; only SECURITY DEFINER functions can touch
 -- it).
+--
+-- Local staging smoke test finding (2026-09-17): on both Supabase-local and
+-- (per Supabase's own project bootstrap convention) hosted Supabase
+-- projects, pgcrypto is installed into the `extensions` schema, not
+-- `public`. A SECURITY DEFINER function that pins `set search_path = public`
+-- (the hardening pattern used throughout this file) therefore CANNOT resolve
+-- an unqualified `crypt()`/`gen_salt()` call — verify_pin() failed this way
+-- on every call until schema-qualified below. Never rely on search_path for
+-- extension functions inside a SECURITY DEFINER body; always schema-qualify.
 -- -----------------------------------------------------------------------------
 
 create table if not exists public.pin_credentials (
@@ -247,7 +256,7 @@ begin
     return false;
   end if;
 
-  v_ok := (v_record.pin_hash = crypt(p_pin, v_record.pin_hash));
+  v_ok := (v_record.pin_hash = extensions.crypt(p_pin, v_record.pin_hash));
 
   if v_ok then
     update public.pin_credentials
