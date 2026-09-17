@@ -1,9 +1,8 @@
 {
-  "framework": null,
-  "outputDirectory": ".",
+  "framework": "vite",
+  "buildCommand": "cd app && npm install && npm run build",
+  "outputDirectory": "app/dist",
   "rewrites": [
-    { "source": "/admin", "destination": "/admin-dashboard.html" },
-    { "source": "/cashier", "destination": "/cashier-dashboard.html" },
-    { "source": "/entry", "destination": "/entry.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
