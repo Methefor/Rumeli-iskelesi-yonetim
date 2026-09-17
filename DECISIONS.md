@@ -142,6 +142,93 @@ role/branch-membership oracle for the whole user base. Removing the
 parameter removes the vulnerability class entirely rather than relying on
 callers to "just not do that."
 
+## Security review (2026-09-17): `profiles` self-update restricted by column-level GRANT, not RLS alone
+
+**Decision:** `revoke update on public.profiles from authenticated;` then
+`grant update (full_name, phone, avatar_url) on public.profiles to authenticated;`
+in `006_rls_policies.sql`, alongside (not instead of) the row-level policies.
+**Why:** the original `profiles_update_self_limited` policy was
+`using (id = auth.uid())` with no column restriction — a user could update
+*any* column on their own row, including `is_active` and (once added)
+`employee_code`. Postgres RLS `USING`/`WITH CHECK` clauses are row-scoped
+only; they cannot express "this row, but only these columns." Postgres's
+column-level privilege system is the correct tool for that and is a
+first-class, well-supported feature — not a workaround. `is_active` and
+`employee_code` are excluded from the grant entirely; the only way to change
+them is a `SECURITY DEFINER` RPC (`008_admin_rpcs.sql`), which runs as the
+function owner and so is unaffected by the caller's own column grants.
+
+## Security review (2026-09-17): `branch_manager` gets `employee.manage_branch`, not `employee.manage`
+
+**Decision:** added a new permission `employee.manage_branch`, granted to
+`branch_manager` in place of the previous `employee.manage` grant. Every RLS
+policy and RPC that checks it also checks
+`current_user_shares_branch_with(target_user_id)` (new helper,
+`005_auth_helpers.sql`).
+**Why:** `employee.manage` is a boolean permission with no row context — a
+policy gated only on `current_user_has_permission('employee.manage')`
+returns the same answer for every row, so a branch manager for Branch X
+could read/write employee records in Branch Y. This is exactly the kind of
+bug a permission-only (role-based) authorization model produces once any
+role needs to be scoped to a subset of rows; the fix pairs the permission
+check with an explicit relationship check (shared branch membership) on
+every policy/RPC that uses it, rather than trying to make the permission
+system itself branch-aware.
+
+## Security review (2026-09-17): critical writes are RPC-only, not raw-write-with-permission-check
+
+**Decision:** removed the raw `for all using (current_user_has_permission(...))`
+write policies on `user_roles` and `branch_memberships`
+(`006_rls_policies.sql`). The only way to change either table now is through
+the audited `SECURITY DEFINER` RPCs in `008_admin_rpcs.sql`
+(`assign_role`/`revoke_role`/`assign_branch_membership`/`remove_branch_membership`),
+which also cover `admin_set_employee_active`, `admin_reset_pin`, and
+`admin_set_employee_code` for the equivalent `profiles`-column cases.
+**Why:** a permission-gated raw write policy can only express "does the
+caller hold this permission," never a role hierarchy — there was nothing
+stopping a `manager` from granting `owner`, or a `branch_manager` (once
+scoped to `employee.manage_branch`) from granting a role to a user outside
+their branch, because RLS has no vocabulary for "and also enforce this
+business rule about which role may grant which other role." A
+`SECURITY DEFINER` function can encode that hierarchy directly in code and
+guarantees an `audit_logs` row is written on every change — a raw table
+write policy could easily be used correctly by a well-behaved client and
+still leave no trace if any future client (or a manual `supabase.from(...)`
+call) bypassed the intended RPC path.
+
+## Security review (2026-09-17): `service_credentials` rejected in favor of `generateLink` + `verifyOtp`
+
+**Decision:** the `pin-login` Edge Function no longer stores or reads a
+per-profile password anywhere. It calls
+`adminClient.auth.admin.generateLink({ type: 'magiclink', email })` followed
+by `anonClient.auth.verifyOtp({ type: 'magiclink', token_hash, email })`,
+both server-side, to obtain a real session.
+**Why:** `service_credentials` would have required a service-role-only table
+holding a plaintext-equivalent, readable password per employee — its own
+generation scheme, rotation policy, and access-control review, all to solve
+a problem (mint a session for a verified user, server-side) that
+`generateLink`/`verifyOtp` already solves with zero stored secrets, using
+only public Supabase Auth Admin/Auth API calls. See `AUTH_ARCHITECTURE.md`
+"Why an Edge Function is required" for the full comparison, including the
+"not live-verified, deployment blocked pending a staging smoke test" caveat
+— this flow is believed correct from documented Supabase behavior but has
+not been exercised against a real project in this session.
+
+## Security review (2026-09-17): `employee_code` is the login handle, not `legacy_cashier_id`
+
+**Decision:** added `profiles.employee_code` (unique, format
+`^[A-Z][0-9]{2,4}$`, e.g. `M001`/`K002`/`D001`) as the resolved login handle,
+closing the "Open question" `AUTH_ARCHITECTURE.md` previously left open.
+Client-writable only through `admin_set_employee_code()`
+(`008_admin_rpcs.sql`) — excluded from the self-service column grant above.
+**Why:** `legacy_cashier_id` is explicitly documented (see its column
+comment in `001_profiles_roles.sql`) as traceability-only, for joining
+historical `daily_reports` rows during the transition — reusing it as a
+login handle would couple authentication to a legacy foreign key that Phase
+D's data migration may need to remap or leave null for accounts that never
+existed in the legacy system (e.g. a newly hired owner/manager account
+created directly in V4).
+
 ## Phase C: guards fail closed on missing authorization data, not open
 
 **Decision:** `RoleGuard`/`BranchGuard` show `Unauthorized` when `roles`/

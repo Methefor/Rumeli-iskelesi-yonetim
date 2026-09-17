@@ -1,11 +1,21 @@
 # Auth Architecture (Phase C — design, not yet live)
 
 Status: **design + prepared code only**. Nothing described here is running
-against production. Migrations live in `supabase/migrations/001-006`
+against production. Migrations live in `supabase/migrations/001-008`
 (not applied); the Edge Function lives in `supabase/functions/pin-login/`
-(not deployed); the frontend scaffold lives in `app/src/app/providers/Auth*`,
-`app/src/app/router/guards/`, and `app/src/features/auth/` (deployed as part
-of the V4 app, but functionally inert — there is nowhere yet to log in).
+(not deployed, and the session-minting step is not live-verified — see
+"PIN login flow" below); the frontend scaffold lives in
+`app/src/app/providers/Auth*`, `app/src/app/router/guards/`, and
+`app/src/features/auth/` (deployed as part of the V4 app, but functionally
+inert — there is nowhere yet to log in).
+
+**2026-09-17 security review round:** this document was updated after a
+review found four blocking issues in the original design below (raw
+`profiles` self-update with no column limit; `branch_manager` holding an
+org-wide `employee.manage` grant; critical writes permitted as raw table
+writes; a rejected `service_credentials` design). All four are fixed in the
+current `001-008` migrations and this document — see `DECISIONS.md` for the
+full reasoning behind each fix.
 
 ## Why this exists
 
@@ -49,15 +59,15 @@ Role and permission keys are data (rows), never hardcoded string comparisons
 scattered through RLS or the frontend — see `supabase/migrations/001` and
 `002`.
 
-**Open question (not resolved in this phase):** how a person authenticates
-to begin with — `profiles` has no login handle yet (email/phone/employee
-code). The `pin-login` Edge Function assumes an `employee_code` but the
-column/table to resolve it against `profiles` is intentionally left as a
-`TODO` in that function's source (see `supabase/functions/pin-login/index.ts`)
-rather than guessed at here. This needs an explicit decision before that
-function can be deployed — likely a short numeric/text code separate from
-`legacy_cashier_id`, decided alongside the Phase D data migration script
-that populates `profiles` from legacy `cashiers`/`admins`.
+**Login handle (resolved 2026-09-17):** `profiles.employee_code` — a short,
+unique, normalized code (`M001`, `K001`, `K002`, `D001`, `D002`; format
+`^[A-Z][0-9]{2,4}$`, enforced by a check constraint in `001` and again in
+`admin_set_employee_code()` in `008`). Deliberately NOT `legacy_cashier_id`,
+which stays traceability-only and is never used for lookup. `employee_code`
+is not client-writable at all (excluded from the column-level `UPDATE` grant
+in `006`) — it is set only at Phase D provisioning time or via
+`admin_set_employee_code()` (org-wide privileged only, audited). The
+`pin-login` Edge Function resolves it directly; see "PIN login flow" below.
 
 ## 2. PIN mechanism
 
@@ -82,21 +92,32 @@ cannot mint a real Supabase Auth session — session issuance (access token +
 refresh token) is GoTrue's job, not Postgres's, and there is no supported
 way to fabricate a GoTrue-valid JWT from inside SQL/plpgsql.
 
-**Chosen design:**
+**Chosen design (updated 2026-09-17 security review):**
 1. Browser → `pin-login` Edge Function: `{ employeeCode, pin }`. No
    Supabase client credentials involved at this point.
 2. Edge Function (holds the `service_role` key — never shipped to the
-   browser) resolves `employeeCode → user_id`, calls `verify_pin` via its
-   service-role connection.
-3. On success, the Edge Function calls
-   `supabase.auth.signInWithPassword({ email, password })` using a
-   per-profile, randomly generated, rotate-able password stored only in a
-   service-role-only table (`service_credentials` — **not yet a migration
-   in this phase**, an open design item below).
-4. The resulting `{ access_token, refresh_token }` are returned to the
-   browser over HTTPS. The browser calls `supabase.auth.setSession(...)`.
+   browser) resolves `employeeCode → profile.id` (via `profiles.employee_code`,
+   see "Login handle" above), calls `verify_pin` via its service-role
+   connection.
+3. On success, the Edge Function looks up the profile's `auth.users` email
+   (`adminClient.auth.admin.getUserById`), then calls
+   `adminClient.auth.admin.generateLink({ type: 'magiclink', email })` and
+   immediately `anonClient.auth.verifyOtp({ type: 'magiclink', token_hash, email })`
+   itself — no email is ever sent, and the token_hash never leaves the
+   function's server-side execution.
+4. The resulting `{ access_token, refresh_token }` from `verifyOtp`'s
+   session are returned to the browser over HTTPS. The browser calls
+   `supabase.auth.setSession(...)`.
 
-**Alternatives considered and rejected for now:**
+**Alternatives considered:**
+- *`service_credentials` (a per-profile stored password + `signInWithPassword`)*
+  — the original design. **REJECTED** in the security review: it requires a
+  service-role-only table holding a plaintext-equivalent, readable password
+  per employee, with its own generation/rotation/access-control surface to
+  design and get right — an entire additional secret-management problem for
+  no benefit over `generateLink`/`verifyOtp`, which uses only public,
+  documented Supabase Auth Admin/Auth APIs and stores no password anywhere.
+  See `DECISIONS.md`.
 - *Custom JWT signing* (sign a GoTrue-shaped JWT with the project's JWT
   secret directly in the Edge Function): works, but requires safely
   handling the project's JWT secret inside function code and keeping it in
@@ -107,13 +128,15 @@ way to fabricate a GoTrue-valid JWT from inside SQL/plpgsql.
   wrong UX for this app's actual usage pattern (shared devices, fast
   numeric entry per the mobile-first requirements).
 
-**Open design item — `service_credentials` table:** not written as a
-migration in this phase because its own security shape (who can read it —
-service_role only, certainly; how the random password is generated/rotated;
-whether it's a separate table or a column on `pin_credentials`) deserves its
-own review pass rather than being bundled into this one. Tracked in
-`BACKLOG.md`. `pin-login/index.ts` has explicit `// TODO` markers at both
-points that depend on it.
+**Not live-verified — deployment BLOCKED pending a smoke test:**
+`generateLink`/`verifyOtp` are documented, stable Supabase Auth behaviors,
+but this exact server-side "mint a session with nobody actually receiving an
+email" usage has not been exercised against a real Supabase project in this
+session (no project/DB access available here). Before deploying, run one
+manual smoke test against staging confirming: (a) no email is actually
+dispatched, and (b) `verifyOtp`'s session works with
+`supabase.auth.setSession()` on the client exactly like any other login. See
+`pin-login/index.ts`'s header comment and `BACKLOG.md`.
 
 ## 3. Session model
 
@@ -153,15 +176,35 @@ Per the brief, these are the actions that MUST go through
 `write_audit_log()` (`supabase/migrations/005`) once their owning feature is
 built: PIN reset, role change, branch assignment, late/on-time override,
 score override, badge override, report edit, report delete, employee
-activation/deactivation. The RLS design (`RLS_PLAN.md`) permits some of
-these as direct table writes for privileged roles as a safety net, but the
-Management Center UI (Phase H) must route them through audited RPCs, not
-raw table writes — noted inline in `006_rls_policies.sql`.
+activation/deactivation.
+
+As of the 2026-09-17 security review, the ones that exist today are **audited
+SECURITY DEFINER RPCs in `supabase/migrations/008_admin_rpcs.sql`**, not raw
+table writes — `006_rls_policies.sql` grants no direct client
+INSERT/UPDATE/DELETE on `user_roles` or `branch_memberships` at all, and
+excludes `profiles.is_active`/`employee_code` from the client's column-level
+`UPDATE` grant:
+
+| Action | RPC |
+|---|---|
+| Role assignment | `assign_role(user_id, role_key, reason)` |
+| Role revocation | `revoke_role(user_id, role_key, reason)` |
+| Branch assignment | `assign_branch_membership(user_id, branch_id, is_primary, reason)` |
+| Branch removal | `remove_branch_membership(user_id, branch_id, reason)` |
+| Employee activation/deactivation | `admin_set_employee_active(user_id, is_active, reason)` |
+| PIN reset | `admin_reset_pin(user_id, new_pin, reason)` |
+| Employee code change | `admin_set_employee_code(user_id, employee_code, reason)` |
+
+Late/on-time override, score override, badge override, and report
+edit/delete have no owning table yet (Phase D) — their RPCs will be added
+alongside those tables, following this same pattern.
 
 ## 5. What is intentionally NOT done in this phase
 
 - No migration has been applied.
-- No Edge Function has been deployed.
+- No Edge Function has been deployed — and even once approved for
+  deployment, see the "Not live-verified" note above; the session-minting
+  step needs one staging smoke test first.
 - No real login is possible in the V4 app yet — `LoginPage` is a shell.
 - The legacy app's plaintext-PIN login, `?cashier_id=` pattern, and
   unguarded admin dashboard are all still live in production, unchanged.

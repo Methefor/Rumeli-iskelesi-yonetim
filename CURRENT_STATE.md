@@ -55,12 +55,15 @@ this exists" for the confirmed findings — RLS enabled but effectively
 public on every legacy table; `avatars` bucket public/anon-writable). Based
 on that, Phase C produced:
 
-- `supabase/migrations/001-007` — the full identity/authorization schema +
-  RLS + storage policies, as reviewable SQL. **Not applied to any
-  database, staging or production.**
+- `supabase/migrations/001-008` — the full identity/authorization schema +
+  RLS + storage policies + audited admin RPCs, as reviewable SQL. **Not
+  applied to any database, staging or production.**
 - `supabase/functions/pin-login/` — a prepared Edge Function source.
-  **Not deployed**, and cannot be until two open design items are resolved
-  (see `AUTH_ARCHITECTURE.md` "Open question" / "Open design item").
+  **Not deployed.** Functionally complete (resolves `employee_code`, verifies
+  the PIN, mints a session via `generateLink`/`verifyOtp`) but the
+  session-minting step is **not live-verified against a real Supabase
+  project** — see `AUTH_ARCHITECTURE.md` "Not live-verified" for the exact
+  smoke test required before deployment.
 - A frontend auth scaffold in `app/` (`AuthProvider`, `useAuth`,
   `ProtectedRoute`, `RoleGuard`, `BranchGuard`, a `LoginPage` shell) that
   tracks a real Supabase session today but has no way to create one yet —
@@ -69,6 +72,39 @@ on that, Phase C produced:
   `daily_reports` totals don't reproduce the frozen 2026 presentation
   totals. Not investigated further (no DB query access this session); do
   not build Phase J regression fixtures until this is resolved.
+
+**Security review (2026-09-17), same day:** a review of the above found four
+blocking issues before it could be considered "hardened" — see
+`DECISIONS.md` for the full reasoning behind each fix:
+1. `profiles` self-update had no column restriction (any user could flip
+   their own `is_active`). Fixed via a Postgres column-level `GRANT`
+   restricting client `UPDATE` to `full_name`/`phone`/`avatar_url` only.
+2. `branch_manager` held the org-wide `employee.manage` permission. Replaced
+   with a new `employee.manage_branch` permission, paired everywhere with an
+   explicit shared-branch-membership check
+   (`current_user_shares_branch_with()`, `005_auth_helpers.sql`).
+3. Role/branch-membership writes were raw, permission-gated table policies,
+   which cannot express the required role hierarchy or guarantee an audit
+   trail. Replaced with audited `SECURITY DEFINER` RPCs
+   (`008_admin_rpcs.sql`: `assign_role`, `revoke_role`,
+   `assign_branch_membership`, `remove_branch_membership`,
+   `admin_set_employee_active`, `admin_reset_pin`, `admin_set_employee_code`).
+4. The `service_credentials` design (a stored, readable per-employee
+   password) was rejected outright and replaced with
+   `generateLink`/`verifyOtp` — no password is stored anywhere.
+
+Also resolved: `profiles.employee_code` (format `^[A-Z][0-9]{2,4}$`, e.g.
+`M001`/`K002`) is now the login handle `pin-login` resolves against —
+closing the previously-open "how does anyone log in" question. See
+`AUTH_ARCHITECTURE.md` "Login handle".
+
+**One item remains open, by design:** the `generateLink`/`verifyOtp`
+session-minting flow in `pin-login/index.ts` is believed correct from
+documented Supabase Auth behavior but has not been exercised against a real
+Supabase project (no project/DB access in this session). Treat deployment
+as blocked until that one staging smoke test passes — see
+`AUTH_ARCHITECTURE.md` and `MIGRATION_PLAN.md`'s production sign-off
+checklist.
 
 See `AUTH_ARCHITECTURE.md`, `RLS_PLAN.md`, and `MIGRATION_PLAN.md` for the
 full design and the approval gates before any of this touches a real

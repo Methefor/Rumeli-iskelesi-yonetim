@@ -15,6 +15,7 @@ authorize applying anything.
 | 005 | `005_auth_helpers.sql` | helper functions, `pin_credentials`, `verify_pin()` | 001, 002, 003, 004 |
 | 006 | `006_rls_policies.sql` | RLS enable + policies for every table above | 001-005 |
 | 007 | `007_storage_policies.sql` | new `avatars-v4` bucket + policies | 001, 002 |
+| 008 | `008_admin_rpcs.sql` | audited RPCs: `assign_role`, `revoke_role`, `assign_branch_membership`, `remove_branch_membership`, `admin_set_employee_active`, `admin_reset_pin`, `admin_set_employee_code` | 001-005 |
 
 Each file's own header comment repeats its dependencies and a rollback
 snippet — this table is a summary, the files are the source of truth.
@@ -31,9 +32,9 @@ snippet — this table is a summary, the files are the source of truth.
 - No Phase D operational tables (shifts, sales_reports, tasks, performance,
   badges, inventory) — see `RLS_PLAN.md` "Future operational tables" for
   the design template those will follow.
-- The `service_credentials` mechanism the `pin-login` Edge Function needs
-  (see `AUTH_ARCHITECTURE.md` "Open design item") — not written as a
-  migration yet, needs its own review.
+- A `service_credentials` table — this design was reviewed and REJECTED
+  (see `DECISIONS.md`); the `pin-login` Edge Function uses
+  `generateLink`/`verifyOtp` instead and stores no password anywhere.
 
 ## How to review
 
@@ -41,8 +42,8 @@ snippet — this table is a summary, the files are the source of truth.
    purpose, dependencies, and rollback.
 2. Check `RLS_PLAN.md` for the full policy rationale per table/role.
 3. Check `AUTH_ARCHITECTURE.md` for how `pin_credentials`/`verify_pin` fit
-   into the actual login flow (they're necessary but not sufficient on
-   their own — the Edge Function and `service_credentials` are still open).
+   into the actual login flow, and the "not live-verified" caveat on the
+   `generateLink`/`verifyOtp` session-minting step (008/pin-login).
 4. Confirm nothing here references or writes to a legacy table name.
 
 ## How to apply (once approved — not yet)
@@ -56,7 +57,7 @@ supabase db push
 ```
 
 `supabase db push` applies migration files in filename order, which is why
-they're numbered `001`-`007` rather than timestamped — the numeric prefixes
+they're numbered `001`-`008` rather than timestamped — the numeric prefixes
 enforce the dependency order in this table regardless of file creation
 date. After staging verification, repeat against the production project
 only with explicit sign-off.
@@ -69,9 +70,9 @@ editor does not track which migrations have run.
 
 Each file documents its own rollback (drop statements in dependency-safe
 reverse order). Applying and rolling back should be exercised on staging
-before production ever sees these files. Because 001-007 create entirely
+before production ever sees these files. Because 001-008 create entirely
 new tables/functions/policies with no foreign keys into any legacy table,
-a full rollback of all seven is non-destructive to legacy data by
+a full rollback of all eight is non-destructive to legacy data by
 construction — but always confirm with `git diff`-style review of the
 actual staging schema state before trusting that in the moment.
 
@@ -84,17 +85,19 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 
 ## Sign-off checklist before applying to staging
 
-- [ ] Someone other than the author has read all 7 files.
+- [ ] Someone other than the author has read all 8 files.
 - [ ] `RLS_PLAN.md`'s policy table matches what's actually in `006`.
 - [ ] Confirmed via `\d` or the dashboard schema view that no table/function
-      name in 001-007 collides with an existing legacy name.
+      name in 001-008 collides with an existing legacy name.
 - [ ] Staging project exists and is not the production project.
 - [ ] A rollback has been test-run on staging at least once.
 
 ## Sign-off checklist before applying to production
 
 - [ ] All of the above, on staging, with no issues found.
-- [ ] `AUTH_ARCHITECTURE.md`'s open items (login-handle column,
-      `service_credentials`) have a decision, even if not yet implemented.
+- [ ] The `generateLink`/`verifyOtp` session-minting step in `pin-login` has
+      been smoke-tested against staging (see `AUTH_ARCHITECTURE.md`
+      "Not live-verified") — this is the one open item left from the
+      2026-09-17 security review; everything else it found is fixed.
 - [ ] Explicit user approval for this specific step, separate from the
       approval to prepare these files.

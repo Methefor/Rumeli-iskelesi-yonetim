@@ -14,6 +14,10 @@
 -- Rollback:
 --   drop table if exists public.role_permissions;
 --   drop table if exists public.permissions;
+--
+-- Amended 2026-09-17 (security review): added employee.manage_branch and
+-- corrected the branch_manager grant set — see DECISIONS.md. Still not
+-- applied anywhere, so amending in place is safe.
 -- =============================================================================
 
 create table if not exists public.permissions (
@@ -26,9 +30,10 @@ create table if not exists public.permissions (
 comment on table public.permissions is 'Fixed permission catalog. Managed by migration, not end-user CRUD.';
 
 insert into public.permissions (key, description) values
-  ('employee.read',       'View employee records.'),
-  ('employee.manage',     'Create/edit/deactivate employees, assign branch/role, reset PIN.'),
-  ('branch.manage',       'Create/edit branches, assign branch memberships.'),
+  ('employee.read',        'View employee records (org-wide).'),
+  ('employee.manage',      'Create/edit/deactivate employees, assign branch/role, reset PIN — org-wide.'),
+  ('employee.manage_branch', 'Same as employee.manage, but only for employees who share a branch membership with the caller (see current_user_shares_branch_with() in 005_auth_helpers.sql). Grants no visibility or write access outside the caller''s own branch(es).'),
+  ('branch.manage',        'Create/edit branches, assign branch memberships.'),
   ('sales.create',        'Submit a sales/shift report.'),
   ('sales.edit_own',      'Edit a sales/shift report the user submitted themselves.'),
   ('sales.edit_all',      'Edit any sales/shift report regardless of submitter.'),
@@ -63,7 +68,12 @@ where
     'reports.read', 'reports.export', 'settings.manage'
   ))
   or (r.key = 'branch_manager' and p.key in (
-    'employee.read', 'employee.manage',
+    -- Security review (2026-09-17): branch_manager previously held the
+    -- org-wide 'employee.manage' grant, which — combined with RLS policies
+    -- keyed only on the permission, not on branch overlap — let a branch
+    -- manager for Branch X manage employees in Branch Y. Replaced with the
+    -- branch-scoped 'employee.manage_branch'; see DECISIONS.md.
+    'employee.manage_branch',
     'sales.create', 'sales.edit_own', 'sales.edit_all',
     'shift.manage', 'reports.read', 'reports.export'
   ))

@@ -19,25 +19,54 @@
 -- Rollback:
 --   alter table public.profiles disable row level security;
 --   (repeat per table, then) drop policy <name> on <table>; for every policy
---   created below. Disabling RLS on a table with no policies makes it fully
+--   created below. Also revoke/re-grant: `grant update on public.profiles to
+--   authenticated;` to undo the column-level restriction below.
+--   Disabling RLS on a table with no policies makes it fully
 --   readable/writable by anon+authenticated again — only do this as part of
 --   a full rollback of 001-006 together, never on its own.
+--
+-- Amended 2026-09-17 (security review): profiles self-update is now
+-- column-restricted (not just row-restricted); a branch-scoped profiles
+-- update policy was added for 'employee.manage_branch'; the raw
+-- user_roles/branch_memberships write policies were removed in favor of the
+-- audited RPCs in 008_admin_rpcs.sql (required by this migration from now
+-- on, not just the reverse). Still not applied anywhere, so amending in
+-- place is safe.
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
 -- profiles
 -- ---------------------------------------------------------------------------
+-- Security review (2026-09-17), finding #1: the original
+-- `profiles_update_self_limited` policy was `using (id = auth.uid())` with
+-- NO column restriction — a normal user could UPDATE any column on their
+-- own row, including `is_active`, `employee_code`, `legacy_cashier_id`.
+-- Postgres RLS policies are row-scoped only; they cannot restrict which
+-- columns a role may write. The fix uses Postgres COLUMN-LEVEL PRIVILEGES
+-- (a separate mechanism from RLS) to restrict `authenticated`'s raw UPDATE
+-- to exactly the three self-editable fields, for every row RLS lets them
+-- reach (self, or a privileged/branch-scoped row below). `is_active`,
+-- `employee_code`, and `legacy_cashier_id` are excluded from this grant
+-- entirely — the only way to change them is a SECURITY DEFINER RPC in
+-- 008_admin_rpcs.sql, which runs as the function owner and so bypasses this
+-- grant regardless of the caller's own privileges.
 alter table public.profiles enable row level security;
+
+revoke update on public.profiles from authenticated;
+grant update (full_name, phone, avatar_url) on public.profiles to authenticated;
 
 create policy profiles_select_self_or_privileged on public.profiles
   for select
   using (
     id = auth.uid()
     or public.current_user_is_owner_or_manager()
-    or public.current_user_has_permission('employee.read')
+    or (
+      public.current_user_has_permission('employee.manage_branch')
+      and public.current_user_shares_branch_with(id)
+    )
   );
 
-create policy profiles_update_self_limited on public.profiles
+create policy profiles_update_self on public.profiles
   for update
   using (id = auth.uid())
   with check (id = auth.uid());
@@ -46,6 +75,21 @@ create policy profiles_update_privileged on public.profiles
   for update
   using (public.current_user_has_permission('employee.manage'))
   with check (public.current_user_has_permission('employee.manage'));
+
+-- Security review (2026-09-17), finding #2: branch_manager no longer holds
+-- 'employee.manage' (see 002) — this branch-scoped policy is its
+-- replacement, gated on BOTH the permission and an actual shared branch
+-- membership with the target row, closing the org-wide-access bug.
+create policy profiles_update_branch_scoped on public.profiles
+  for update
+  using (
+    public.current_user_has_permission('employee.manage_branch')
+    and public.current_user_shares_branch_with(id)
+  )
+  with check (
+    public.current_user_has_permission('employee.manage_branch')
+    and public.current_user_shares_branch_with(id)
+  );
 
 -- No INSERT policy: profile rows are created by a trigger on auth.users
 -- (SECURITY DEFINER, added alongside the Phase C data-migration script, not
@@ -83,20 +127,22 @@ create policy user_roles_select_self_or_privileged on public.user_roles
   using (
     user_id = auth.uid()
     or public.current_user_is_owner_or_manager()
-    or public.current_user_has_permission('employee.manage')
+    or (
+      public.current_user_has_permission('employee.manage_branch')
+      and public.current_user_shares_branch_with(user_id)
+    )
   );
 
-create policy user_roles_write_privileged on public.user_roles
-  for all
-  using (public.current_user_has_permission('employee.manage'))
-  with check (public.current_user_has_permission('employee.manage'));
-
--- Role changes are a "critical action" per the brief — the RECOMMENDED path
--- is an audited RPC (assign_role(...)/revoke_role(...), added alongside the
--- Phase D admin features) that calls write_audit_log() internally, not a
--- raw table write from the client. This policy permits the raw write as a
--- safety net so authorization isn't blocked on that RPC existing, but the
--- Management Center UI (Phase H) must use the RPC path once it exists.
+-- Security review (2026-09-17), finding #3: role assignment/revocation is a
+-- "critical action" and must NOT be a raw table write, even for privileged
+-- roles — a permission-gated `for all` policy has no way to enforce the role
+-- hierarchy (a manager must not be able to grant 'owner'; a branch_manager
+-- must not grant any role outside their own branch). Removed entirely. The
+-- ONLY way to write this table now is assign_role()/revoke_role() in
+-- 008_admin_rpcs.sql, which enforce the hierarchy and write an audit_logs
+-- row on every change. No INSERT/UPDATE/DELETE policy is defined here on
+-- purpose — RLS denies all direct client writes, and the RPCs are
+-- SECURITY DEFINER so they bypass RLS regardless.
 
 -- ---------------------------------------------------------------------------
 -- branches
@@ -124,10 +170,14 @@ create policy branch_memberships_select_self_or_privileged on public.branch_memb
     or branch_id in (select public.current_user_branch_ids()) -- a branch_manager can see co-members of their own branch
   );
 
-create policy branch_memberships_write_privileged on public.branch_memberships
-  for all
-  using (public.current_user_has_permission('branch.manage'))
-  with check (public.current_user_has_permission('branch.manage'));
+-- Security review (2026-09-17), finding #3: branch assignment/removal is a
+-- "critical action" per AUTH_ARCHITECTURE.md's audited-actions list. Removed
+-- the raw `branch.manage`-gated write policy that was here; the only path
+-- now is assign_branch_membership()/remove_branch_membership() in
+-- 008_admin_rpcs.sql (SECURITY DEFINER, audit-logged, and — unlike a table
+-- policy — able to also allow a branch_manager to add/remove members of
+-- their OWN branch specifically, which a single permission-gated policy on
+-- this table could not express without also exposing other branches).
 
 -- ---------------------------------------------------------------------------
 -- audit_logs — append-only, read restricted

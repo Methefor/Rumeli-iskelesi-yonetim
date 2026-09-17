@@ -20,11 +20,16 @@
 -- Rollback:
 --   drop function if exists public.verify_pin(uuid, text);
 --   drop function if exists public.write_audit_log(text, text, text, jsonb, jsonb, text);
+--   drop function if exists public.current_user_shares_branch_with(uuid);
 --   drop function if exists public.current_user_is_owner_or_manager();
 --   drop function if exists public.current_user_branch_ids();
 --   drop function if exists public.current_user_has_permission(text);
 --   drop function if exists public.current_user_role_keys();
 --   drop table if exists public.pin_credentials;
+--
+-- Amended 2026-09-17 (security review): added current_user_shares_branch_with()
+-- for branch-scoped authorization checks in 006 and 008. Still not applied
+-- anywhere, so amending in place is safe.
 -- =============================================================================
 
 -- -----------------------------------------------------------------------------
@@ -122,6 +127,36 @@ comment on function public.current_user_is_owner_or_manager() is
 
 revoke all on function public.current_user_is_owner_or_manager() from public;
 grant execute on function public.current_user_is_owner_or_manager() to authenticated;
+
+
+-- Added 2026-09-17 (security review): the branch-scoped counterpart to
+-- current_user_is_owner_or_manager(). Used by 006's profiles policies and by
+-- 008's admin RPCs to check whether the caller may act on p_user_id under
+-- 'employee.manage_branch' — i.e. whether caller and target share ANY
+-- branch membership. Deliberately takes a target user id (unlike the other
+-- helpers above): it never reveals which branch, only a boolean overlap, so
+-- it cannot be used to enumerate another user's branches.
+create or replace function public.current_user_shares_branch_with(p_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.branch_memberships mine
+    join public.branch_memberships theirs on theirs.branch_id = mine.branch_id
+    where mine.user_id = auth.uid()
+      and theirs.user_id = p_user_id
+  );
+$$;
+
+comment on function public.current_user_shares_branch_with(uuid) is
+  'Whether the calling user shares at least one branch membership with p_user_id. Returns only a boolean, never branch identities, so it cannot enumerate another user''s branches.';
+
+revoke all on function public.current_user_shares_branch_with(uuid) from public;
+grant execute on function public.current_user_shares_branch_with(uuid) to authenticated;
 
 
 -- -----------------------------------------------------------------------------

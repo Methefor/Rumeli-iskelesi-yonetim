@@ -4,15 +4,36 @@
 // STATUS: NOT DEPLOYED. Prepared source for review only — see
 // AUTH_ARCHITECTURE.md "PIN login flow" and MIGRATION_PLAN.md.
 //
-// Do not deploy this until:
-//   - migrations 001-006 have been reviewed and applied,
-//   - the service_credentials mechanism it depends on exists (see the
-//     AUTH_ARCHITECTURE.md open item — not yet a migration in this phase),
-//   - and this file itself has been reviewed.
+// Security review (2026-09-17): the original design depended on a
+// `service_credentials` table (a per-profile, randomly generated, readable
+// password) to mint a session via `signInWithPassword`. REJECTED — see
+// DECISIONS.md "service_credentials rejected". That table is never created
+// and this file no longer references it.
 //
-// Purpose: the only place PIN verification and session issuance happen.
-// The browser never sees a PIN hash, a service-role key, or the per-profile
-// service password this function uses internally.
+// Replacement design: `supabase.auth.admin.generateLink({ type: 'magiclink' })`
+// followed by `supabase.auth.verifyOtp({ type: 'magiclink', token_hash })`,
+// both called from THIS server-side function. `generateLink` does not send
+// any email itself (it is documented as returning the link/token for the
+// caller to deliver, precisely so custom flows like this one don't have to
+// touch email delivery) — the browser never sees the token_hash, and no
+// email/SMS is ever sent to the employee. The result of `verifyOtp` is a
+// normal, refreshable Supabase session, identical in shape to any other
+// sign-in method.
+//
+// NOT LIVE-VERIFIED: this relies on documented GoTrue/Supabase Auth admin
+// behavior that has not been exercised against a real Supabase project in
+// this session (no DB/project access available here). Before deployment,
+// run one manual smoke test against a staging project confirming:
+//   (a) generateLink({ type: 'magiclink' }) does not dispatch an email when
+//       no SMTP "Confirm email" trigger fires for an already-verified user,
+//       and
+//   (b) verifyOtp returns a session whose access/refresh tokens work with
+//       supabase.auth.setSession() on the client exactly like a normal login.
+// Until that smoke test passes, treat deployment as BLOCKED — see
+// BACKLOG.md.
+//
+// Purpose: the only place PIN verification and session issuance happen. The
+// browser never sees a PIN hash, a service-role key, or a token_hash.
 // =============================================================================
 
 import { createClient } from 'jsr:@supabase/supabase-js@2'
@@ -46,15 +67,13 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // 1. Resolve employee_code -> profile id.
-  //    NOTE: `employee_code` is not part of the 001-004 migrations as
-  //    written — it needs a lookup column/table decision (e.g. a short code
-  //    on profiles, or phone number) before this function can be finished.
-  //    Left as an explicit TODO rather than guessed at here.
+  // 1. Resolve employee_code -> profile id + the auth.users email needed for
+  //    step 3. `employee_code` is the resolved login handle as of the
+  //    security review (see DECISIONS.md) — no longer legacy_cashier_id.
   const { data: profile, error: profileError } = await adminClient
     .from('profiles')
     .select('id')
-    .eq('legacy_cashier_id', employeeCode) // TODO: replace with the real lookup column once decided
+    .eq('employee_code', employeeCode.trim().toUpperCase())
     .eq('is_active', true)
     .maybeSingle()
 
@@ -75,18 +94,24 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ error: 'invalid_credentials' }), { status: 401 })
   }
 
-  // 3. Mint a real session using the per-profile service password.
-  //    TODO: this table/mechanism (`service_credentials`) is an open design
-  //    item, not yet a migration — see AUTH_ARCHITECTURE.md. Do not deploy
-  //    this function until it exists and has been reviewed.
-  const { data: serviceCred } = await adminClient
-    .from('service_credentials') // TODO: does not exist yet
-    .select('service_email, service_password')
-    .eq('user_id', profile.id)
-    .maybeSingle()
+  // 3. Mint a real session without ever storing or handling a password.
+  //    getUserById needs the service-role client; generateLink/verifyOtp are
+  //    plain (documented, public) GoTrue Auth Admin/Auth API calls.
+  const { data: authUser, error: getUserError } = await adminClient.auth.admin.getUserById(
+    profile.id,
+  )
 
-  if (!serviceCred) {
+  if (getUserError || !authUser.user?.email) {
     return new Response(JSON.stringify({ error: 'account_not_provisioned' }), { status: 500 })
+  }
+
+  const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+    type: 'magiclink',
+    email: authUser.user.email,
+  })
+
+  if (linkError || !linkData.properties?.hashed_token) {
+    return new Response(JSON.stringify({ error: 'sign_in_failed' }), { status: 500 })
   }
 
   const anonClient = createClient(
@@ -94,19 +119,20 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('SUPABASE_ANON_KEY')!,
   )
 
-  const { data: signInData, error: signInError } = await anonClient.auth.signInWithPassword({
-    email: serviceCred.service_email,
-    password: serviceCred.service_password,
+  const { data: verifyData, error: verifyOtpError } = await anonClient.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: linkData.properties.hashed_token,
+    email: authUser.user.email,
   })
 
-  if (signInError || !signInData.session) {
+  if (verifyOtpError || !verifyData.session) {
     return new Response(JSON.stringify({ error: 'sign_in_failed' }), { status: 500 })
   }
 
   return new Response(
     JSON.stringify({
-      access_token: signInData.session.access_token,
-      refresh_token: signInData.session.refresh_token,
+      access_token: verifyData.session.access_token,
+      refresh_token: verifyData.session.refresh_token,
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } },
   )

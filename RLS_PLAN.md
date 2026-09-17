@@ -52,19 +52,30 @@ parameter, so they can't be used to probe another user's data), granted to
 - `current_user_has_permission(key)` — permission check via role_permissions.
 - `current_user_branch_ids()` — this user's branch memberships.
 - `current_user_is_owner_or_manager()` — org-wide bypass check.
+- `current_user_shares_branch_with(p_user_id)` — added 2026-09-17 security
+  review: whether the caller shares any branch membership with a target
+  user. Returns a boolean only, never branch identities.
 - `write_audit_log(...)` — the only path by which `audit_logs` gets a row.
 
-## Identity/authorization tables (applied policies — `006_rls_policies.sql`)
+## Identity/authorization tables (applied policies — `006_rls_policies.sql`, amended 2026-09-17)
 
 | Table | SELECT | INSERT/UPDATE/DELETE |
 |---|---|---|
-| `profiles` | self, or owner/manager, or `employee.read` | UPDATE: self (limited) or `employee.manage`. No client INSERT (a trigger creates the row on signup) or DELETE (deactivate via `is_active`, never delete). |
+| `profiles` | self, or owner/manager, or `employee.manage_branch` **and** a shared branch with the target row | UPDATE only, column-restricted via GRANT to `full_name`/`phone`/`avatar_url` (see below): self, or `employee.manage` (org-wide), or `employee.manage_branch` **and** a shared branch. `is_active`/`employee_code` are excluded from the grant — only `008`'s RPCs can change them. No client INSERT (a trigger creates the row on signup) or DELETE. |
 | `roles` / `permissions` / `role_permissions` | any `authenticated` user | none (migration-managed only in this phase) |
-| `user_roles` | self, or owner/manager, or `employee.manage` | ALL for `employee.manage` — a safety net; the Management Center UI must use an audited RPC instead (role change is a critical action). |
+| `user_roles` | self, or owner/manager, or `employee.manage_branch` **and** a shared branch | none — `assign_role()`/`revoke_role()` (`008_admin_rpcs.sql`) are the only path; they enforce the role hierarchy (manager can't grant owner; branch_manager can't grant owner/manager/branch_manager and only within a shared branch) and always write an audit row. |
 | `branches` | any `authenticated` user | ALL for `branch.manage` |
-| `branch_memberships` | self, or owner/manager, or a fellow member of the same branch (via `current_user_branch_ids()`) | ALL for `branch.manage` |
+| `branch_memberships` | self, or owner/manager, or a fellow member of the same branch (via `current_user_branch_ids()`) | none — `assign_branch_membership()`/`remove_branch_membership()` (`008`) are the only path. |
 | `audit_logs` | owner/manager or `reports.read` | none — rows are written exclusively via `write_audit_log()`, never updated/deleted by anyone through the client API |
-| `pin_credentials` | nobody (RLS enabled, zero policies) | nobody — only `verify_pin()` (SECURITY DEFINER, `service_role`-only execute) touches this table |
+| `pin_credentials` | nobody (RLS enabled, zero policies) | nobody — only `verify_pin()` (SECURITY DEFINER, `service_role`-only execute) and `admin_reset_pin()` (`008`) touch this table |
+
+**Column-level grant on `profiles` (security review fix, not expressible via
+RLS alone):** `revoke update on public.profiles from authenticated; grant
+update (full_name, phone, avatar_url) on public.profiles to authenticated;`.
+RLS policies above still control *which rows* are reachable; this grant
+controls *which columns* — Postgres RLS has no per-column concept, so a raw
+`using (id = auth.uid())` policy alone would have let a user rewrite their
+own `is_active`. See `DECISIONS.md`.
 
 ## Future operational tables (Phase D — design template, not yet a migration)
 
@@ -134,8 +145,11 @@ seeded test project), one per row below at minimum:
 | 3 | Cashier A selects Cashier B's `profiles` row | 0 rows |
 | 4 | Owner selects any `profiles` row | 1 row |
 | 5 | Branch manager of Branch X selects a `branch_memberships` row for Branch Y | 0 rows |
-| 6 | Cashier attempts UPDATE on `user_roles` (self-promote) | denied (no `employee.manage` permission) |
-| 7 | Manager attempts UPDATE on `user_roles` | allowed (has `employee.manage`) |
+| 6 | Cashier attempts raw UPDATE on `user_roles` (self-promote) | denied (no policy permits any client write) |
+| 7 | Manager calls `assign_role(user, 'owner')` | denied (`42501` — manager may not grant owner) |
+| 7a | Manager calls `assign_role(user, 'cashier')` | allowed; `user_roles` row inserted, `audit_logs` row with `action = 'role_change'` written |
+| 7b | Branch manager of Branch X calls `assign_role(userInBranchY, 'cashier')` | denied (`42501` — no shared branch) |
+| 7c | Branch manager calls `assign_role(userInOwnBranch, 'branch_manager')` | denied (`42501` — branch_manager may not grant branch_manager) |
 | 8 | Any authenticated role selects `pin_credentials` | 0 rows / permission denied |
 | 9 | `service_role` calls `verify_pin` with correct PIN | returns `true`, resets `failed_attempts` |
 | 10 | `service_role` calls `verify_pin` 5x with wrong PIN | 5th call sets `locked_until`, writes an `audit_logs` row with action `pin_lockout` |
@@ -144,3 +158,7 @@ seeded test project), one per row below at minimum:
 | 13 | Authenticated user uploads to `avatars-v4/{own-uid}/...` | allowed |
 | 14 | Authenticated user uploads to `avatars-v4/{other-uid}/...` without `employee.manage` | denied |
 | 15 | Any client attempts INSERT into `audit_logs` directly (not via RPC) | denied (no insert policy) |
+| 16 | User attempts raw `update profiles set is_active = false where id = auth.uid()` | denied (`is_active` not in the column-level `UPDATE` grant) |
+| 17 | User attempts raw `update profiles set full_name = 'X' where id = auth.uid()` | allowed (row: self; column: granted) |
+| 18 | Branch manager of Branch X calls `admin_set_employee_active(userInBranchY, false)` | denied (`42501` — no shared branch) |
+| 19 | Branch manager of Branch X calls `admin_set_employee_active(userInBranchX, false)` | allowed; `audit_logs` row with `action = 'employee_deactivation'` written |

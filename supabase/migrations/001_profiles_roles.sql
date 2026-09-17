@@ -18,6 +18,11 @@
 --   drop table if exists public.profiles;
 --   (safe — nothing else in this migration creates data outside these three
 --   tables, and none of them are referenced by any existing legacy table)
+--
+-- Amended 2026-09-17 (security review): added profiles.employee_code as the
+-- resolved login handle — see AUTH_ARCHITECTURE.md "Login handle" and
+-- DECISIONS.md. Still not applied anywhere, so amending in place rather than
+-- adding a new migration file is safe.
 -- =============================================================================
 
 create extension if not exists pgcrypto;
@@ -33,18 +38,31 @@ create table if not exists public.profiles (
   phone text,
   avatar_url text,
   is_active boolean not null default true,
+  -- Login handle (security-review decision, 2026-09-17): short, unique,
+  -- normalized code (e.g. M001, K001, D002) used to resolve pin-login
+  -- requests to a profile. Deliberately NOT legacy_cashier_id (see
+  -- DECISIONS.md "employee_code is the login handle, not legacy_cashier_id").
+  -- Only ever written by migration-time provisioning or the
+  -- admin_set_employee_code() RPC (008) — never by a raw client update, see
+  -- the column-level GRANTs in 006_rls_policies.sql.
+  employee_code text unique,
   -- Nullable pointer back to the legacy cashiers.id this profile was migrated
   -- from, so historical daily_reports rows (keyed on the legacy cashier_id)
   -- can still be joined to a real identity after cutover. Never used by RLS.
   legacy_cashier_id uuid,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint profiles_employee_code_format check (
+    employee_code is null or employee_code ~ '^[A-Z][0-9]{2,4}$'
+  )
 );
 
 comment on table public.profiles is
   'One row per authenticated identity (auth.users). Replaces legacy admins/cashiers tables for identity purposes.';
+comment on column public.profiles.employee_code is
+  'Login handle for pin-login (e.g. M001, K002, D001). Unique, normalized, privileged-write-only — see admin_set_employee_code() in 008_admin_rpcs.sql.';
 comment on column public.profiles.legacy_cashier_id is
-  'Traceability only, for legacy daily_reports.cashier_id joins during transition. Not used in RLS or authorization.';
+  'Traceability only, for legacy daily_reports.cashier_id joins during transition. Not used in RLS or authorization, and never used as a login handle.';
 
 -- ---------------------------------------------------------------------------
 -- roles: fixed, small set of role keys. Managed by migration, not by

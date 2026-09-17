@@ -2,6 +2,53 @@
 
 Reverse-chronological. One entry per work session.
 
+## 2026-09-17 (continuation) — Phase C security review: fixes applied to prepared files
+
+Continuing this project on a different machine after a git-history check
+showed the previous session's security-fix work (reported as already done:
+`002`/`006` updates, a new `008_admin_rpcs.sql`, a rewritten Edge Function)
+had never actually been committed to `v4-2027` — the branch as pushed still
+contained the original, pre-review Phase C design with all four findings
+below unfixed. Re-did that work directly against the current files rather
+than assuming it existed:
+
+- Added `profiles.employee_code` (`001_profiles_roles.sql`) as the resolved
+  login handle, with a format check constraint. `legacy_cashier_id` stays
+  traceability-only, per `DECISIONS.md`.
+- Added `employee.manage_branch` permission and corrected the
+  `branch_manager` grant set (`002_permissions.sql`) — was `employee.manage`
+  (org-wide), now the branch-scoped equivalent.
+- Added `current_user_shares_branch_with(p_user_id)` helper
+  (`005_auth_helpers.sql`) for branch-overlap checks in policies and RPCs.
+- Rewrote the `profiles` section of `006_rls_policies.sql`: column-level
+  `GRANT` restricting client `UPDATE` to `full_name`/`phone`/`avatar_url`
+  (closes the no-column-limit self-update bug); added a branch-scoped update
+  policy for `employee.manage_branch`; removed the org-wide `employee.read`
+  clause from the SELECT policy in favor of the branch-scoped check.
+  Removed the raw `user_roles`/`branch_memberships` write policies entirely
+  — both tables are now RPC-only.
+- Added `008_admin_rpcs.sql`: `assign_role`, `revoke_role` (enforce the role
+  hierarchy — manager can't grant owner; branch_manager can't grant
+  owner/manager/branch_manager and only within a shared branch),
+  `assign_branch_membership`, `remove_branch_membership`,
+  `admin_set_employee_active`, `admin_reset_pin`, `admin_set_employee_code`.
+  Every one writes an `audit_logs` row.
+- Rewrote `supabase/functions/pin-login/index.ts`: removed the
+  `service_credentials`/`signInWithPassword` design entirely; session
+  minting now uses `generateLink`/`verifyOtp` (no stored password, no email
+  actually sent). Marked NOT live-verified in the file header — needs one
+  staging smoke test before deployment, tracked in `BACKLOG.md`.
+- Updated `AUTH_ARCHITECTURE.md`, `DECISIONS.md` (6 new entries),
+  `CURRENT_STATE.md`, `RLS_PLAN.md`, and `MIGRATION_PLAN.md` to match.
+- Did NOT run `npm run typecheck`/`lint`/`test`/`build` as part of this SQL
+  work — none of these changes touch `app/`'s TypeScript. That validation
+  pass (against the existing `app/` scaffold) is a separate step; see the
+  next entry if run in this same session.
+- Confirmed via `git status`/`git diff` that no legacy file, no file outside
+  `supabase/` and the four root docs, and no `app/src` file was touched by
+  this pass — this was a SQL/Edge-Function-only fix, not new frontend work.
+- Nothing applied to any database. No Edge Function deployed.
+
 ## 2026-09-17 — Phase C preparation: auth/authorization design (not applied)
 
 Received the completed live Supabase audit: RLS enabled but every policy on

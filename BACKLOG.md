@@ -8,14 +8,22 @@ in the original brief. Move items up when a phase actually starts.
 - [x] Database-side audit: live schema, RLS policies confirmed
       (2026-09-17) — see `AUTH_ARCHITECTURE.md` "Why this exists" and
       `RLS_PLAN.md` "Confirmed current production state".
+- [x] Security review of the Phase C design, and fixes applied
+      (2026-09-17): `profiles` self-update column restriction,
+      `branch_manager` branch-scoping, RPC-only critical writes,
+      `service_credentials` rejected in favor of `generateLink`/`verifyOtp`
+      — see `DECISIONS.md` and `WORKLOG.md`.
+- [x] Decide the login-handle column — resolved as `profiles.employee_code`
+      (`001_profiles_roles.sql`), see `AUTH_ARCHITECTURE.md` "Login handle".
 - [ ] Backup strategy for the Supabase project before any schema migration
-      (still needed before migrations 001-007 are applied, even to staging).
-- [ ] Decide the login-handle column (`profiles` has no email/phone/employee
-      code to resolve a login against yet) — see `AUTH_ARCHITECTURE.md`
-      "Open question".
-- [ ] Design and migrate `service_credentials` (per-profile service password
-      for the PIN-login password-grant flow) — see `AUTH_ARCHITECTURE.md`
-      "Open design item".
+      (still needed before migrations 001-008 are applied, even to staging).
+- [ ] **Smoke-test `generateLink`/`verifyOtp` against a real staging
+      Supabase project** before deploying `pin-login` — confirm (a) no email
+      is actually sent, (b) the resulting session works with
+      `supabase.auth.setSession()` like any other login. This is the one
+      item the 2026-09-17 security review left explicitly open — see
+      `AUTH_ARCHITECTURE.md` "Not live-verified". Do not deploy until this
+      passes.
 - [ ] Investigate the `daily_reports` vs frozen-presentation-totals
       discrepancy — see `docs/LEGACY_RECONCILIATION.md`. Needs live
       read-only DB query access, not available in this session.
@@ -23,16 +31,17 @@ in the original brief. Move items up when a phase actually starts.
 ## Phase C — Auth & authorization
 
 - [x] Design complete: identity model, PIN mechanism, session model, RLS
-      policies, storage policies, audit logging — see `AUTH_ARCHITECTURE.md`,
-      `RLS_PLAN.md`, `MIGRATION_PLAN.md`. Prepared as SQL in
-      `supabase/migrations/001-007`, **not applied**.
+      policies, storage policies, audit logging, audited admin RPCs — see
+      `AUTH_ARCHITECTURE.md`, `RLS_PLAN.md`, `MIGRATION_PLAN.md`. Prepared as
+      SQL in `supabase/migrations/001-008`, **not applied**.
+- [x] Security review round complete (2026-09-17) — see `DECISIONS.md`.
 - [x] Frontend scaffold: `AuthProvider`/`useAuth`, `ProtectedRoute`,
       `RoleGuard`, `BranchGuard`, login UI shell, logout action, session
       restore, loading/unauthorized states — all in `app/`, unit-tested,
       not connected to a working backend yet.
-- [ ] Deploy `pin-login` Edge Function (blocked on the two open design
-      items above — see its `// TODO` markers).
-- [ ] Apply migrations 001-007 to a staging Supabase project, run the
+- [ ] Deploy `pin-login` Edge Function (blocked on one item — the
+      `generateLink`/`verifyOtp` staging smoke test above).
+- [ ] Apply migrations 001-008 to a staging Supabase project, run the
       policy test plan in `RLS_PLAN.md`, then production (see
       `MIGRATION_PLAN.md` sign-off checklists).
 - [ ] Wire `LoginPage` to the real Edge Function + `supabase.auth.setSession`
