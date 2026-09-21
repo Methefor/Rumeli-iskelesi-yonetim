@@ -114,6 +114,20 @@ in the original brief. Move items up when a phase actually starts.
 - [ ] Today vs yesterday / week vs week / month vs month / season vs season
       comparisons, each separating absolute change, % change, and drivers.
 
+## Phase E follow-ups (inventory)
+
+- [ ] **Local Supabase validation** (Docker): `supabase db reset` from 001, then
+      run `supabase/tests/inventory_security.test.sql`. Only a scratch-PGlite run exists.
+- [ ] Apply 012-014 to a staging project + policy test plan (`INVENTORY_SECURITY.md`).
+- [ ] Business input needed: real Dondurma catalogue (codes/units/categories),
+      opening stock, costs, waste reason codes, who may receive stock (currently
+      manager/branch_manager only).
+- [ ] Edit / cancel sales-report UI (RPCs and ledger handling exist; no screen yet).
+- [ ] Pagination for movement history; per-item sell-through report screen.
+- [ ] Review 011 cutoff timezone (session tz vs Istanbul).
+- [ ] Balık Ekmek inventory/shift setup (out of scope by design).
+- Deferred by design: recipes/unit conversion, transfers, procurement, generic tasks, performance/badges, 2026 migration.
+
 ## Phase H/I — Performance, badges, İskele Dondurma
 
 - [ ] Management Center screens (create/disable employee, assign

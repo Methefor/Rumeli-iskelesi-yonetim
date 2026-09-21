@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-16 (Phase B).
+Last updated: 2026-09-21 (Phase E).
 
 ## Two applications live in this repo right now
 
@@ -173,3 +173,30 @@ step per `MIGRATION_PLAN.md`'s sign-off checklists — that approval has not
 been given yet. In parallel, the `docs/LEGACY_RECONCILIATION.md` gap needs
 live DB query access to investigate, which is not configured in this
 session.
+
+### Phase E (2026-09-21): İskele Dondurma inventory + UI/UX — committed to v4-2027
+
+* Migrations 012-014 (prepared, not applied anywhere): generic branch-scoped
+  inventory, append-only ledger, effective-dated cost, separate physical
+  counts, product-linked sales lines. Validated only in a scratch Postgres
+  harness; **local Supabase validation is open** (no Docker on this laptop).
+* V4 now has a coherent shell (branch, identity, role, logout), real manager
+  and employee homes, and inventory screens (overview, receive, waste,
+  closing count, items, cost, gross profit, movements). Demo mode
+  (`VITE_DEMO_MODE=true`) runs every screen on synthetic fixtures with zero
+  Supabase requests.
+* See `INVENTORY_MODEL.md`, `INVENTORY_SECURITY.md`. 2026 data untouched.
+
+**Validation status (Phase E) — keep this distinction:**
+
+| Item | Status |
+|---|---|
+| Phase E application / domain / UI tests (typecheck, lint, 150 unit + demo-flow tests, build) | **VALIDATED** |
+| Migrations 012-014 | **PREPARED** (not applied anywhere) |
+| PGlite security harness (`supabase/tests/inventory_security.test.sql`, ~150 assertions) | **PASSED, but NOT equivalent to real Supabase** (WASM Postgres + hand-written auth/storage shim; no GoTrue, PostgREST or real roles/grants) |
+| Real local Supabase `db reset` + integration run | **OPEN** |
+| Hosted / staging validation | **NOT DONE** |
+| Production | **UNTOUCHED** |
+
+The SQL must not be described as fully validated until it passes on a real
+local Supabase stack.

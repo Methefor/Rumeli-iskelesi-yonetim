@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { friendlyFromSupabaseError } from '../errors'
 
 export interface CategoryOption {
   id: string
@@ -15,13 +16,24 @@ export async function listBranchCategories(branchId: string): Promise<CategoryOp
     .returns<Array<{ sales_categories: CategoryOption | null }>>()
 
   if (error || !data) return []
-  return data.map((row) => row.sales_categories).filter((c): c is CategoryOption => c !== null)
+  return data
+    .map((row) => row.sales_categories)
+    .filter((c): c is CategoryOption => c !== null)
 }
 
+/**
+ * A category-level line (`categoryId` + `amount`, revenue only — the legacy
+ * shape) OR a product-linked line (`inventoryItemId` + explicit
+ * `inventoryQuantity` + `amount`). A product line writes a SALE stock
+ * movement server-side; the category is taken from the item. Quantity is
+ * never inferred from amount.
+ */
 export interface SalesReportItemInput {
-  categoryId: string
+  categoryId?: string | null
   amount: number
   quantity?: number
+  inventoryItemId?: string | null
+  inventoryQuantity?: number | null
 }
 
 export interface CreateSalesReportInput {
@@ -35,7 +47,9 @@ export interface CreateSalesReportInput {
   items: SalesReportItemInput[]
 }
 
-export async function createSalesReport(input: CreateSalesReportInput): Promise<{ reportId: string | null; error: string | null }> {
+export async function createSalesReport(
+  input: CreateSalesReportInput,
+): Promise<{ reportId: string | null; error: string | null }> {
   const { data, error } = await supabase.rpc('create_sales_report', {
     p_shift_id: input.shiftId,
     p_register_id: input.registerId ?? null,
@@ -44,13 +58,29 @@ export async function createSalesReport(input: CreateSalesReportInput): Promise<
     p_transaction_count: input.transactionCount ?? null,
     p_average_basket: input.averageBasket ?? null,
     p_notes: input.notes ?? null,
-    p_items: input.items.map((item) => ({ category_id: item.categoryId, amount: item.amount, quantity: item.quantity ?? null })),
+    p_items: input.items.map((item) =>
+      item.inventoryItemId
+        ? {
+            inventory_item_id: item.inventoryItemId,
+            inventory_quantity: item.inventoryQuantity,
+            amount: item.amount,
+          }
+        : {
+            category_id: item.categoryId,
+            amount: item.amount,
+            quantity: item.quantity ?? null,
+          },
+    ),
   })
-  return { reportId: error ? null : (data as string), error: error?.message ?? null }
+  return {
+    reportId: error ? null : (data as string),
+    error: friendlyFromSupabaseError(error),
+  }
 }
 
 export interface SalesReportSummary {
   id: string
+  shiftId: string
   branchId: string
   branchName: string
   reportType: 'X' | 'Z'
@@ -63,6 +93,7 @@ export interface SalesReportSummary {
 
 interface SalesReportRow {
   id: string
+  shift_id: string
   branch_id: string
   report_type: 'X' | 'Z'
   gross_revenue: number
@@ -76,6 +107,7 @@ interface SalesReportRow {
 function mapReportRow(row: SalesReportRow): SalesReportSummary {
   return {
     id: row.id,
+    shiftId: row.shift_id,
     branchId: row.branch_id,
     branchName: row.branches?.name ?? '',
     reportType: row.report_type,
@@ -87,7 +119,8 @@ function mapReportRow(row: SalesReportRow): SalesReportSummary {
   }
 }
 
-const REPORT_SELECT = 'id, branch_id, report_type, gross_revenue, status, reconciliation_status, submitted_at, notes, branches(name)'
+const REPORT_SELECT =
+  'id, shift_id, branch_id, report_type, gross_revenue, status, reconciliation_status, submitted_at, notes, branches(name)'
 
 /** The signed-in employee's own reports, most recent first. */
 export async function listMyRecentReports(userId: string): Promise<SalesReportSummary[]> {
@@ -118,7 +151,9 @@ export async function listBranchReports(branchId: string): Promise<SalesReportSu
 }
 
 /** Reports flagged WARNING/ERROR that still need a manager's attention. */
-export async function listReconciliationQueue(branchId: string): Promise<SalesReportSummary[]> {
+export async function listReconciliationQueue(
+  branchId: string,
+): Promise<SalesReportSummary[]> {
   const { data, error } = await supabase
     .from('sales_reports')
     .select(REPORT_SELECT)
@@ -142,5 +177,5 @@ export async function overrideReconciliation(input: {
     p_new_status: input.newStatus,
     p_reason: input.reason,
   })
-  return { error: error?.message ?? null }
+  return { error: friendlyFromSupabaseError(error) }
 }

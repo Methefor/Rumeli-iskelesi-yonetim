@@ -109,3 +109,14 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
       never-executed state this checklist item originally flagged.
 - [ ] Explicit user approval for this specific step, separate from the
       approval to prepare these files.
+
+## Phase E additions (012-014) — prepared, not applied
+
+| # | File | Creates | Depends on |
+|---|---|---|---|
+| 012 | `012_inventory_core.sql` | inventory permissions + role grants, `inventory_items`, `inventory_item_costs`, `inventory_movements`, `inventory_counts`, `inventory_count_items`, append-only guards, `sales_report_items` product link, two views | 001-003, 009 |
+| 013 | `013_inventory_rls.sql` | `current_user_can_inventory`, `inventory_item_branch_id`, privileges, RLS (SELECT only), cost column grant | 012 |
+| 014 | `014_inventory_rpcs.sql` | 10 public RPCs, internal helpers, replaces `create/edit/cancel_sales_report` | 011, 012, 013 |
+
+Rollback notes are in each file. Sign-off before staging: run
+`supabase/tests/inventory_security.test.sql` on a **local** Supabase reset.

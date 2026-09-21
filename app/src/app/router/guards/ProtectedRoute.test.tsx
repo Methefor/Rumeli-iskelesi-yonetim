@@ -17,6 +17,7 @@ function authValue(status: AuthStatus): AuthContextValue {
     branchIds: [],
     signOut: vi.fn(),
     isDemo: false,
+    profile: null,
     signInDemo: vi.fn(),
   }
 }

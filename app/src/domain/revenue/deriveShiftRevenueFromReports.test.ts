@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'vitest'
-import { deriveShiftRevenueFromReports, type ShiftReportSummary } from './deriveShiftRevenueFromReports'
+import {
+  deriveShiftRevenueFromReports,
+  type ShiftReportSummary,
+} from './deriveShiftRevenueFromReports'
 
 function report(overrides: Partial<ShiftReportSummary>): ShiftReportSummary {
   return { reportType: 'X', grossRevenue: 0, status: 'submitted', ...overrides }
@@ -15,12 +18,16 @@ describe('deriveShiftRevenueFromReports', () => {
   })
 
   test('uses the X total alone when only a morning report exists', () => {
-    const total = deriveShiftRevenueFromReports([report({ reportType: 'X', grossRevenue: 650.5 })])
+    const total = deriveShiftRevenueFromReports([
+      report({ reportType: 'X', grossRevenue: 650.5 }),
+    ])
     expect(total).toBe(650.5)
   })
 
   test('uses the Z total alone when only an evening report exists', () => {
-    const total = deriveShiftRevenueFromReports([report({ reportType: 'Z', grossRevenue: 1200 })])
+    const total = deriveShiftRevenueFromReports([
+      report({ reportType: 'Z', grossRevenue: 1200 }),
+    ])
     expect(total).toBe(1200)
   })
 

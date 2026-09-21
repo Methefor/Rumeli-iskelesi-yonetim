@@ -3,6 +3,12 @@ import type { Session, User } from '@supabase/supabase-js'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
+/** Display identity for the app shell — never used for authorization. */
+export interface AuthProfile {
+  fullName: string
+  employeeCode: string | null
+}
+
 export interface AuthContextValue {
   status: AuthStatus
   session: Session | null
@@ -15,6 +21,8 @@ export interface AuthContextValue {
    */
   roles: string[]
   branchIds: string[]
+  /** Who is signed in, for display (name + employee code). Null if not loaded. */
+  profile: AuthProfile | null
   signOut: () => Promise<void>
   /**
    * True when the current session was created by `signInDemo`, never by a

@@ -1,5 +1,6 @@
 .button {
   display: inline-flex;
+  text-decoration: none;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);

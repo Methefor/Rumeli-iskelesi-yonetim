@@ -1,8 +1,16 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { formatDate, formatTime } from '../../../utils/dates'
+import {
+  DataBoundary,
+  EmptyState,
+  LinkButton,
+  PageHeader,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useSelectedBranch } from '../../../hooks/useSelectedBranch'
-import { listBranchShifts, type ShiftSummary } from '../../../services/supabase'
-import { Card, StatusChip, Button, EmptyState, Skeleton } from '../../../components/ui'
+import { listBranchShifts } from '../../../services/data'
 
 const STATUS_TONE = {
   scheduled: 'neutral',
@@ -11,54 +19,57 @@ const STATUS_TONE = {
   closed: 'success',
   cancelled: 'danger',
 } as const
+const STATUS_LABEL: Record<string, string> = {
+  scheduled: 'Planlandı',
+  in_progress: 'Devam ediyor',
+  submitted: 'Gönderildi',
+  closed: 'Kapandı',
+  cancelled: 'İptal',
+}
 
 export function ShiftOverviewPage() {
-  const { branches, selectedBranchId, setSelectedBranchId } = useSelectedBranch()
-  const [shifts, setShifts] = useState<ShiftSummary[] | null>(null)
-
-  useEffect(() => {
-    if (!selectedBranchId) return
-    void listBranchShifts(selectedBranchId).then(setShifts)
-  }, [selectedBranchId])
+  const { selectedBranchId, selectedBranch } = useSelectedBranch()
+  const state = useAsync(selectedBranchId ? `shifts:${selectedBranchId}` : null, () =>
+    selectedBranchId ? listBranchShifts(selectedBranchId) : Promise.resolve([]),
+  )
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>Vardiya Genel Bakış</h1>
-        <Link to="assign">
-          <Button size="md">Vardiya Ata</Button>
-        </Link>
-      </div>
-
-      {branches.length > 1 && (
-        <select
-          value={selectedBranchId ?? ''}
-          onChange={(e) => setSelectedBranchId(e.target.value)}
-          style={{ padding: 8, borderRadius: 8 }}
-        >
-          {branches.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {shifts === null && <Skeleton height={160} />}
-      {shifts !== null && shifts.length === 0 && (
-        <EmptyState icon="🕒" title="Vardiya yok" description="Bu şube için henüz planlanmış bir vardiya yok." />
-      )}
-      {shifts?.map((s) => (
-        <Card key={s.id}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-              <p style={{ fontWeight: 600 }}>{s.definition.name}</p>
-              <p style={{ fontSize: 13, opacity: 0.75 }}>{s.businessDate}</p>
-            </div>
-            <StatusChip tone={STATUS_TONE[s.status as keyof typeof STATUS_TONE] ?? 'neutral'}>{s.status}</StatusChip>
-          </div>
-        </Card>
-      ))}
-    </div>
+    <Stack>
+      <PageHeader
+        title="Vardiyalar"
+        subtitle={selectedBranch?.name}
+        actions={<LinkButton to="assign">Vardiya Ata</LinkButton>}
+      />
+      <DataBoundary state={state} rows={3}>
+        {(shifts) =>
+          shifts.length === 0 ? (
+            <EmptyState
+              icon="🕒"
+              title="Vardiya yok"
+              description="Bu şube için planlanmış bir vardiya yok."
+            />
+          ) : (
+            <Stack gap="sm">
+              {shifts.map((s) => (
+                <RowCard
+                  key={s.id}
+                  title={s.definition.name}
+                  subtitle={`${formatDate(s.businessDate)} · ${formatTime(s.definition.startHour, s.definition.startMinute)}–${formatTime(s.definition.endHour, s.definition.endMinute)}`}
+                  trailing={
+                    <StatusChip
+                      tone={
+                        STATUS_TONE[s.status as keyof typeof STATUS_TONE] ?? 'neutral'
+                      }
+                    >
+                      {STATUS_LABEL[s.status] ?? s.status}
+                    </StatusChip>
+                  }
+                />
+              ))}
+            </Stack>
+          )
+        }
+      </DataBoundary>
+    </Stack>
   )
 }

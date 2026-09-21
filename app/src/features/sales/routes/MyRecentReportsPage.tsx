@@ -1,53 +1,76 @@
-import { useEffect, useState } from 'react'
+import { formatDateTime } from '../../../utils/dates'
+import { formatMoney } from '../../../utils/format'
+import {
+  DataBoundary,
+  EmptyState,
+  PageHeader,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useAuth } from '../../../hooks/useAuth'
-import { listMyRecentReports, type SalesReportSummary } from '../../../services/supabase'
-import { Card, StatusChip, EmptyState, Skeleton } from '../../../components/ui'
+import { listMyRecentReports } from '../../../services/data'
 
-const RECONCILIATION_TONE = { OK: 'success', WARNING: 'warning', ERROR: 'danger' } as const
+const RECONCILIATION_TONE = {
+  OK: 'success',
+  WARNING: 'warning',
+  ERROR: 'danger',
+} as const
+const RECONCILIATION_LABEL = { OK: 'Uyumlu', WARNING: 'Uyarı', ERROR: 'Hata' } as const
 const STATUS_TONE = { submitted: 'neutral', edited: 'info', cancelled: 'danger' } as const
+const STATUS_LABEL: Record<string, string> = {
+  submitted: 'Gönderildi',
+  edited: 'Düzenlendi',
+  cancelled: 'İptal',
+}
 
 export function MyRecentReportsPage() {
   const { user } = useAuth()
-  const [reports, setReports] = useState<SalesReportSummary[] | null>(null)
-
-  useEffect(() => {
-    if (!user) return
-    void listMyRecentReports(user.id).then(setReports)
-  }, [user])
-
-  if (reports === null) {
-    return (
-      <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-        <Skeleton height={70} />
-        <Skeleton height={70} />
-      </div>
-    )
-  }
-
-  if (reports.length === 0) {
-    return <EmptyState icon="🧾" title="Son Raporlarım" description="Henüz gönderilmiş bir satış raporunuz yok." />
-  }
+  const state = useAsync(user ? `my-reports:${user.id}` : null, () =>
+    user ? listMyRecentReports(user.id) : Promise.resolve([]),
+  )
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-      <h1 style={{ fontSize: 18, fontWeight: 600 }}>Son Raporlarım</h1>
-      {reports.map((r) => (
-        <Card key={r.id}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <p style={{ fontWeight: 600 }}>
-                {r.branchName} — {r.reportType} Raporu
-              </p>
-              <p style={{ fontSize: 13, opacity: 0.75 }}>{new Date(r.submittedAt).toLocaleString('tr-TR')}</p>
-              <p style={{ fontSize: 15, marginTop: 4 }}>{r.grossRevenue.toFixed(2)} ₺</p>
-            </div>
-            <div style={{ display: 'grid', gap: 4, justifyItems: 'end' }}>
-              <StatusChip tone={STATUS_TONE[r.status as keyof typeof STATUS_TONE] ?? 'neutral'}>{r.status}</StatusChip>
-              <StatusChip tone={RECONCILIATION_TONE[r.reconciliationStatus]}>{r.reconciliationStatus}</StatusChip>
-            </div>
-          </div>
-        </Card>
-      ))}
-    </div>
+    <Stack>
+      <PageHeader title="Raporlarım" subtitle="Son gönderdiğiniz satış raporları" />
+      <DataBoundary state={state} rows={3}>
+        {(reports) =>
+          reports.length === 0 ? (
+            <EmptyState
+              icon="🧾"
+              title="Henüz rapor yok"
+              description="Gönderdiğiniz satış raporları burada görünür."
+            />
+          ) : (
+            <Stack gap="sm">
+              {reports.map((r) => (
+                <RowCard
+                  key={r.id}
+                  title={`${r.branchName} — ${r.reportType} Raporu`}
+                  subtitle={formatDateTime(r.submittedAt)}
+                  meta={r.notes ?? undefined}
+                  trailing={
+                    <>
+                      <strong>{formatMoney(r.grossRevenue)}</strong>
+                      <StatusChip
+                        tone={
+                          STATUS_TONE[r.status as keyof typeof STATUS_TONE] ?? 'neutral'
+                        }
+                      >
+                        {STATUS_LABEL[r.status] ?? r.status}
+                      </StatusChip>
+                      <StatusChip tone={RECONCILIATION_TONE[r.reconciliationStatus]}>
+                        {RECONCILIATION_LABEL[r.reconciliationStatus]}
+                      </StatusChip>
+                    </>
+                  }
+                />
+              ))}
+            </Stack>
+          )
+        }
+      </DataBoundary>
+    </Stack>
   )
 }

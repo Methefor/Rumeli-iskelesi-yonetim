@@ -1,6 +1,6 @@
 import { EmptyState } from '../ui/EmptyState'
 import { StatusChip } from '../ui/StatusChip'
-import styles from './RoutePlaceholder.module.css'
+import styles from './Unauthorized.module.css'
 
 export interface UnauthorizedProps {
   message?: string

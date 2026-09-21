@@ -2,6 +2,35 @@
 
 Reverse-chronological. One entry per work session.
 
+## 2026-09-21 — Phase E: İskele Dondurma inventory depth + V4 UI/UX (committed to v4-2027)
+
+Branch `v4-2027`, base `32bde7b`. Nothing deployed or applied; no hosted
+Supabase, Vercel, or legacy file touched. Old stash `laptop-old-phase-c-before-sync` untouched.
+
+- Migrations `012_inventory_core`, `013_inventory_rls`, `014_inventory_rpcs`
+  (generic, branch-scoped inventory; append-only ledger; effective-dated cost;
+  counts separate from the ledger; product-linked sales lines with server-side
+  SALE/REVERSAL movements). See `INVENTORY_MODEL.md`, `INVENTORY_SECURITY.md`.
+- `supabase/tests/inventory_security.test.sql` (~150 assertions). Docker is not
+  installed on this laptop, so it was run in a scratch PGlite harness (outside
+  the repo) with an auth/storage shim; negative controls proved role switching
+  and RLS are really enforced. Local Supabase run remains OPEN.
+- Domain `app/src/domain/inventory` (stock, variance, sell-through, cost,
+  gross profit, alerts, closing, permission map) + 52 tests.
+- Data layer: `services/data` facade -> real (`services/supabase/inventory.ts`)
+  or synthetic (`services/demo`) by `VITE_DEMO_MODE`; friendly Turkish errors
+  (`services/errors.ts`); `useAsync` + `DataBoundary` for loading/error states.
+- UI: new app shell (branch switcher, identity, role, Demo chip, visible
+  logout, one responsive nav), manager/employee homes, 8 inventory screens,
+  profile, management hub; existing 7 screens moved to the shared components
+  and shared branch selection. Removed placeholder pages and "Faz" labels.
+- Tests: 150 total (was 71), incl. full-app demo flows with a fetch spy.
+- Validation status: app/domain/UI tests VALIDATED; migrations 012-014 PREPARED;
+  PGlite harness PASSED but NOT equivalent to real Supabase; real local Supabase
+  reset/integration OPEN; hosted/staging NOT DONE; Production UNTOUCHED.
+- Browser review (demo mode): 360px mobile as M001 and D001, desktop sidebar;
+  no horizontal overflow on 22 routes. Found/fixed a wrapping stat card.
+
 ## 2026-09-17 (continuation 3) — Phase D: core operational data model, prepared and local-staging-validated
 
 Goal: the normalized operational core (Branch → Employee → Shift → Sales)

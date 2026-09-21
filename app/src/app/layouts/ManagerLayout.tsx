@@ -1,25 +1,19 @@
-import { Outlet } from 'react-router-dom'
-import { BottomNav, type BottomNavItem } from '../../components/navigation/BottomNav'
-import { DemoBadge } from '../../components/navigation/DemoBadge'
-import styles from './AppLayout.module.css'
+import { AppShell, type NavItem } from '../../components/navigation/AppShell'
+import { SelectedBranchProvider } from '../providers/SelectedBranchProvider'
 
-const navItems: BottomNavItem[] = [
-  { to: '/app/manager', label: 'Genel Bakış', icon: '📊', end: true },
-  { to: '/app/manager/branches', label: 'Şubeler', icon: '🏬' },
-  { to: '/app/manager/employees', label: 'Çalışanlar', icon: '👥' },
-  { to: '/app/manager/reports', label: 'Raporlar', icon: '🧾' },
-  { to: '/app/manager/management', label: 'Yönetim', icon: '⚙️' },
+const NAV_ITEMS: readonly NavItem[] = [
+  { to: '/app/manager', label: 'Genel Bakış', icon: 'grid', end: true },
+  { to: '/app/manager/shifts', label: 'Vardiyalar', icon: 'clock' },
+  { to: '/app/manager/reports', label: 'Satış', icon: 'receipt' },
+  { to: '/app/manager/inventory', label: 'Stok', icon: 'box' },
+  { to: '/app/manager/management', label: 'Yönetim', icon: 'sliders' },
 ]
 
-/** Layout shell for manager-facing routes: content area + bottom nav. */
+/** Manager shell: branch switcher + identity + logout header, one responsive nav, routed page. */
 export function ManagerLayout() {
   return (
-    <div className={styles.layout}>
-      <DemoBadge />
-      <main className={styles.content}>
-        <Outlet />
-      </main>
-      <BottomNav items={navItems} />
-    </div>
+    <SelectedBranchProvider>
+      <AppShell navItems={NAV_ITEMS} allowBranchSwitch />
+    </SelectedBranchProvider>
   )
 }

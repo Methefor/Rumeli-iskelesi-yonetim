@@ -1,33 +1,40 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { formatDate, formatTime } from '../../../utils/dates'
+import {
+  Button,
+  DataBoundary,
+  EmptyState,
+  Inline,
+  LinkButton,
+  PageHeader,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useAuth } from '../../../hooks/useAuth'
-import { listMyShiftAssignments, confirmShiftAssignment, type ShiftAssignmentSummary } from '../../../services/supabase'
-import { Card, Button, StatusChip, EmptyState, Skeleton } from '../../../components/ui'
 import { useToast } from '../../../hooks/useToast'
+import { confirmShiftAssignment, listMyShiftAssignments } from '../../../services/data'
 
-const STATUS_TONE = { assigned: 'neutral', confirmed: 'success', cancelled: 'danger' } as const
-
-function formatTime(hour: number, minute: number): string {
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+const STATUS_TONE = {
+  assigned: 'warning',
+  confirmed: 'success',
+  cancelled: 'danger',
+} as const
+const STATUS_LABEL: Record<string, string> = {
+  assigned: 'Onay bekliyor',
+  confirmed: 'Onaylandı',
+  cancelled: 'İptal',
 }
 
+/** The signed-in employee's own shift assignments. */
 export function MyShiftPage() {
   const { user } = useAuth()
   const { showToast } = useToast()
-  const [assignments, setAssignments] = useState<ShiftAssignmentSummary[] | null>(null)
+  const state = useAsync(user ? `my-shifts:${user.id}` : null, () =>
+    user ? listMyShiftAssignments(user.id) : Promise.resolve([]),
+  )
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
-  const [reloadKey, setReloadKey] = useState(0)
-
-  useEffect(() => {
-    if (!user) return
-    let cancelled = false
-    listMyShiftAssignments(user.id).then((data) => {
-      if (!cancelled) setAssignments(data)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [user, reloadKey])
 
   async function handleConfirm(assignmentId: string) {
     setConfirmingId(assignmentId)
@@ -38,74 +45,66 @@ export function MyShiftPage() {
       return
     }
     showToast('Vardiya onaylandı', 'success')
-    setReloadKey((k) => k + 1)
-  }
-
-  if (assignments === null) {
-    return (
-      <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-        <Skeleton height={80} />
-        <Skeleton height={80} />
-      </div>
-    )
-  }
-
-  if (assignments.length === 0) {
-    return (
-      <EmptyState
-        icon="🕒"
-        title="Vardiyam"
-        description="Size atanmış bir vardiya bulunmuyor."
-        action={
-          <Link to="reports">
-            <Button variant="secondary">Son Raporlarım</Button>
-          </Link>
-        }
-      />
-    )
+    state.reload()
   }
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>Vardiyam</h1>
-        <Link to="reports">
-          <Button variant="ghost" size="md">
-            Son Raporlarım
-          </Button>
-        </Link>
-      </div>
+    <Stack>
+      <PageHeader
+        title="Vardiyalarım"
+        actions={
+          <LinkButton to="/app/employee/reports" variant="secondary">
+            Raporlarım
+          </LinkButton>
+        }
+      />
 
-      {assignments.map((a) => (
-        <Card key={a.assignmentId}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <p style={{ fontWeight: 600 }}>
-                {a.shift.branchName} — {a.shift.definition.name}
-              </p>
-              <p style={{ fontSize: 13, opacity: 0.75 }}>
-                {a.shift.businessDate} · {formatTime(a.shift.definition.startHour, a.shift.definition.startMinute)}–
-                {formatTime(a.shift.definition.endHour, a.shift.definition.endMinute)}
-              </p>
-            </div>
-            <StatusChip tone={STATUS_TONE[a.status as keyof typeof STATUS_TONE] ?? 'neutral'}>{a.status}</StatusChip>
-          </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            {a.status === 'assigned' && (
-              <Button size="md" loading={confirmingId === a.assignmentId} onClick={() => void handleConfirm(a.assignmentId)}>
-                Onayla
-              </Button>
-            )}
-            {a.shift.status !== 'cancelled' && (
-              <Link to={`${a.shift.id}/report`}>
-                <Button variant="secondary" size="md">
-                  Satış Raporu Gir
-                </Button>
-              </Link>
-            )}
-          </div>
-        </Card>
-      ))}
-    </div>
+      <DataBoundary state={state} rows={3} rowHeight={96}>
+        {(assignments) =>
+          assignments.length === 0 ? (
+            <EmptyState
+              icon="🕒"
+              title="Atanmış vardiya yok"
+              description="Size atanmış bir vardiya bulunmuyor."
+            />
+          ) : (
+            <Stack gap="sm">
+              {assignments.map((a) => (
+                <RowCard
+                  key={a.assignmentId}
+                  title={`${a.shift.branchName} — ${a.shift.definition.name}`}
+                  subtitle={`${formatDate(a.shift.businessDate)} · ${formatTime(a.shift.definition.startHour, a.shift.definition.startMinute)}–${formatTime(a.shift.definition.endHour, a.shift.definition.endMinute)}`}
+                  trailing={
+                    <StatusChip
+                      tone={
+                        STATUS_TONE[a.status as keyof typeof STATUS_TONE] ?? 'neutral'
+                      }
+                    >
+                      {STATUS_LABEL[a.status] ?? a.status}
+                    </StatusChip>
+                  }
+                >
+                  <Inline>
+                    {a.status === 'assigned' && (
+                      <Button
+                        loading={confirmingId === a.assignmentId}
+                        onClick={() => void handleConfirm(a.assignmentId)}
+                      >
+                        Onayla
+                      </Button>
+                    )}
+                    {a.shift.status !== 'cancelled' && a.status !== 'cancelled' && (
+                      <LinkButton to={`${a.shift.id}/report`} variant="secondary">
+                        Satış Raporu Gir
+                      </LinkButton>
+                    )}
+                  </Inline>
+                </RowCard>
+              ))}
+            </Stack>
+          )
+        }
+      </DataBoundary>
+    </Stack>
   )
 }

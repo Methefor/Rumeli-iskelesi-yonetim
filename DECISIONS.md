@@ -322,3 +322,27 @@ security regression this phase exists to prevent. Failing closed means a
 route only ever opens once its authorization data is actually correct, at
 the cost of every guarded route being inaccessible until Phase D's schema
 is live — an acceptable, visible gap, not a hidden one.
+
+## Phase E (2026-09-21): inventory decisions
+
+* **Append-oriented ledger + REVERSAL**, no UPDATE/DELETE anywhere; signed
+  `stock_delta` set server-side. Corrections are audited reversals/adjustments.
+* **Counts never rewrite stock.** Variance is recorded against a server-side
+  theoretical snapshot; only an explicit audited adjustment moves the ledger.
+* **Revenue != quantity.** Sales lines get optional `inventory_item_id` +
+  explicit `inventory_quantity` (not a separate table, so revenue and quantity
+  of one product stay together); a category is category-level XOR product-level
+  within one report.
+* **Effective-dated, append-only cost** (must be later than the latest; <=30
+  days ahead) + per-movement snapshot; NULL snapshot means unknown, not zero.
+* **Cost confidentiality via column grant** (`unit_cost_snapshot` excluded) and
+  a cost-gated RPC; branch_manager reads cost but cannot set it.
+* **Gross profit only**, shown partial/unavailable when unmapped or uncosted.
+* **Sell-through denominator** = opening + received + adjustment-in (see `INVENTORY_MODEL.md`).
+* **Closing workflow**: sales report + count required, waste optional (no fake
+  "no waste" confirmation is stored). No task subsystem.
+* **Demo mode via a data facade** (`services/data`), one deterministic store;
+  demo authorization mirrors roles but is not a security boundary.
+* **Employee cannot receive stock** (per brief); revisit with the business.
+* **Docker missing**: a scratch PGlite harness was used as a *substitute*,
+  reported as not equivalent to local Supabase.

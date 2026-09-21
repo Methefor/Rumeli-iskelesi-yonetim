@@ -1,6 +1,11 @@
 export { supabase } from './client'
 export { env, isDemoModeEnabled } from './env'
-export { fetchAuthorizationContext, signOut, type AuthorizationContext } from './auth'
+export {
+  fetchAuthorizationContext,
+  signOut,
+  type AuthorizationContext,
+  type UserProfileSummary,
+} from './auth'
 export {
   listMyShiftAssignments,
   listBranchShifts,

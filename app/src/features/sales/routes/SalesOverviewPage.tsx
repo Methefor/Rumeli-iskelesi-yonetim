@@ -1,59 +1,77 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { formatDateTime } from '../../../utils/dates'
+import { formatMoney } from '../../../utils/format'
+import {
+  DataBoundary,
+  EmptyState,
+  LinkButton,
+  PageHeader,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useSelectedBranch } from '../../../hooks/useSelectedBranch'
-import { listBranchReports, type SalesReportSummary } from '../../../services/supabase'
-import { Card, StatusChip, Button, EmptyState, Skeleton } from '../../../components/ui'
+import { listBranchReports } from '../../../services/data'
 
-const RECONCILIATION_TONE = { OK: 'success', WARNING: 'warning', ERROR: 'danger' } as const
+const RECONCILIATION_TONE = {
+  OK: 'success',
+  WARNING: 'warning',
+  ERROR: 'danger',
+} as const
+const RECONCILIATION_LABEL = { OK: 'Uyumlu', WARNING: 'Uyarı', ERROR: 'Hata' } as const
 
 export function SalesOverviewPage() {
-  const { branches, selectedBranchId, setSelectedBranchId } = useSelectedBranch()
-  const [reports, setReports] = useState<SalesReportSummary[] | null>(null)
-
-  useEffect(() => {
-    if (!selectedBranchId) return
-    void listBranchReports(selectedBranchId).then(setReports)
-  }, [selectedBranchId])
-
-  const flaggedCount = reports?.filter((r) => r.reconciliationStatus !== 'OK' && r.status !== 'cancelled').length ?? 0
+  const { selectedBranchId, selectedBranch } = useSelectedBranch()
+  const state = useAsync(selectedBranchId ? `reports:${selectedBranchId}` : null, () =>
+    selectedBranchId ? listBranchReports(selectedBranchId) : Promise.resolve([]),
+  )
+  const flagged =
+    state.data?.filter((r) => r.reconciliationStatus !== 'OK' && r.status !== 'cancelled')
+      .length ?? 0
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>Satış Genel Bakış</h1>
-        <Link to="reconciliation">
-          <Button size="md" variant={flaggedCount > 0 ? 'danger' : 'secondary'}>
-            Mutabakat Kuyruğu {flaggedCount > 0 ? `(${flaggedCount})` : ''}
-          </Button>
-        </Link>
-      </div>
-
-      {branches.length > 1 && (
-        <select value={selectedBranchId ?? ''} onChange={(e) => setSelectedBranchId(e.target.value)} style={{ padding: 8, borderRadius: 8 }}>
-          {branches.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {reports === null && <Skeleton height={160} />}
-      {reports !== null && reports.length === 0 && (
-        <EmptyState icon="🧾" title="Rapor yok" description="Bu şube için henüz gönderilmiş bir satış raporu yok." />
-      )}
-      {reports?.map((r) => (
-        <Card key={r.id}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-              <p style={{ fontWeight: 600 }}>{r.reportType} Raporu</p>
-              <p style={{ fontSize: 13, opacity: 0.75 }}>{new Date(r.submittedAt).toLocaleString('tr-TR')}</p>
-              <p style={{ fontSize: 15, marginTop: 4 }}>{r.grossRevenue.toFixed(2)} ₺</p>
-            </div>
-            <StatusChip tone={RECONCILIATION_TONE[r.reconciliationStatus]}>{r.reconciliationStatus}</StatusChip>
-          </div>
-        </Card>
-      ))}
-    </div>
+    <Stack>
+      <PageHeader
+        title="Satış Raporları"
+        subtitle={selectedBranch?.name}
+        actions={
+          <LinkButton to="reconciliation" variant={flagged > 0 ? 'danger' : 'secondary'}>
+            Mutabakat{flagged > 0 ? ` (${flagged})` : ''}
+          </LinkButton>
+        }
+      />
+      <DataBoundary state={state} rows={3}>
+        {(reports) =>
+          reports.length === 0 ? (
+            <EmptyState
+              icon="🧾"
+              title="Rapor yok"
+              description="Bu şube için gönderilmiş satış raporu yok."
+            />
+          ) : (
+            <Stack gap="sm">
+              {reports.map((r) => (
+                <RowCard
+                  key={r.id}
+                  title={`${r.reportType} Raporu`}
+                  subtitle={formatDateTime(r.submittedAt)}
+                  trailing={
+                    <>
+                      <strong>{formatMoney(r.grossRevenue)}</strong>
+                      <StatusChip tone={RECONCILIATION_TONE[r.reconciliationStatus]}>
+                        {RECONCILIATION_LABEL[r.reconciliationStatus]}
+                      </StatusChip>
+                      {r.status === 'cancelled' && (
+                        <StatusChip tone="danger">İptal</StatusChip>
+                      )}
+                    </>
+                  }
+                />
+              ))}
+            </Stack>
+          )
+        }
+      </DataBoundary>
+    </Stack>
   )
 }

@@ -1,4 +1,5 @@
 import { supabase } from './client'
+import { friendlyFromSupabaseError } from '../errors'
 
 export interface ShiftDefinitionSummary {
   id: string
@@ -77,7 +78,9 @@ function mapAssignmentRow(row: ShiftAssignmentRow): ShiftAssignmentSummary | nul
 }
 
 /** The signed-in employee's own shift assignments, most recent business_date first. */
-export async function listMyShiftAssignments(userId: string): Promise<ShiftAssignmentSummary[]> {
+export async function listMyShiftAssignments(
+  userId: string,
+): Promise<ShiftAssignmentSummary[]> {
   const { data, error } = await supabase
     .from('shift_assignments')
     .select(
@@ -89,7 +92,9 @@ export async function listMyShiftAssignments(userId: string): Promise<ShiftAssig
     .returns<ShiftAssignmentRow[]>()
 
   if (error || !data) return []
-  return data.map(mapAssignmentRow).filter((row): row is ShiftAssignmentSummary => row !== null)
+  return data
+    .map(mapAssignmentRow)
+    .filter((row): row is ShiftAssignmentSummary => row !== null)
 }
 
 interface ShiftRow {
@@ -133,7 +138,9 @@ function mapShiftRow(row: ShiftRow): ShiftSummary | null {
 export async function listBranchShifts(branchId: string): Promise<ShiftSummary[]> {
   const { data, error } = await supabase
     .from('shifts')
-    .select('id, branch_id, business_date, status, branches(name), shift_definitions(id, key, name, start_hour, start_minute, end_hour, end_minute)')
+    .select(
+      'id, branch_id, business_date, status, branches(name), shift_definitions(id, key, name, start_hour, start_minute, end_hour, end_minute)',
+    )
     .eq('branch_id', branchId)
     .order('business_date', { ascending: false })
     .limit(50)
@@ -150,12 +157,17 @@ export interface BranchOption {
 }
 
 export async function listBranches(): Promise<BranchOption[]> {
-  const { data, error } = await supabase.from('branches').select('id, key, name').eq('is_active', true)
+  const { data, error } = await supabase
+    .from('branches')
+    .select('id, key, name')
+    .eq('is_active', true)
   if (error || !data) return []
   return data
 }
 
-export async function listShiftDefinitions(branchId: string): Promise<ShiftDefinitionSummary[]> {
+export async function listShiftDefinitions(
+  branchId: string,
+): Promise<ShiftDefinitionSummary[]> {
   const { data, error } = await supabase
     .from('shift_definitions')
     .select('id, key, name, start_hour, start_minute, end_hour, end_minute')
@@ -185,12 +197,19 @@ export async function listBranchEmployees(branchId: string): Promise<BranchEmplo
     .from('branch_memberships')
     .select('profiles(id, full_name, employee_code)')
     .eq('branch_id', branchId)
-    .returns<Array<{ profiles: { id: string; full_name: string; employee_code: string | null } | null }>>()
+    .returns<
+      Array<{
+        profiles: { id: string; full_name: string; employee_code: string | null } | null
+      }>
+    >()
 
   if (error || !data) return []
   return data
     .map((row) => row.profiles)
-    .filter((p): p is { id: string; full_name: string; employee_code: string | null } => p !== null)
+    .filter(
+      (p): p is { id: string; full_name: string; employee_code: string | null } =>
+        p !== null,
+    )
     .map((p) => ({ id: p.id, fullName: p.full_name, employeeCode: p.employee_code }))
 }
 
@@ -206,7 +225,10 @@ export async function scheduleShift(input: {
     p_business_date: input.businessDate,
     p_reason: input.reason ?? null,
   })
-  return { shiftId: error ? null : (data as string), error: error?.message ?? null }
+  return {
+    shiftId: error ? null : (data as string),
+    error: friendlyFromSupabaseError(error),
+  }
 }
 
 export async function assignShift(input: {
@@ -219,13 +241,18 @@ export async function assignShift(input: {
     p_user_id: input.userId,
     p_reason: input.reason ?? null,
   })
-  return { assignmentId: error ? null : (data as string), error: error?.message ?? null }
+  return {
+    assignmentId: error ? null : (data as string),
+    error: friendlyFromSupabaseError(error),
+  }
 }
 
-export async function confirmShiftAssignment(assignmentId: string): Promise<{ error: string | null }> {
+export async function confirmShiftAssignment(
+  assignmentId: string,
+): Promise<{ error: string | null }> {
   const { error } = await supabase.rpc('update_shift_assignment_status', {
     p_assignment_id: assignmentId,
     p_new_status: 'confirmed',
   })
-  return { error: error?.message ?? null }
+  return { error: friendlyFromSupabaseError(error) }
 }

@@ -1,89 +1,102 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { formatDateTime } from '../../../utils/dates'
+import { formatMoney } from '../../../utils/format'
+import {
+  Button,
+  DataBoundary,
+  EmptyState,
+  Input,
+  PageHeader,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useSelectedBranch } from '../../../hooks/useSelectedBranch'
-import { listReconciliationQueue, overrideReconciliation, type SalesReportSummary } from '../../../services/supabase'
-import { Card, StatusChip, Button, Input, EmptyState, Skeleton } from '../../../components/ui'
 import { useToast } from '../../../hooks/useToast'
+import { listReconciliationQueue, overrideReconciliation } from '../../../services/data'
 
-const RECONCILIATION_TONE = { OK: 'success', WARNING: 'warning', ERROR: 'danger' } as const
+const TONE = { OK: 'success', WARNING: 'warning', ERROR: 'danger' } as const
+const LABEL = { OK: 'Uyumlu', WARNING: 'Uyarı', ERROR: 'Hata' } as const
 
+/** Reports whose register total and category total disagree. A manager may override with a mandatory, audited reason. */
 export function ReconciliationQueuePage() {
-  const { branches, selectedBranchId, setSelectedBranchId } = useSelectedBranch()
+  const { selectedBranchId, selectedBranch } = useSelectedBranch()
   const { showToast } = useToast()
-  const [reports, setReports] = useState<SalesReportSummary[] | null>(null)
-  const [reasonDraft, setReasonDraft] = useState<Record<string, string>>({})
-  const [overridingId, setOverridingId] = useState<string | null>(null)
-  const [reloadKey, setReloadKey] = useState(0)
-
-  useEffect(() => {
-    if (!selectedBranchId) return
-    let cancelled = false
-    listReconciliationQueue(selectedBranchId).then((data) => {
-      if (!cancelled) setReports(data)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [selectedBranchId, reloadKey])
+  const state = useAsync(selectedBranchId ? `queue:${selectedBranchId}` : null, () =>
+    selectedBranchId ? listReconciliationQueue(selectedBranchId) : Promise.resolve([]),
+  )
+  const [reasons, setReasons] = useState<Record<string, string>>({})
+  const [busyId, setBusyId] = useState<string | null>(null)
 
   async function handleOverride(reportId: string) {
-    const reason = reasonDraft[reportId]?.trim()
+    const reason = reasons[reportId]?.trim()
     if (!reason) {
-      showToast('Gerekçe zorunludur', 'danger')
+      showToast('Gerekçe zorunludur.', 'danger')
       return
     }
-    setOverridingId(reportId)
+    setBusyId(reportId)
     const { error } = await overrideReconciliation({ reportId, newStatus: 'OK', reason })
-    setOverridingId(null)
+    setBusyId(null)
     if (error) {
       showToast(error, 'danger')
       return
     }
     showToast('Mutabakat durumu güncellendi', 'success')
-    setReloadKey((k) => k + 1)
+    state.reload()
   }
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-      <h1 style={{ fontSize: 18, fontWeight: 600 }}>Mutabakat Kuyruğu</h1>
-
-      {branches.length > 1 && (
-        <select value={selectedBranchId ?? ''} onChange={(e) => setSelectedBranchId(e.target.value)} style={{ padding: 8, borderRadius: 8 }}>
-          {branches.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {reports === null && <Skeleton height={160} />}
-      {reports !== null && reports.length === 0 && (
-        <EmptyState icon="✅" title="Kuyruk boş" description="Mutabakat gerektiren bir rapor yok." />
-      )}
-      {reports?.map((r) => (
-        <Card key={r.id}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div>
-              <p style={{ fontWeight: 600 }}>{r.reportType} Raporu — {r.grossRevenue.toFixed(2)} ₺</p>
-              <p style={{ fontSize: 13, opacity: 0.75 }}>{new Date(r.submittedAt).toLocaleString('tr-TR')}</p>
-            </div>
-            <StatusChip tone={RECONCILIATION_TONE[r.reconciliationStatus]}>{r.reconciliationStatus}</StatusChip>
-          </div>
-          <Input
-            label="Onay gerekçesi (zorunlu)"
-            value={reasonDraft[r.id] ?? ''}
-            onChange={(e) => setReasonDraft((prev) => ({ ...prev, [r.id]: e.target.value }))}
-          />
-          <Button
-            size="md"
-            loading={overridingId === r.id}
-            onClick={() => void handleOverride(r.id)}
-            style={{ marginTop: 8 }}
-          >
-            OK Olarak Onayla
-          </Button>
-        </Card>
-      ))}
-    </div>
+    <Stack>
+      <PageHeader
+        title="Mutabakat Kuyruğu"
+        subtitle={selectedBranch?.name}
+        back={{ to: '/app/manager/reports', label: 'Satış Raporları' }}
+      />
+      <DataBoundary state={state} rows={2} rowHeight={130}>
+        {(reports) =>
+          reports.length === 0 ? (
+            <EmptyState
+              icon="✅"
+              title="Kuyruk boş"
+              description="Mutabakat gerektiren rapor yok."
+            />
+          ) : (
+            <Stack gap="sm">
+              {reports.map((r) => (
+                <RowCard
+                  key={r.id}
+                  title={`${r.reportType} Raporu — ${formatMoney(r.grossRevenue)}`}
+                  subtitle={formatDateTime(r.submittedAt)}
+                  trailing={
+                    <StatusChip tone={TONE[r.reconciliationStatus]}>
+                      {LABEL[r.reconciliationStatus]}
+                    </StatusChip>
+                  }
+                >
+                  <Stack gap="sm">
+                    <Input
+                      label="Onay gerekçesi (zorunlu)"
+                      value={reasons[r.id] ?? ''}
+                      onChange={(e) =>
+                        setReasons((p) => ({ ...p, [r.id]: e.target.value }))
+                      }
+                      maxLength={200}
+                    />
+                    <Button
+                      loading={busyId === r.id}
+                      disabled={!reasons[r.id]?.trim()}
+                      onClick={() => void handleOverride(r.id)}
+                    >
+                      Uyumlu Olarak Onayla
+                    </Button>
+                  </Stack>
+                </RowCard>
+              ))}
+            </Stack>
+          )
+        }
+      </DataBoundary>
+    </Stack>
   )
 }

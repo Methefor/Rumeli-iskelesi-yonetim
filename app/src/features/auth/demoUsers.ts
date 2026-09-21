@@ -57,5 +57,7 @@ export function findDemoUser(employeeCode: string, pin: string): DemoUser | unde
 
 /** Where a demo user should land after "logging in" — mirrors the real router's role split. */
 export function demoHomePath(user: DemoUser): string {
-  return user.roles.some((role) => MANAGER_ROLES.includes(role)) ? '/app/manager' : '/app/employee'
+  return user.roles.some((role) => MANAGER_ROLES.includes(role))
+    ? '/app/manager'
+    : '/app/employee'
 }

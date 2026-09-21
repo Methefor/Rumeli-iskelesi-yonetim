@@ -1,58 +1,106 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { canInventory } from '../../../domain/inventory'
+import { reconcile } from '../../../domain/reconciliation'
+import { formatMoney } from '../../../utils/format'
+import {
+  Button,
+  Card,
+  CurrencyInput,
+  DataBoundary,
+  EmptyState,
+  Input,
+  Note,
+  PageHeader,
+  QuantityInput,
+  SegmentedControl,
+  Stack,
+  StatusChip,
+  StickyActionBar,
+} from '../../../components/ui'
+import { useAsync } from '../../../hooks/useAsync'
 import { useAuth } from '../../../hooks/useAuth'
 import { useToast } from '../../../hooks/useToast'
 import {
-  listMyShiftAssignments,
-  listBranchCategories,
   createSalesReport,
-  type ShiftAssignmentSummary,
-  type CategoryOption,
-} from '../../../services/supabase'
-import { Card, Button, Input, CurrencyInput, Skeleton } from '../../../components/ui'
+  listBranchCategories,
+  listInventoryItems,
+  listMyShiftAssignments,
+  type SalesReportItemInput,
+} from '../../../services/data'
 
+/**
+ * Sales report entry. Categories with tracked products are entered PER
+ * PRODUCT (explicit sold quantity + revenue) so stock is reduced server-side
+ * in the same transaction; other categories stay category-level (revenue
+ * only). Quantity is never inferred from revenue. The reconciliation shown
+ * here is a preview — the server decides the stored status.
+ */
 export function NewSalesReportPage() {
   const { shiftId } = useParams<{ shiftId: string }>()
-  const { user } = useAuth()
+  const { user, roles } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
 
-  const [assignment, setAssignment] = useState<ShiftAssignmentSummary | null | undefined>(undefined)
-  const [categories, setCategories] = useState<CategoryOption[]>([])
+  const state = useAsync(
+    user && shiftId ? `new-report:${user.id}:${shiftId}` : null,
+    async () => {
+      if (!user || !shiftId) return null
+      const assignment =
+        (await listMyShiftAssignments(user.id)).find((a) => a.shift.id === shiftId) ??
+        null
+      if (!assignment) return null
+      const branchId = assignment.shift.branchId
+      const [categories, items] = await Promise.all([
+        listBranchCategories(branchId),
+        canInventory(roles, 'inventory.read')
+          ? listInventoryItems(branchId).catch(() => [])
+          : Promise.resolve([]),
+      ])
+      return {
+        assignment,
+        categories,
+        items: items.filter((i) => i.isActive && i.salesCategoryId),
+      }
+    },
+  )
+
   const [reportType, setReportType] = useState<'X' | 'Z'>('X')
   const [grossRevenue, setGrossRevenue] = useState<number | null>(null)
   const [transactionCount, setTransactionCount] = useState<number | null>(null)
   const [notes, setNotes] = useState('')
   const [amounts, setAmounts] = useState<Record<string, number | null>>({})
+  const [quantities, setQuantities] = useState<Record<string, number | null>>({})
+  const [productAmounts, setProductAmounts] = useState<Record<string, number | null>>({})
   const [submitting, setSubmitting] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      if (!user || !shiftId) return
-      const assignments = await listMyShiftAssignments(user.id)
-      const found = assignments.find((a) => a.shift.id === shiftId) ?? null
-      setAssignment(found)
-      if (found) {
-        setCategories(await listBranchCategories(found.shift.branchId))
+  async function handleSubmit(
+    categoryIdsWithProducts: Set<string>,
+    itemIds: string[],
+    categoryIds: string[],
+  ) {
+    if (!shiftId || grossRevenue === null) return
+    const items: SalesReportItemInput[] = []
+    for (const id of categoryIds) {
+      if (categoryIdsWithProducts.has(id)) continue
+      const amount = amounts[id]
+      if (amount !== null && amount !== undefined) items.push({ categoryId: id, amount })
+    }
+    for (const id of itemIds) {
+      const qty = quantities[id]
+      const amount = productAmounts[id]
+      if (qty && qty > 0 && amount !== null && amount !== undefined) {
+        items.push({ inventoryItemId: id, inventoryQuantity: qty, amount })
       }
     }
-    void load()
-  }, [user, shiftId])
-
-  const itemsTotal = Object.values(amounts).reduce((sum: number, v) => sum + (v ?? 0), 0)
-
-  async function handleSubmit() {
-    if (!shiftId || grossRevenue === null) return
     setSubmitting(true)
     const { error } = await createSalesReport({
       shiftId,
       reportType,
       grossRevenue,
       transactionCount,
-      notes: notes || null,
-      items: categories
-        .filter((c) => amounts[c.id] !== null && amounts[c.id] !== undefined)
-        .map((c) => ({ categoryId: c.id, amount: amounts[c.id]! })),
+      notes: notes.trim() || null,
+      items,
     })
     setSubmitting(false)
     if (error) {
@@ -60,70 +108,175 @@ export function NewSalesReportPage() {
       return
     }
     showToast('Rapor gönderildi', 'success')
-    navigate('/app/employee/shifts/reports')
-  }
-
-  if (assignment === undefined) {
-    return (
-      <div style={{ padding: 16, display: 'grid', gap: 12 }}>
-        <Skeleton height={40} />
-        <Skeleton height={200} />
-      </div>
-    )
-  }
-
-  if (assignment === null) {
-    return <div style={{ padding: 16 }}>Bu vardiyaya atanmış değilsiniz.</div>
+    navigate('/app/employee/reports')
   }
 
   return (
-    <div style={{ padding: 16, display: 'grid', gap: 16 }}>
-      <h1 style={{ fontSize: 18, fontWeight: 600 }}>
-        Satış Raporu — {assignment.shift.branchName} / {assignment.shift.definition.name}
-      </h1>
+    <Stack>
+      <PageHeader
+        title="Satış Raporu"
+        back={{ to: '/app/employee/shifts', label: 'Vardiyalarım' }}
+      />
+      <DataBoundary state={state} rows={3} rowHeight={120}>
+        {(data) => {
+          if (data === null) {
+            return (
+              <EmptyState
+                icon="🔒"
+                title="Bu vardiyaya atanmış değilsiniz"
+                description="Yalnızca size atanan vardiyalar için rapor gönderebilirsiniz."
+              />
+            )
+          }
+          const { assignment, categories, items } = data
+          const trackedCategories = new Set(items.map((i) => i.salesCategoryId as string))
+          const categoryIds = categories.map((c) => c.id)
+          const itemIds = items.map((i) => i.id)
 
-      <Card>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          {(['X', 'Z'] as const).map((type) => (
-            <Button
-              key={type}
-              variant={reportType === type ? 'primary' : 'secondary'}
-              size="md"
-              onClick={() => setReportType(type)}
+          const halfFilled = items.some((i) => {
+            const q = quantities[i.id]
+            const a = productAmounts[i.id]
+            return (q && q > 0) !== (a !== null && a !== undefined)
+          })
+          const categoryTotal = categories
+            .filter((c) => !trackedCategories.has(c.id))
+            .reduce((s, c) => s + (amounts[c.id] ?? 0), 0)
+          const productTotal = items.reduce(
+            (s, i) => s + ((quantities[i.id] ?? 0) > 0 ? (productAmounts[i.id] ?? 0) : 0),
+            0,
+          )
+          const itemsTotal = categoryTotal + productTotal
+          const preview =
+            grossRevenue !== null
+              ? reconcile(grossRevenue, itemsTotal, {
+                  warningPercentage: 2,
+                  errorPercentage: 5,
+                })
+              : null
+
+          return (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                void handleSubmit(trackedCategories, itemIds, categoryIds)
+              }}
             >
-              {type} Raporu
-            </Button>
-          ))}
-        </div>
+              <Stack>
+                <Note>
+                  {assignment.shift.branchName} — {assignment.shift.definition.name}
+                </Note>
+                <Card>
+                  <Stack gap="sm">
+                    <SegmentedControl
+                      label="Rapor türü"
+                      value={reportType}
+                      onChange={setReportType}
+                      options={[
+                        { value: 'X', label: 'X Raporu (sabah)' },
+                        { value: 'Z', label: 'Z Raporu (akşam)' },
+                      ]}
+                    />
+                    <CurrencyInput
+                      label="Kasa toplamı (brüt ciro)"
+                      value={grossRevenue}
+                      onValueChange={setGrossRevenue}
+                    />
+                    <QuantityInput
+                      label="İşlem sayısı (opsiyonel)"
+                      allowDecimal={false}
+                      value={transactionCount}
+                      onValueChange={setTransactionCount}
+                    />
+                    <Input
+                      label="Not (opsiyonel)"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      maxLength={200}
+                    />
+                  </Stack>
+                </Card>
 
-        <CurrencyInput label="Kasa Toplamı (Brüt Ciro)" value={grossRevenue} onValueChange={setGrossRevenue} />
-        <Input
-          label="İşlem Sayısı (opsiyonel)"
-          type="number"
-          value={transactionCount ?? ''}
-          onChange={(e) => setTransactionCount(e.target.value === '' ? null : Number(e.target.value))}
-        />
-        <Input label="Not (opsiyonel)" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </Card>
+                {items.length > 0 && (
+                  <Card>
+                    <Stack gap="sm">
+                      <strong>Ürün satışları</strong>
+                      <Note>
+                        Satılan miktarı ve geliri ürün bazında girin; stok bu miktardan
+                        düşülür. Boş bırakılan ürün kaydedilmez.
+                      </Note>
+                      {items.map((item) => (
+                        <Stack key={item.id} gap="sm">
+                          <span>{item.name}</span>
+                          <QuantityInput
+                            label="Satılan miktar"
+                            unit={item.unit}
+                            allowDecimal={item.allowsDecimal}
+                            value={quantities[item.id] ?? null}
+                            onValueChange={(v) =>
+                              setQuantities((p) => ({ ...p, [item.id]: v }))
+                            }
+                          />
+                          <CurrencyInput
+                            label="Gelir"
+                            value={productAmounts[item.id] ?? null}
+                            onValueChange={(v) =>
+                              setProductAmounts((p) => ({ ...p, [item.id]: v }))
+                            }
+                          />
+                        </Stack>
+                      ))}
+                      {halfFilled && (
+                        <StatusChip tone="warning">
+                          Her ürün için hem miktar hem gelir girin
+                        </StatusChip>
+                      )}
+                    </Stack>
+                  </Card>
+                )}
 
-      {categories.length > 0 && (
-        <Card>
-          <p style={{ fontWeight: 600, marginBottom: 8 }}>Kategori Dağılımı</p>
-          {categories.map((c) => (
-            <CurrencyInput
-              key={c.id}
-              label={c.name}
-              value={amounts[c.id] ?? null}
-              onValueChange={(v) => setAmounts((prev) => ({ ...prev, [c.id]: v }))}
-            />
-          ))}
-          <p style={{ fontSize: 13, opacity: 0.75, marginTop: 8 }}>Kategori toplamı: {itemsTotal.toFixed(2)} ₺</p>
-        </Card>
-      )}
+                {categories.some((c) => !trackedCategories.has(c.id)) && (
+                  <Card>
+                    <Stack gap="sm">
+                      <strong>Kategori dağılımı</strong>
+                      {categories
+                        .filter((c) => !trackedCategories.has(c.id))
+                        .map((c) => (
+                          <CurrencyInput
+                            key={c.id}
+                            label={c.name}
+                            value={amounts[c.id] ?? null}
+                            onValueChange={(v) =>
+                              setAmounts((p) => ({ ...p, [c.id]: v }))
+                            }
+                          />
+                        ))}
+                    </Stack>
+                  </Card>
+                )}
 
-      <Button fullWidth loading={submitting} disabled={grossRevenue === null} onClick={() => void handleSubmit()}>
-        Raporu Gönder
-      </Button>
-    </div>
+                <Note>
+                  Girilen dağılım toplamı: {formatMoney(itemsTotal)}
+                  {preview &&
+                    preview.status !== 'OK' &&
+                    ' — kasa toplamından farklı; mutabakat kuyruğuna düşebilir.'}
+                </Note>
+
+                <StickyActionBar>
+                  <Button
+                    type="submit"
+                    size="lg"
+                    fullWidth
+                    loading={submitting}
+                    disabled={grossRevenue === null || halfFilled}
+                  >
+                    Raporu Gönder
+                  </Button>
+                </StickyActionBar>
+              </Stack>
+            </form>
+          )
+        }}
+      </DataBoundary>
+    </Stack>
   )
 }

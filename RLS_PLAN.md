@@ -183,3 +183,10 @@ seeded test project), one per row below at minimum:
 | 17 | User attempts raw `update profiles set full_name = 'X' where id = auth.uid()` | allowed (row: self; column: granted) |
 | 18 | Branch manager of Branch X calls `admin_set_employee_active(userInBranchY, false)` | denied (`42501` — no shared branch) |
 | 19 | Branch manager of Branch X calls `admin_set_employee_active(userInBranchX, false)` | allowed; `audit_logs` row with `action = 'employee_deactivation'` written |
+
+## Phase E: inventory tables
+
+SELECT-only policies via `current_user_can_inventory(permission, branch)`;
+cost rows need `inventory.cost.read`; `inventory_movements.unit_cost_snapshot`
+is excluded from the client column grant; all writes are audited RPCs (014).
+Full matrix and test plan: `INVENTORY_SECURITY.md`.

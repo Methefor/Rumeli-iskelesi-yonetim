@@ -1,11 +1,18 @@
 import { supabase } from './client'
 
+export interface UserProfileSummary {
+  fullName: string
+  employeeCode: string | null
+}
+
 export interface AuthorizationContext {
   roles: string[]
   branchIds: string[]
+  /** Display identity for the app shell; null when it could not be loaded (never blocks authorization). */
+  profile: UserProfileSummary | null
 }
 
-const EMPTY_CONTEXT: AuthorizationContext = { roles: [], branchIds: [] }
+const EMPTY_CONTEXT: AuthorizationContext = { roles: [], branchIds: [], profile: null }
 
 /**
  * Loads the current user's roles + branch memberships from the Phase D
@@ -23,9 +30,14 @@ export async function fetchAuthorizationContext(
   userId: string,
 ): Promise<AuthorizationContext> {
   try {
-    const [rolesResult, membershipsResult] = await Promise.all([
+    const [rolesResult, membershipsResult, profileResult] = await Promise.all([
       supabase.from('user_roles').select('roles(key)').eq('user_id', userId),
       supabase.from('branch_memberships').select('branch_id').eq('user_id', userId),
+      supabase
+        .from('profiles')
+        .select('full_name, employee_code')
+        .eq('id', userId)
+        .maybeSingle(),
     ])
 
     if (rolesResult.error || membershipsResult.error) {
@@ -40,7 +52,17 @@ export async function fetchAuthorizationContext(
       .map((row) => (row as { branch_id?: string }).branch_id)
       .filter((id): id is string => Boolean(id))
 
-    return { roles, branchIds }
+    const profileRow = profileResult.error
+      ? null
+      : (profileResult.data as {
+          full_name?: string
+          employee_code?: string | null
+        } | null)
+    const profile: UserProfileSummary | null = profileRow?.full_name
+      ? { fullName: profileRow.full_name, employeeCode: profileRow.employee_code ?? null }
+      : null
+
+    return { roles, branchIds, profile }
   } catch {
     return EMPTY_CONTEXT
   }

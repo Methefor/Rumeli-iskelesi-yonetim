@@ -48,13 +48,16 @@ export function LoginPage() {
 
     // TODO(Phase C completion): call the pin-login Edge Function once
     // deployed, then supabase.auth.setSession() with the returned tokens.
-    showToast("Giriş backend'i henüz hazır değil (Faz C hazırlık aşaması).", 'warning')
+    showToast(
+      'Giriş şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.',
+      'warning',
+    )
   }
 
   return (
     <div className={styles.page}>
       <Card className={styles.card}>
-        <StatusChip tone="info">{isDemoModeEnabled ? 'Demo / Preview' : 'Faz C — hazırlık'}</StatusChip>
+        {isDemoModeEnabled && <StatusChip tone="info">Demo / Preview</StatusChip>}
         <h1 className={styles.title}>Rumeli Operasyon</h1>
         <p className={styles.subtitle}>Çalışan kodu ve PIN ile giriş yapın.</p>
         {isDemoModeEnabled && (

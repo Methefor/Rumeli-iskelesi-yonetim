@@ -14,3 +14,9 @@ here has been run against the production Supabase project.
 Do not run `supabase db push`, `supabase functions deploy`, or apply any of
 this SQL via the dashboard SQL editor without explicit approval — see the
 warnings at the top of each file.
+
+## Phase E
+
+`migrations/012`-`014` (inventory) are prepared, not applied. Executable DB
+assertions live in `tests/inventory_security.test.sql` — run **only** against a
+local/disposable database (`supabase start && supabase db reset`).

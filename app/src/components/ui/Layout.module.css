@@ -1,0 +1,39 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap, var(--space-4));
+  min-width: 0;
+}
+
+.inline {
+  display: flex;
+  gap: var(--gap, var(--space-2));
+  min-width: 0;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.align_start {
+  align-items: flex-start;
+}
+
+.align_center {
+  align-items: center;
+}
+
+.align_end {
+  align-items: flex-end;
+}
+
+.align_between {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--min, 150px), 100%), 1fr));
+  gap: var(--gap, var(--space-2));
+}

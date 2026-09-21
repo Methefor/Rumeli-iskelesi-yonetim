@@ -7,9 +7,12 @@ import {
   signOut as signOutRequest,
 } from '../../services/supabase/auth'
 import { findDemoUser, type DemoUser } from '../../features/auth/demoUsers'
-import { AuthContext, type AuthStatus } from './AuthContext'
-
-const DEMO_STORAGE_KEY = 'v4-demo-employee-code'
+import {
+  clearStoredDemoCredentials,
+  readStoredDemoCredentials,
+  storeDemoCredentials,
+} from '../../features/auth/demoSession'
+import { AuthContext, type AuthProfile, type AuthStatus } from './AuthContext'
 
 interface AuthState {
   status: AuthStatus
@@ -17,6 +20,7 @@ interface AuthState {
   user: User | null
   roles: string[]
   branchIds: string[]
+  profile: AuthProfile | null
   isDemo: boolean
 }
 
@@ -26,15 +30,17 @@ const initialState: AuthState = {
   user: null,
   roles: [],
   branchIds: [],
+  profile: null,
   isDemo: false,
 }
 
-const demoUnauthenticatedState: AuthState = {
+const unauthenticatedState: AuthState = {
   status: 'unauthenticated',
   session: null,
   user: null,
   roles: [],
   branchIds: [],
+  profile: null,
   isDemo: false,
 }
 
@@ -49,6 +55,12 @@ function toDemoAuthUser(demoUser: DemoUser): User {
   }
 }
 
+/** "M001 — Demo Yönetici" -> "Demo Yönetici" (the code is shown separately). */
+function demoDisplayName(demoUser: DemoUser): string {
+  const parts = demoUser.fullName.split(' — ')
+  return parts.length > 1 ? parts.slice(1).join(' — ') : demoUser.fullName
+}
+
 function demoState(demoUser: DemoUser): AuthState {
   return {
     status: 'authenticated',
@@ -56,17 +68,11 @@ function demoState(demoUser: DemoUser): AuthState {
     user: toDemoAuthUser(demoUser),
     roles: demoUser.roles,
     branchIds: demoUser.branchIds,
+    profile: { fullName: demoDisplayName(demoUser), employeeCode: demoUser.employeeCode },
     isDemo: true,
   }
 }
 
-/**
- * Restores/tracks the Supabase Auth session and, once one exists, loads the
- * user's roles/branch memberships. This never reads a `?cashier_id=` URL
- * parameter or any other client-supplied identity — the only source of
- * truth is the Supabase session itself (or, in Preview-only demo mode, the
- * synthetic demoUsers directory — see DECISIONS.md).
- */
 /** Synchronous — sessionStorage + an array lookup, safe as a lazy useState initializer. */
 function restoreDemoState(): AuthState | null {
   if (!isDemoModeEnabled) return null
@@ -76,9 +82,16 @@ function restoreDemoState(): AuthState | null {
   return demoUser ? demoState(demoUser) : null
 }
 
+/**
+ * Restores/tracks the Supabase Auth session and, once one exists, loads the
+ * user's roles/branch memberships. This never reads a `?cashier_id=` URL
+ * parameter or any other client-supplied identity — the only source of
+ * truth is the Supabase session itself (or, in Preview-only demo mode, the
+ * synthetic demoUsers directory — see DECISIONS.md).
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(() => {
-    if (isDemoModeEnabled) return restoreDemoState() ?? demoUnauthenticatedState
+    if (isDemoModeEnabled) return restoreDemoState() ?? unauthenticatedState
     return initialState
   })
   const mountedRef = useRef(true)
@@ -97,16 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function applySession(session: Session | null) {
       if (!session) {
-        if (mountedRef.current) {
-          setState({
-            status: 'unauthenticated',
-            session: null,
-            user: null,
-            roles: [],
-            branchIds: [],
-            isDemo: false,
-          })
-        }
+        if (mountedRef.current) setState(unauthenticatedState)
         return
       }
 
@@ -118,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           user: session.user,
           roles: authz.roles,
           branchIds: authz.branchIds,
+          profile: authz.profile ?? null,
           isDemo: false,
         })
       }
@@ -144,26 +149,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user: state.user,
       roles: state.roles,
       branchIds: state.branchIds,
+      profile: state.profile,
       isDemo: state.isDemo,
       signInDemo(employeeCode: string, pin: string) {
         if (!isDemoModeEnabled) return null
         const demoUser = findDemoUser(employeeCode, pin)
         if (!demoUser) return null
-        sessionStorage.setItem(DEMO_STORAGE_KEY, `${demoUser.employeeCode}:${demoUser.pin}`)
+        storeDemoCredentials(demoUser)
         setState(demoState(demoUser))
         return { roles: demoUser.roles }
       },
       async signOut() {
         if (state.isDemo) {
-          sessionStorage.removeItem(DEMO_STORAGE_KEY)
-          setState({
-            status: 'unauthenticated',
-            session: null,
-            user: null,
-            roles: [],
-            branchIds: [],
-            isDemo: false,
-          })
+          clearStoredDemoCredentials()
+          setState(unauthenticatedState)
           return
         }
         await signOutRequest()
@@ -173,17 +172,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-/**
- * DEMO_STORAGE_KEY stores "CODE:PIN" together so a page reload re-validates
- * against demoUsers (via findDemoUser) rather than trusting a bare,
- * unverified employee code read back from storage.
- */
-function readStoredDemoCredentials(): { employeeCode: string; pin: string } | null {
-  const stored = sessionStorage.getItem(DEMO_STORAGE_KEY)
-  if (!stored) return null
-  const separatorIndex = stored.indexOf(':')
-  if (separatorIndex === -1) return null
-  return { employeeCode: stored.slice(0, separatorIndex), pin: stored.slice(separatorIndex + 1) }
 }

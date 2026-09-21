@@ -94,7 +94,9 @@ describe('AuthProvider', () => {
     )
 
     await waitFor(() =>
-      expect(screen.getByTestId('probe')).toHaveTextContent('authenticated:cashier:b1:real'),
+      expect(screen.getByTestId('probe')).toHaveTextContent(
+        'authenticated:cashier:b1:real',
+      ),
     )
   })
 
