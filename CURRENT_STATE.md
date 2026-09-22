@@ -176,10 +176,11 @@ session.
 
 ### Phase E (2026-09-21): İskele Dondurma inventory + UI/UX — committed to v4-2027
 
-* Migrations 012-014 (prepared, not applied anywhere): generic branch-scoped
-  inventory, append-only ledger, effective-dated cost, separate physical
-  counts, product-linked sales lines. Validated only in a scratch Postgres
-  harness; **local Supabase validation is open** (no Docker on this laptop).
+* Migrations 012-014 (prepared, not applied to any hosted project): generic
+  branch-scoped inventory, append-only ledger, effective-dated cost, separate
+  physical counts, product-linked sales lines. As of 2026-09-22, validated
+  against a real local Supabase stack (fresh `db reset`, real Auth/PostgREST/
+  RLS) — see the table below and `docs/LOCAL_VALIDATION_2026-09-22.md`.
 * V4 now has a coherent shell (branch, identity, role, logout), real manager
   and employee homes, and inventory screens (overview, receive, waste,
   closing count, items, cost, gross profit, movements). Demo mode
@@ -191,12 +192,32 @@ session.
 
 | Item | Status |
 |---|---|
-| Phase E application / domain / UI tests (typecheck, lint, 150 unit + demo-flow tests, build) | **VALIDATED** |
-| Migrations 012-014 | **PREPARED** (not applied anywhere) |
-| PGlite security harness (`supabase/tests/inventory_security.test.sql`, ~150 assertions) | **PASSED, but NOT equivalent to real Supabase** (WASM Postgres + hand-written auth/storage shim; no GoTrue, PostgREST or real roles/grants) |
-| Real local Supabase `db reset` + integration run | **OPEN** |
+| Phase E application / domain / UI tests (typecheck, lint, 163 unit + demo-flow tests, build) | **VALIDATED** |
+| Migrations 012-014 | **PREPARED**, validated on a real local Supabase stack; **not applied to any hosted project** |
+| Fresh local Supabase `db reset` (001-014 from zero) | **VALIDATED LOCALLY** (2026-09-22, real Docker/Postgres/GoTrue/PostgREST) |
+| SQL security/timezone suites (`inventory_security.test.sql`, `timezone_regression.test.sql`, `timezone_rpc.test.sql`, ~155+32 assertions incl. the cashier/branch_manager rollback) against real local Postgres roles | **VALIDATED LOCALLY** |
+| Real local Auth + PostgREST integration (`local_inventory_api.mjs`, 137 assertions, real password sessions/JWTs, every role) | **VALIDATED LOCALLY** |
+| Timezone invariance (session TZ UTC / Europe/Istanbul / America/New_York / Asia/Tokyo all produce the same business result) | **VALIDATED LOCALLY** |
 | Hosted / staging validation | **NOT DONE** |
 | Production | **UNTOUCHED** |
 
-The SQL must not be described as fully validated until it passes on a real
-local Supabase stack.
+The PGlite harness result described in earlier Phase E docs has been
+superseded by the above real local Supabase run; see
+`docs/LOCAL_VALIDATION_2026-09-22.md`. Do not describe any of this as
+hosted/staging-validated until it has actually run there.
+
+
+### 2026-09-21 local validation follow-up (uncommitted)
+
+Real Supabase validation remains OPEN: CLI 2.117.0 start failed because Docker/Podman is absent. Migration 011 and the application cutoff evaluator now explicitly use Istanbul business time (prepared files only). Typecheck/lint/build and 158 tests passed; 13 timezone tests additionally passed under UTC/New York/Tokyo. SQL regression is prepared, not executed. No hosted/production changes or permission changes. See docs/LOCAL_VALIDATION_2026-09-21.md.
+
+
+###  2026-09-22 — real local validation PASS (uncommitted)
+
+Supersedes the previous Docker-blocked/OPEN entry. Fresh local Supabase reset applied 001– 014. Real role SQL security suite and timezone arithmetic pass; 32 actual timezone RPC cases and 135 real Auth/PostgREST assertions pass. 163 application tests, typecheck, lint and build pass. Local security advisors report no warn/error issues. Cashier own-branch adjust/non-sale reverse/count void is explicitly approved and implemented in prepared files, with owner/manager audit UI.011 AND 014 timezone expressions fixed. Hosted/production untouched; no commit/push. See docs/LOCAL_VALIDATION_ 2026-09-22.md for limitations, including local Vector log collection and bundle-size warning.
+
+### 2026-09-22 (later) — cashier `inventory.adjust` grant rolled back; branch_manager loses reversal
+
+The user's explicit approval reversed the cashier grant above and narrowed the design further: **cashier/employee have no privileged inventory access at all** (no adjust, no reversal, no count-void, no cost, no receive — same as before Phase E's cashier experiment). **branch_manager keeps own-branch adjust and count-void, but not `reverse_inventory_movement`** — reversal is now owner/manager only, the one substantive change from the original Phase E design. See `DECISIONS.md` "cashier grant rolled back; final inventory authorization scope" for the full rationale.
+
+Re-validated end to end on a fresh real local Supabase reset (Docker): `inventory_security.test.sql` (with a new section testing the rollback against real own-branch fixtures for cashier and branch_manager, not just cross-branch), `timezone_regression.test.sql`, `timezone_rpc.test.sql` (32/32), and `local_inventory_api.mjs` (rewritten, 137/137 real Auth+PostgREST assertions) all pass. App suite: typecheck, lint, 165 tests, build — all pass. No commit/push; production and hosted Supabase untouched.

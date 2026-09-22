@@ -32,13 +32,15 @@ import { useInventoryBase, useInventoryContext } from '../hooks'
 
 /**
  * The stock ledger, newest first. The ledger is append-only: nothing here
- * edits or deletes a row. Roles with inventory.adjust can record an explicit
- * adjustment (the ONLY way to make the ledger agree with a count variance)
- * or reverse a non-sale movement with a reason — both audited. Sale-linked
- * movements are corrected by editing/cancelling the sales report.
+ * edits or deletes a row. Roles with inventory.adjust (owner, manager,
+ * branch_manager) can record an explicit adjustment (the ONLY way to make
+ * the ledger agree with a count variance) — audited. Reversing a non-sale
+ * movement is narrower still: owner/manager only, not branch_manager — also
+ * audited. Sale-linked movements are corrected by editing/cancelling the
+ * sales report.
  */
 export function MovementHistoryPage() {
-  const { branchId, branchName, can } = useInventoryContext()
+  const { branchId, branchName, can, canReverseMovement } = useInventoryContext()
   const base = useInventoryBase()
   const { showToast } = useToast()
 
@@ -159,7 +161,7 @@ export function MovementHistoryPage() {
                   {visible.map((m) => {
                     const item = nameOf(m.inventoryItemId)
                     const canReverse =
-                      canAdjust &&
+                      canReverseMovement &&
                       m.type !== 'REVERSAL' &&
                       m.salesReportId === null &&
                       !reversed.has(m.id)

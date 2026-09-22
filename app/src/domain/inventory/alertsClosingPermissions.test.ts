@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { deriveInventoryAlerts } from './alerts'
 import { deriveClosingStatus } from './closing'
-import { canInventory, inventoryPermissionsFor } from './permissions'
+import { canInventory, inventoryPermissionsFor, isOwnerOrManager } from './permissions'
 
 describe('deriveInventoryAlerts', () => {
   const items = [
@@ -131,5 +131,14 @@ describe('inventory permissions (UI visibility map)', () => {
 
   it('unions the permissions of multiple roles', () => {
     expect(canInventory(['employee', 'branch_manager'], 'inventory.receive')).toBe(true)
+  })
+
+  it('isOwnerOrManager: only owner/manager, not branch_manager, cashier or employee — reversal is narrower than inventory.adjust', () => {
+    expect(isOwnerOrManager(['owner'])).toBe(true)
+    expect(isOwnerOrManager(['manager'])).toBe(true)
+    expect(isOwnerOrManager(['branch_manager'])).toBe(false)
+    expect(isOwnerOrManager(['cashier'])).toBe(false)
+    expect(isOwnerOrManager(['employee'])).toBe(false)
+    expect(isOwnerOrManager([])).toBe(false)
   })
 })

@@ -13,6 +13,7 @@ import { realApi, type DataApi } from './real'
 const api: DataApi = isDemoModeEnabled ? demoApi : realApi
 
 export const {
+  listInventoryAudit,
   listMyShiftAssignments,
   listBranchShifts,
   listBranches,

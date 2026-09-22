@@ -293,3 +293,137 @@ describe('gross profit in the demo data is honest', () => {
     expect(result.unmappedCategoryRevenue).toBe(700)
   })
 })
+
+describe('cashier has no privileged inventory access (rollback)', () => {
+  function ownBranchInventory() {
+    const state = resetDemoState(NOW)
+    const item = state.items.find((i) => i.id === 'demo-item-a')!
+    item.branchId = R
+    return state
+  }
+
+  it('cashier cannot adjust, reverse or void — not even in their own branch', async () => {
+    const state = ownBranchInventory()
+    signInAs('K001')
+    expect(
+      (
+        await demoApi.recordInventoryAdjustment({
+          itemId: 'demo-item-a',
+          direction: 'IN',
+          quantity: 2,
+          reason: 'Sayım farkı',
+        })
+      ).error,
+    ).toMatch(/yetkiniz/)
+
+    const movement = addMovement(state, {
+      itemId: 'demo-item-a',
+      type: 'ADJUSTMENT_IN',
+      quantity: 2,
+      at: NOW,
+      createdBy: 'demo-m001',
+      reason: 'fixture (manager-equivalent)',
+    })
+    expect(
+      (await demoApi.reverseInventoryMovement({ movementId: movement.id, reason: 'x' }))
+        .error,
+    ).toMatch(/yetkiniz/)
+
+    const count = await demoApi.submitInventoryCount({
+      branchId: R,
+      lines: [{ inventoryItemId: 'demo-item-a', physicalQuantity: 12 }],
+    })
+    expect(count.error).toBeNull()
+    expect(
+      (await demoApi.voidInventoryCount({ countId: count.countId!, reason: 'x' })).error,
+    ).toMatch(/yetkiniz/)
+  })
+
+  it('cashier cannot correct another branch or attribute count to an unassigned shift', async () => {
+    signInAs('K001')
+    expect(
+      (
+        await demoApi.recordInventoryAdjustment({
+          itemId: 'demo-item-a',
+          direction: 'IN',
+          quantity: 1,
+          reason: 'x',
+        })
+      ).error,
+    ).toMatch(/yetkiniz/)
+    const state = ownBranchInventory()
+    const shift = state.shifts.find((s) => s.branchId === R && s.status !== 'cancelled')!
+    state.assignments = state.assignments.filter((a) => a.shiftId !== shift.id)
+    expect(
+      (
+        await demoApi.submitInventoryCount({
+          branchId: R,
+          shiftId: shift.id,
+          lines: [{ inventoryItemId: 'demo-item-a', physicalQuantity: 2 }],
+        })
+      ).error,
+    ).toMatch(/atanmış/)
+  })
+})
+
+describe('manager (org-wide) keeps full adjust/reverse/void, with mandatory reasons', () => {
+  it('adjusts, reverses and voids a count in Dondurma with an audited reason', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('M001')
+    const input = {
+      itemId: 'demo-item-a',
+      direction: 'IN' as const,
+      quantity: 2,
+      reason: 'Sayım farkı',
+    }
+    expect(
+      (await demoApi.recordInventoryAdjustment({ ...input, reason: ' ' })).error,
+    ).toMatch(/Gerekçe/)
+    const before = theoreticalQuantity(state, input.itemId)
+    expect((await demoApi.recordInventoryAdjustment(input)).error).toBeNull()
+    expect(theoreticalQuantity(state, input.itemId)).toBe(before + 2)
+    const movement = state.movements.at(-1)!
+    expect(movement.createdBy).toBe('demo-m001')
+    expect(
+      (await demoApi.reverseInventoryMovement({ movementId: movement.id, reason: ' ' }))
+        .error,
+    ).toMatch(/Gerekçe/)
+    expect(
+      (
+        await demoApi.reverseInventoryMovement({
+          movementId: movement.id,
+          reason: 'Hatalı düzeltme',
+        })
+      ).error,
+    ).toBeNull()
+    expect(theoreticalQuantity(state, input.itemId)).toBe(before)
+    expect(
+      (
+        await demoApi.reverseInventoryMovement({
+          movementId: movement.id,
+          reason: 'Tekrar',
+        })
+      ).error,
+    ).toBeTruthy()
+
+    const count = await demoApi.submitInventoryCount({
+      branchId: D,
+      lines: [{ inventoryItemId: 'demo-item-a', physicalQuantity: 12 }],
+    })
+    expect(count.error).toBeNull()
+    const stockBeforeVoid = theoreticalQuantity(state, 'demo-item-a')
+    expect(
+      (await demoApi.voidInventoryCount({ countId: count.countId!, reason: ' ' })).error,
+    ).toMatch(/Gerekçe/)
+    expect(
+      (
+        await demoApi.voidInventoryCount({
+          countId: count.countId!,
+          reason: 'Yanlış sayım',
+        })
+      ).error,
+    ).toBeNull()
+    expect(state.counts.find((c) => c.id === count.countId)?.status).toBe('voided')
+    expect(theoreticalQuantity(state, 'demo-item-a')).toBe(stockBeforeVoid)
+  })
+})

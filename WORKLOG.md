@@ -343,3 +343,19 @@ DB access configured) — findings were supplied and are documented as-is.
   passing), `npm run build` all pass clean from a fresh `npm install`.
 - Confirmed via `git status` that no legacy file outside `app/` and the
   `.gitignore` fix was touched.
+
+
+### 2026-09-21 — local validation attempt and timezone correction
+
+Verified clean v4-2027 at 5a3922e before edits. Local start blocked by missing Docker/Podman; no db reset or Auth/PostgREST validation performed. Prepared explicit Europe/Istanbul SQL cutoff and device-independent application evaluation; all 158 application tests, lint, typecheck and build pass. Reviewed branch_manager adjust/reverse/count-void without changing grants. Full findings and outstanding tests: docs/LOCAL_VALIDATION_2026-09-21.md. No commit/push.
+
+
+###  2026-09-22 — completed real local validation
+
+Fresh 001– 014 local reset PASS after repairing interrupted012 block delimiters. SQL inventory security PASS, timezone arithmetic PASS, 32 actual RPC timezone cases PASS, 135 Auth/PostgREST assertions PASS. 163 app tests/21 files, typecheck/lint/build PASS; local security advisors no warn/error issues. Demo browser cashier adjust/reverse and manager count-void/audit verified, audit 360px layout checked. Corrected management relative links found in browser; count-void warning clarified. No production/commit/push. Full report: docs/LOCAL_VALIDATION_ 2026-09-22.md.
+
+### 2026-09-22 (later) — rolled back cashier inventory.adjust; branch_manager loses reversal
+
+Per explicit user instruction: reverted the cashier `inventory.adjust` grant added earlier the same day (migration 012), and additionally restricted `reverse_inventory_movement` (014) to owner/manager only — branch_manager keeps `record_inventory_adjustment` and `void_inventory_count` in their own branch, but not reversal. Updated the frontend UI-visibility mirror (new `isOwnerOrManager` helper, `canReverseMovement` in `useInventoryContext`), gated the reverse button in `MovementHistoryPage` on it, fixed stale cashier-can-void copy in `ClosingCountPage`, updated the demo API/store and its tests, added a new SQL test section exercising the rollback against real own-branch fixtures (not just cross-branch denial), and rewrote `local_inventory_api.mjs`'s adjust/reverse/void flow end to end (137 assertions, all actor/stock/audit numbers recomputed).
+
+Re-ran the full local validation from a fresh `supabase db reset --local --no-seed`: inventory security SQL, both timezone SQL suites, and the Auth/PostgREST script all pass, plus `npm run typecheck`/`lint`/`test` (165 tests)/`build`. No commit, no push, no hosted/production change.

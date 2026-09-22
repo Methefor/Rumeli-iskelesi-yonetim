@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom'
 import {
   canInventory,
   deriveInventoryAlerts,
+  isOwnerOrManager,
   type InventoryPermission,
 } from '../../domain/inventory'
 import { useAsync } from '../../hooks/useAsync'
@@ -37,6 +38,10 @@ export function useInventoryContext() {
     branchName: selectedBranch?.name ?? '',
     roles,
     can: (permission: InventoryPermission) => canInventory(roles, permission),
+    // Movement reversal is owner/manager only — narrower than 'inventory.adjust',
+    // which branch_manager also holds for adjustments and count-void. See
+    // domain/inventory/permissions.ts.
+    canReverseMovement: isOwnerOrManager(roles),
   }
 }
 
@@ -69,14 +74,16 @@ export function useBranchInventory() {
  * Shifts an inventory action may be attributed to: yesterday's and today's
  * (an evening shift runs past midnight) non-cancelled shifts in the selected
  * branch. Employees see only shifts they are assigned to; roles with
- * inventory.adjust see the branch's shifts. The server re-validates.
+ * owner/manager/branch_manager roles see the branch's shifts. The server re-validates.
  */
 export function useRecentShifts() {
   const { user } = useAuth()
-  const { branchId, can } = useInventoryContext()
+  const { branchId, roles } = useInventoryContext()
   const today = istanbulDate()
   const yesterday = addDaysIso(today, -1)
-  const privileged = can('inventory.adjust')
+  const privileged = roles.some((role) =>
+    ['owner', 'manager', 'branch_manager'].includes(role),
+  )
 
   return useAsync<ShiftSummary[]>(
     user && branchId ? `recent-shifts:${branchId}:${today}:${privileged}` : null,

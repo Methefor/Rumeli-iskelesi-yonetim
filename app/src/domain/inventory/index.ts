@@ -34,5 +34,6 @@ export {
 export {
   inventoryPermissionsFor,
   canInventory,
+  isOwnerOrManager,
   type InventoryPermission,
 } from './permissions'

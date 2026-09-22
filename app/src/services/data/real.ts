@@ -1,3 +1,4 @@
+import { listInventoryAudit } from '../supabase/inventoryAudit'
 import * as shifts from '../supabase/shifts'
 import * as sales from '../supabase/sales'
 import * as inventory from '../supabase/inventory'
@@ -8,6 +9,7 @@ import * as inventory from '../supabase/inventory'
  * satisfy, so a screen can be written once and run against either.
  */
 export const realApi = {
+  listInventoryAudit,
   // shifts
   listMyShiftAssignments: shifts.listMyShiftAssignments,
   listBranchShifts: shifts.listBranchShifts,

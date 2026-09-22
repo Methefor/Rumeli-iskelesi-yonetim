@@ -169,3 +169,22 @@ in the original brief. Move items up when a phase actually starts.
       nothing external links to it.
 - [ ] `animated-login-register/` at the repo root is unreferenced by any
       live page — flagged as safe to remove, not yet removed.
+
+
+### 2026-09-21 validation follow-up
+
+- Enable a local Docker-compatible runtime after system-installation approval; fresh reset 001-014 and real Auth/PostgREST inventory validation remain required.
+- Execute prepared timezone SQL regression and actual create_sales_report RPC boundary tests across session timezones.
+- Decide branch_manager direct adjustment/reversal/count-void policy; preserve current grants until approval. Include linked-count adjustments and shift-assignment bypass in decision.
+- Review existing backdated-entry policy separately from timezone correction.
+
+
+###  2026-09-22 — validation follow-up resolved
+
+Previous Docker installation, fresh 001– 014 reset, real Auth/PostgREST inventory checks and SQL/RPC timezone checks are complete. Cashier direct-action policy decided and prepared locally. Remaining: investigate local Vector Docker log connection refusal; optional audit pagination/date filtering beyond last 100 entries; retain separate backdated-entry policy review. No production deployment authorized.
+
+### 2026-09-22 (later) — cashier grant rolled back
+
+- Cashier `inventory.adjust` grant reverted; cashier/employee now identical for inventory (read/record/count, own branch, nothing privileged).
+- branch_manager additionally lost `reverse_inventory_movement` (owner/manager only from now on) — a deliberate narrowing beyond just undoing the cashier grant.
+- Still open: local Vector Docker log connection refusal (cosmetic); audit pagination/date filtering beyond last 100 entries; backdated-entry policy review (separate from the timezone fix). No production deployment authorized.

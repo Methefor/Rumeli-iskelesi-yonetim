@@ -1,3 +1,4 @@
+import { InventoryAuditPage } from '../../features/inventory/routes/InventoryAuditPage'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { EmployeeLayout } from '../layouts/EmployeeLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
@@ -74,6 +75,14 @@ export const router = createBrowserRouter([
       { path: 'inventory/costs', element: <CostManagementPage /> },
       { path: 'inventory/profit', element: <GrossProfitPage /> },
       { path: 'inventory/movements', element: <MovementHistoryPage /> },
+      {
+        path: 'inventory/audit',
+        element: (
+          <RoleGuard allow={['owner', 'manager']}>
+            <InventoryAuditPage />
+          </RoleGuard>
+        ),
+      },
       { path: 'management', element: <ManagementPage /> },
       { path: 'branches', element: <Navigate to="/app/manager/management" replace /> },
       { path: 'employees', element: <Navigate to="/app/manager/management" replace /> },

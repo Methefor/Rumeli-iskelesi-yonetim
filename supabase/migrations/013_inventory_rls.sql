@@ -153,3 +153,19 @@ create policy inventory_count_items_select_scoped on public.inventory_count_item
 --                         reverse_inventory_movement, and the SALE/REVERSAL
 --                         rows written by create/edit/cancel_sales_report
 --   counts/count items    submit_inventory_count / void_inventory_count
+
+
+-- Inventory audit snapshots include confidential cost data. Report-only roles
+-- must not bypass inventory cost/branch rules through the generic audit table.
+-- Preserve pre-inventory report audit access; inventory oversight is owner/manager.
+drop policy audit_logs_select_privileged on public.audit_logs;
+create policy audit_logs_select_privileged on public.audit_logs
+  for select to authenticated
+  using (
+    public.current_user_is_owner_or_manager()
+    or (
+      public.current_user_has_permission('reports.read')
+      and left(action, 10) <> 'inventory_'
+      and left(entity_type, 10) <> 'inventory_'
+    )
+  );

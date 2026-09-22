@@ -19,6 +19,7 @@
 -- =============================================================================
 
 begin;
+set local timezone = 'Europe/Istanbul';
 
 create schema t;
 grant usage on schema t to anon, authenticated;
@@ -327,6 +328,54 @@ select t.assert((select unit_cost_snapshot from public.inventory_movements where
 select t.assert((select count(*) from public.audit_logs where action = 'inventory_movement_reversal') = 1, 'reversal audited');
 
 -- =============================================================================
+-- E2. Rollback validation: cashier has NO privileged inventory access at all
+--     (a prior grant of inventory.adjust to cashier is reverted here);
+--     branch_manager keeps own-branch adjust and count-void but NOT movement
+--     reversal (owner/manager only). "Own branch" below means Rumeli (BR) —
+--     the cashier's and this branch_manager's REAL membership. Testing this
+--     against Dondurma (BD) alone would only prove branch-scope denial, not
+--     that the permission itself is absent.
+-- =============================================================================
+select t.as_user('M');
+select t.expect_ok($q$select public.upsert_inventory_item(null, t.id('BR'), 'ITEMR', 'Rumeli fixture item', 'kg')$q$, 'manager creates a Rumeli item for own-branch boundary tests');
+select t.as_superuser();
+insert into t.ctx select 'ITEMR', id from public.inventory_items where code = 'ITEMR';
+select t.as_user('M');
+select t.expect_ok($q$select public.record_inventory_receipt(t.id('BR'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEMR'), 'quantity', 20)))$q$, 'manager stocks the Rumeli fixture item');
+
+-- cashier: adjust, reversal and void are all denied in their OWN branch
+select t.as_user('K');
+select t.expect_denied($q$select public.record_inventory_adjustment(t.id('ITEMR'), 'OUT', 1, 'shrink')$q$, 'cashier has no inventory.adjust, even in their own branch');
+select t.expect_ok($q$select public.record_inventory_waste(t.id('BR'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEMR'), 'quantity', 1)), 'damaged')$q$, 'cashier can still record waste in own branch (unaffected by the rollback)');
+select t.as_superuser();
+insert into t.ctx select 'WASTER', id from public.inventory_movements where inventory_item_id = t.id('ITEMR') and movement_type = 'WASTE';
+select t.as_user('K');
+select t.expect_denied($q$select public.reverse_inventory_movement(t.id('WASTER'), 'oops')$q$, 'cashier cannot reverse a movement, even their own');
+select t.expect_ok($q$select public.submit_inventory_count(t.id('BR'), null, jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEMR'), 'physical_quantity', 19)), 'cashier closing count')$q$, 'cashier can still submit a count in own branch (unaffected by the rollback)');
+select t.as_superuser();
+insert into t.ctx select 'COUNTR', id from public.inventory_counts where branch_id = t.id('BR');
+select t.as_user('K');
+select t.expect_denied($q$select public.void_inventory_count(t.id('COUNTR'), 'x')$q$, 'cashier cannot void a count, even one they submitted themselves');
+
+-- branch_manager: adjust and count-void stay allowed own-branch, reversal does not
+select t.as_user('BMR');
+select t.expect_ok($q$select public.record_inventory_adjustment(t.id('ITEMR'), 'OUT', 1, 'branch_manager own-branch adjustment')$q$, 'branch_manager keeps own-branch adjust (unaffected by the rollback)');
+select t.expect_denied($q$select public.reverse_inventory_movement(t.id('WASTER'), 'branch_manager attempt')$q$, 'branch_manager cannot reverse a movement (owner/manager only, per the rollback)');
+select t.expect_ok($q$select public.void_inventory_count(t.id('COUNTR'), 'branch_manager voids own-branch count')$q$, 'branch_manager keeps own-branch count-void (unaffected by the rollback)');
+select t.as_superuser();
+select t.assert(not exists (select 1 from public.inventory_movements where reverses_movement_id = t.id('WASTER')), 'both denied reversal attempts left the ledger untouched');
+select t.assert((select status from public.inventory_counts where id = t.id('COUNTR')) = 'voided', 'branch_manager count-void took effect');
+select t.assert((select count(*) from public.audit_logs where action = 'inventory_adjustment' and reason = 'branch_manager own-branch adjustment') = 1, 'branch_manager adjustment audited');
+select t.assert((select count(*) from public.audit_logs where action = 'inventory_count_void' and reason = 'branch_manager voids own-branch count') = 1, 'branch_manager count-void audited');
+
+-- owner/manager: reversal still works
+select t.as_user('M');
+select t.expect_ok($q$select public.reverse_inventory_movement(t.id('WASTER'), 'owner/manager reversal still works')$q$, 'manager can still reverse a movement (owner/manager retains this)');
+select t.as_superuser();
+select t.assert((select count(*) from public.audit_logs where action = 'inventory_movement_reversal' and reason = 'owner/manager reversal still works') = 1, 'manager reversal audited');
+select t.assert(exists (select 1 from public.inventory_movements where reverses_movement_id = t.id('WASTER')), 'the reversal row now exists, appended (original WASTER row untouched)');
+
+-- =============================================================================
 -- F. Physical count never touches the ledger
 -- =============================================================================
 select t.as_superuser();
@@ -342,14 +391,14 @@ select t.expect_denied($q$select public.submit_inventory_count(t.id('BD'), null,
 select t.expect_denied($q$select public.submit_inventory_count(t.id('BD'), null, jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM3'), 'physical_quantity', 1)))$q$, 'inactive item cannot be counted', '22023');
 select t.expect_ok($q$select public.submit_inventory_count(t.id('BD'), t.id('S1'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'physical_quantity', 140), jsonb_build_object('inventory_item_id', t.id('ITEM2'), 'physical_quantity', 20)), 'closing count')$q$, 'assigned employee submits a closing count');
 select t.as_superuser();
-insert into t.ctx select 'COUNT1', id from public.inventory_counts;
+insert into t.ctx select 'COUNT1', id from public.inventory_counts where branch_id = t.id('BD');
 select t.assert(t.stock('ITEM1') = 148, 'submitting a count did NOT change theoretical stock');
 select t.assert((select count(*) from public.inventory_movements where inventory_count_id is not null) = 0, 'submitting a count wrote no ledger movement');
 select t.assert((select theoretical_quantity from public.inventory_count_items where inventory_item_id = t.id('ITEM1')) = 148, 'count snapshots the theoretical quantity server-side');
 select t.assert((select variance_quantity from public.inventory_count_items where inventory_item_id = t.id('ITEM1')) = -8, 'variance = physical - theoretical (140 - 148)');
 select t.assert((select variance_quantity from public.inventory_count_items where inventory_item_id = t.id('ITEM2')) = 0, 'a matching count has zero variance');
 select t.assert((select business_date from public.inventory_counts where id = t.id('COUNT1')) = current_date, 'count business date comes from the shift');
-select t.assert((select count(*) from public.audit_logs where action = 'inventory_count_submit') = 1, 'count submission audited');
+select t.assert((select count(*) from public.audit_logs where action = 'inventory_count_submit' and entity_id = t.id('COUNT1')::text) = 1, 'count submission audited');
 select t.expect_denied($q$update public.inventory_count_items set physical_quantity = 148$q$, 'submitted count lines are immutable');
 select t.expect_denied($q$delete from public.inventory_counts$q$, 'counts are never deleted');
 select t.expect_denied($q$update public.inventory_counts set note = 'edited'$q$, 'counts cannot be edited (only voided)');
@@ -366,7 +415,7 @@ select t.as_user('E');
 do $$ begin perform t.assert((select count(*) from public.inventory_counts) = 1, 'employee sees own-branch counts'); end $$;
 select t.expect_denied($q$select public.void_inventory_count(t.id('COUNT1'), 'x')$q$, 'employee cannot void a count');
 select t.as_user('BMR');
-do $$ begin perform t.assert((select count(*) from public.inventory_counts) = 0, 'unrelated branch_manager cannot see the count'); end $$;
+do $$ begin perform t.assert((select count(*) from public.inventory_counts where branch_id = t.id('BD')) = 0, 'unrelated branch_manager cannot see the Dondurma count'); end $$;
 select t.as_user('BMD');
 select t.expect_denied($q$select public.void_inventory_count(t.id('COUNT1'), '')$q$, 'voiding needs a reason', '22023');
 select t.expect_ok($q$select public.void_inventory_count(t.id('COUNT1'), 'counted the wrong freezer')$q$, 'branch_manager voids a mistaken count');
@@ -374,7 +423,7 @@ select t.expect_denied($q$select public.void_inventory_count(t.id('COUNT1'), 'ag
 select t.as_superuser();
 select t.assert((select status from public.inventory_counts where id = t.id('COUNT1')) = 'voided', 'count is voided, not deleted');
 select t.assert((select count(*) from public.inventory_last_counts) = 0, 'voided counts are excluded from inventory_last_counts');
-select t.assert((select count(*) from public.audit_logs where action = 'inventory_count_void') = 1, 'void audited');
+select t.assert((select count(*) from public.audit_logs where action = 'inventory_count_void' and entity_id = t.id('COUNT1')::text) = 1, 'void audited');
 
 -- =============================================================================
 -- G. Sales -> inventory (revenue and quantity are separate facts)
@@ -497,7 +546,7 @@ end $$;
 select t.as_user('K');
 do $$ begin perform t.assert((select count(*) from public.inventory_movements where inventory_item_id is not null and branch_id = t.id('BD')) = 0, 'Rumeli cashier sees no Dondurma movements'); end $$;
 select t.as_user('BMR');
-do $$ begin perform t.assert((select count(*) from public.inventory_stock_balances) = 0, 'unrelated branch_manager sees no Dondurma balances'); end $$;
+do $$ begin perform t.assert((select count(*) from public.inventory_stock_balances where branch_id = t.id('BD')) = 0, 'unrelated branch_manager sees no Dondurma balances'); end $$;
 select t.as_user('E');
 do $$ begin
   perform t.assert((select theoretical_quantity from public.inventory_stock_balances where inventory_item_id = t.id('ITEM1')) = 140, 'employee reads own-branch balances (140)');

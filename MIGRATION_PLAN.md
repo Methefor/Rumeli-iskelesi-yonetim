@@ -110,7 +110,7 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 - [ ] Explicit user approval for this specific step, separate from the
       approval to prepare these files.
 
-## Phase E additions (012-014) — prepared, not applied
+## Phase E additions (012-014) — prepared, validated locally, not applied to any hosted project
 
 | # | File | Creates | Depends on |
 |---|---|---|---|
@@ -120,3 +120,15 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 
 Rollback notes are in each file. Sign-off before staging: run
 `supabase/tests/inventory_security.test.sql` on a **local** Supabase reset.
+
+**2026-09-22 update:** the above has now happened, on a real disposable local
+Supabase stack (Docker), not a substitute. A fresh `supabase db reset --local
+--no-seed` applied 001-014 cleanly. `inventory_security.test.sql`,
+`timezone_regression.test.sql` and `timezone_rpc.test.sql` (32 cases) all
+passed against real Postgres roles/RLS. `local_inventory_api.mjs` drove real
+Auth password sessions through real PostgREST for every role and passed
+135/135 assertions. See `docs/LOCAL_VALIDATION_2026-09-22.md` for the full
+run and its limitations. **This is still only local** — no hosted/staging
+Supabase project has been touched, and this checklist's sign-off items above
+(staging run, explicit approval for the production step) are unchanged and
+still unmet.

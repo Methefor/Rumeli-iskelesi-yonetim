@@ -1,10 +1,12 @@
 # Inventory Model (Phase E)
 
 Status: **prepared, not applied to any hosted Supabase project.** Migrations
-`012`–`014`. Validated only in a scratch Postgres (see "Validation" below);
-local Supabase validation is still open. Initially used by **İskele
-Dondurma**, but the schema is generic by branch — no branch-named columns, no
-seeded products/SKUs/costs (the business enters its own catalogue).
+`012`–`014`. As of 2026-09-22, validated against a real local Supabase stack
+(see "Validation performed" below) — a real disposable Docker/Postgres/GoTrue/
+PostgREST setup, not the earlier PGlite substitute; hosted/staging validation
+is still not done. Initially used by **İskele Dondurma**, but the schema is
+generic by branch — no branch-named columns, no seeded products/SKUs/costs
+(the business enters its own catalogue).
 
 ## Principles
 
@@ -90,25 +92,38 @@ snapshots) using the same domain functions.
 
 ## Validation performed
 
-* `npm run typecheck`, `lint`, `test` (150), `build` — all pass.
-* `supabase/tests/inventory_security.test.sql` (≈150 assertions: RLS, RPC
+* `npm run typecheck`, `lint`, `test` (163), `build` — all pass.
+* 2026-09-22, real local Supabase (Docker/Postgres/GoTrue/PostgREST), fresh
+  `supabase db reset --local --no-seed` applying 001–014 from zero:
+  `supabase/tests/inventory_security.test.sql` (≈150 assertions: RLS, RPC
   authorization, raw-write denial, append-only, count-vs-ledger, cost
-  confidentiality, sales integration, audit rows) passes against migrations
-  001–014 in a **scratch PGlite (WASM Postgres) with a minimal auth/storage
-  shim**, with negative controls confirming role switching and RLS are
-  really enforced. **This is not local Supabase** — Docker was unavailable on
-  this laptop, so local Supabase reset + integration run remains OPEN.
+  confidentiality, sales integration, audit rows), `timezone_regression.test.sql`
+  and `timezone_rpc.test.sql` (32 RPC cases across 4 session timezones) all
+  pass in real transactions (rolled back). `supabase/tests/local_inventory_api.mjs`
+  drove real Auth password sessions through real PostgREST for owner, manager,
+  branch_manager, cashier, employee, viewer and anon, and passed 135/135
+  assertions — branch isolation, raw-write denial, cost-column
+  confidentiality, mandatory reasons, audit immutability. See
+  `docs/LOCAL_VALIDATION_2026-09-22.md` for the full run, its limits, and how
+  to repeat it. The earlier scratch-PGlite result is superseded by this real
+  run but was not wrong; it was always described as a substitute, not
+  equivalent to Supabase.
+* Hosted/staging validation and production apply: still not done.
 
 **Validation status (Phase E) — keep this distinction:**
 
 | Item | Status |
 |---|---|
-| Phase E application / domain / UI tests (typecheck, lint, 150 unit + demo-flow tests, build) | **VALIDATED** |
-| Migrations 012-014 | **PREPARED** (not applied anywhere) |
-| PGlite security harness (`supabase/tests/inventory_security.test.sql`, ~150 assertions) | **PASSED, but NOT equivalent to real Supabase** (WASM Postgres + hand-written auth/storage shim; no GoTrue, PostgREST or real roles/grants) |
-| Real local Supabase `db reset` + integration run | **OPEN** |
+| Phase E application / domain / UI tests (typecheck, lint, 163 unit + demo-flow tests, build) | **VALIDATED** |
+| Migrations 012-014 | **PREPARED**, validated on a real local Supabase stack; **not applied to any hosted project** |
+| Fresh local Supabase `db reset` (001-014 from zero) | **VALIDATED LOCALLY** (2026-09-22, real Docker/Postgres/GoTrue/PostgREST) |
+| SQL security/timezone suites (`inventory_security.test.sql`, `timezone_regression.test.sql`, `timezone_rpc.test.sql`, ~150+32 assertions) against real local Postgres roles | **VALIDATED LOCALLY** |
+| Real local Auth + PostgREST integration (`local_inventory_api.mjs`, 135 assertions, real password sessions/JWTs, every role) | **VALIDATED LOCALLY** |
+| Timezone invariance (session TZ UTC / Europe/Istanbul / America/New_York / Asia/Tokyo all produce the same business result) | **VALIDATED LOCALLY** |
 | Hosted / staging validation | **NOT DONE** |
 | Production | **UNTOUCHED** |
 
-The SQL must not be described as fully validated until it passes on a real
-local Supabase stack.
+The PGlite harness result described in earlier Phase E docs has been
+superseded by the above real local Supabase run; see
+`docs/LOCAL_VALIDATION_2026-09-22.md`. Do not describe any of this as
+hosted/staging-validated until it has actually run there.

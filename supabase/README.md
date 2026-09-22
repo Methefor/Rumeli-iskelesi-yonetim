@@ -17,6 +17,15 @@ warnings at the top of each file.
 
 ## Phase E
 
-`migrations/012`-`014` (inventory) are prepared, not applied. Executable DB
-assertions live in `tests/inventory_security.test.sql` — run **only** against a
-local/disposable database (`supabase start && supabase db reset`).
+`migrations/012`-`014` (inventory) are prepared, **still not applied to any
+hosted/production project**. Executable DB assertions live in
+`tests/inventory_security.test.sql`, `tests/timezone_regression.test.sql`,
+`tests/timezone_rpc.test.sql`, and `tests/local_inventory_api.mjs` — run
+**only** against a local/disposable database
+(`supabase db reset --local --no-seed`, then feed each `.sql` file to `psql`
+inside the `supabase_db_<project>` container; `local_inventory_api.mjs` needs
+`SUPABASE_CLI`/`DOCKER_CLI` pointed at real executables if they aren't on
+`PATH`). As of 2026-09-22 all four have passed against a real local Supabase
+stack (Docker) — see `../docs/LOCAL_VALIDATION_2026-09-22.md`. That is local
+validation, not hosted/staging validation, and does not by itself authorize
+applying these migrations anywhere else.

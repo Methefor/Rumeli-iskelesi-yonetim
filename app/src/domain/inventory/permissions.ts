@@ -28,7 +28,9 @@ const ALL: readonly InventoryPermission[] = [
  * (the worst case of drift is a hidden button or a button that the server
  * then refuses — never an access-control bypass).
  *
- * branch_manager has cost.read but not cost.manage. viewer has nothing.
+ * branch_manager has cost.read but not cost.manage. cashier and employee have
+ * NO inventory.adjust (rolled back — cashier previously held it briefly; see
+ * DECISIONS.md). viewer has nothing.
  */
 const ROLE_PERMISSIONS: Readonly<Record<string, readonly InventoryPermission[]>> = {
   owner: ALL,
@@ -62,4 +64,15 @@ export function canInventory(
   permission: InventoryPermission,
 ): boolean {
   return inventoryPermissionsFor(roles).has(permission)
+}
+
+/**
+ * UI-VISIBILITY ONLY, mirrors `current_user_is_owner_or_manager()`. Movement
+ * reversal (`reverse_inventory_movement`) is owner/manager ONLY on the server
+ * — branch_manager holds inventory.adjust (for record_inventory_adjustment
+ * and void_inventory_count) but NOT reversal, so that one action needs this
+ * narrower check instead of `canInventory(roles, 'inventory.adjust')`.
+ */
+export function isOwnerOrManager(roles: readonly string[]): boolean {
+  return roles.includes('owner') || roles.includes('manager')
 }

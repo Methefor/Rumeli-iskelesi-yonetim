@@ -346,3 +346,23 @@ is live — an acceptable, visible gap, not a hidden one.
 * **Employee cannot receive stock** (per brief); revisit with the business.
 * **Docker missing**: a scratch PGlite harness was used as a *substitute*,
   reported as not equivalent to local Supabase.
+
+
+###  2026-09-22 — cashier direct inventory corrections, owner oversight
+
+Metehan explicitly selected own-branch stock adjustment, non-sale movement reversal and count void for cashiers, without per-action owner approval. This supersedes the proposed manager-only direct-action model in the 2026-09-21 validation report. Mandatory reason, actor, server time, before/after audit and branch boundaries remain required. Costs and unassigned-shift privilege are not expanded. Owner/manager receives a read-only inventory audit view. Prepared/local only; production rollout not authorized. Count void continues to preserve linked adjustments; UI explains this.
+
+**Superseded the same day — see below.**
+
+### 2026-09-22 (later) — cashier grant rolled back; final inventory authorization scope
+
+The above cashier grant is reverted. Explicit written approval from the user set the final scope instead:
+
+* **cashier / employee**: `inventory.read`, `inventory.record` (waste), `inventory.count` — own branch, nothing else. No `inventory.adjust`, no `reverse_inventory_movement`, no `void_inventory_count`, no cost access, no receive. Identical treatment for both roles — the cashier-specific carve-out is gone.
+* **branch_manager**: unchanged — read/receive/waste/count/adjust/item.manage/cost.read in their own branch(es); `inventory.adjust` covers `record_inventory_adjustment` (mandatory reason, audited, append-only) and `void_inventory_count` (mandatory reason, audited, does not reverse stock or linked adjustments).
+* **branch_manager loses `reverse_inventory_movement`** — this is the one substantive change from the original Phase E design, not just a rollback of the cashier grant. Movement reversal is now owner/manager only; `reverse_inventory_movement` additionally requires `current_user_is_owner_or_manager()`.
+* **manager / owner**: unchanged, full scope including reversal.
+
+Rationale: reversal is the one inventory action that erases the practical effect of an earlier movement outright (append-only in the ledger, but functionally undoing a colleague's or one's own entry) — narrower than a bounded, reasoned adjustment or a count void that leaves the linked adjustment untouched. Keeping it owner/manager-only while still letting branch_manager self-serve adjustments and count-voids balances day-to-day autonomy against the fact that a wrong reversal is the hardest of the three to catch after the fact from the ledger alone.
+
+Updated: `012_inventory_core.sql` (permission grant), `014_inventory_rpcs.sql` (`reverse_inventory_movement` authorization), `app/src/domain/inventory/permissions.ts` (+ new `isOwnerOrManager` UI-mirror helper), `app/src/features/inventory/hooks.ts` (`canReverseMovement`), `MovementHistoryPage.tsx`, `ClosingCountPage.tsx` (copy), `services/demo/api.ts`, SQL test suite (`inventory_security.test.sql`, new section E2), `local_inventory_api.mjs` (rewritten adjust/reverse/void flow, 137 assertions), app unit/demo tests. Re-validated on a fresh real local Supabase reset: all SQL/timezone/Auth-PostgREST suites and the full app suite (165 tests) pass. Still prepared/local only; no hosted or production change; not committed at the time this entry was written.

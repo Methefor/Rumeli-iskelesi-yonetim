@@ -267,7 +267,7 @@ export function ClosingCountPage() {
                       highlight: v !== 0,
                     }
                   })}
-                  footnote="Gönderilen sayım silinemez; hatalıysa bir yönetici iptal edebilir. Sayım kayıtlı stoğu değiştirmez."
+                  footnote="Gönderilen sayım silinemez; hatalıysa bir şube müdürü veya yönetici gerekçesiyle iptal edebilir. Sayım kayıtlı stoğu değiştirmez."
                 />
               </ConfirmSheet>
             </>
@@ -334,8 +334,8 @@ export function ClosingCountPage() {
       >
         <Stack gap="sm">
           <Note>
-            İptal edilen sayım geçmişte kalır ancak son sayım olarak sayılmaz. Gerekçe
-            zorunludur.
+            İptal edilen sayım geçmişte kalır ancak son sayım olarak sayılmaz. Stok
+            miktarı ve bağlantılı stok düzeltmeleri geri alınmaz. Gerekçe zorunludur.
           </Note>
           <Input
             label="Gerekçe"

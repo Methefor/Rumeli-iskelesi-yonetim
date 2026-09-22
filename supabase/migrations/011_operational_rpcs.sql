@@ -454,8 +454,10 @@ begin
   -- domain/shifts.evaluateOnTime resolves a ShiftTimingRule: the cutoff is
   -- anchored to the shift's OWN business_date, offset forward a day when
   -- cutoff_day_offset = 1 (a cutoff past midnight).
-  v_cutoff_instant := (v_shift.business_date + (v_shift.cutoff_day_offset || ' days')::interval)::date
-    + make_interval(hours => v_shift.cutoff_hour, mins => v_shift.cutoff_minute);
+  -- Business clock time belongs to Istanbul, never the caller/session TimeZone.
+  v_cutoff_instant := ((v_shift.business_date + v_shift.cutoff_day_offset)::timestamp
+    + make_interval(hours => v_shift.cutoff_hour, mins => v_shift.cutoff_minute))
+    at time zone 'Europe/Istanbul';
 
   if now() > v_cutoff_instant and not v_is_privileged then
     raise exception 'submission window has closed for this shift' using errcode = '22023';

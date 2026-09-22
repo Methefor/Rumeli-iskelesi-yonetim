@@ -190,3 +190,19 @@ SELECT-only policies via `current_user_can_inventory(permission, branch)`;
 cost rows need `inventory.cost.read`; `inventory_movements.unit_cost_snapshot`
 is excluded from the client column grant; all writes are audited RPCs (014).
 Full matrix and test plan: `INVENTORY_SECURITY.md`.
+
+**2026-09-22:** this policy set was exercised against a real local Supabase
+stack (real `auth.uid()`, real `authenticated` role, real PostgREST column
+grants), not just the SQL test harness — 135/135 assertions in
+`supabase/tests/local_inventory_api.mjs`, including cross-branch denial, the
+`unit_cost_snapshot` column being unreadable, and raw INSERT/UPDATE/DELETE
+denial on every inventory table for every role. Still local only; no hosted
+project. See `docs/LOCAL_VALIDATION_2026-09-22.md`.
+
+**2026-09-22 (later):** the cashier `inventory.adjust` grant tried earlier
+that day was rolled back, and `reverse_inventory_movement` was additionally
+restricted to owner/manager (branch_manager keeps adjust and count-void, not
+reversal — see `INVENTORY_SECURITY.md` and `DECISIONS.md`). Re-run on a
+fresh local reset: 137/137 real Auth/PostgREST assertions, including own-branch
+(not just cross-branch) denial for cashier and branch_manager's reversal
+attempt. Still local only.

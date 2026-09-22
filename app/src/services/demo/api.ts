@@ -80,7 +80,7 @@ function shiftAllowed(
   if (shift.branchId !== branchId) return 'Seçilen ürün veya vardiya bu şubeye ait değil.'
   if (shift.status === 'cancelled')
     return 'İptal edilmiş bir vardiya için kayıt girilemez.'
-  if (!assignedTo(state, actor, shiftId) && !canInv(actor, 'inventory.adjust', branchId))
+  if (!assignedTo(state, actor, shiftId) && !canManageShifts(actor, branchId))
     return 'Bu vardiyaya atanmış değilsiniz.'
   return null
 }
@@ -91,7 +91,40 @@ function visibleItems(state: DemoState, actor: DemoUser | null, branchId: string
     : []
 }
 
+function auditInventory(
+  state: DemoState,
+  actor: DemoUser,
+  action: string,
+  entityId: string,
+  reason: string,
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+) {
+  state.seq += 1
+  state.inventoryAudit.push({
+    id: `demo-audit-${state.seq}`,
+    actorId: actor.id,
+    actorName: state.employees.find((e) => e.id === actor.id)?.fullName ?? actor.id,
+    action,
+    entityId,
+    reason,
+    at: state.now().toISOString(),
+    before,
+    after,
+  })
+}
 export const demoApi: DataApi = {
+  async listInventoryAudit(branchId, limit = 100) {
+    const actor = currentDemoUser()
+    if (!actor || !isOrgWide(actor.roles)) return []
+    return demoState()
+      .inventoryAudit.filter(
+        (r) => r.after?.branch_id === branchId || r.before?.branch_id === branchId,
+      )
+      .slice()
+      .reverse()
+      .slice(0, limit)
+  },
   // ------------------------------------------------------------------ shifts
   async listMyShiftAssignments(userId) {
     const state = demoState()
@@ -605,7 +638,8 @@ export const demoApi: DataApi = {
       return { error: NOT_AUTHORIZED }
     if (!input.reason.trim()) return { error: 'Gerekçe zorunludur.' }
     try {
-      addMovement(state, {
+      const beforeQuantity = theoreticalQuantity(state, item.id)
+      const movement = addMovement(state, {
         itemId: item.id,
         type: input.direction === 'IN' ? 'ADJUSTMENT_IN' : 'ADJUSTMENT_OUT',
         quantity: input.quantity,
@@ -614,6 +648,24 @@ export const demoApi: DataApi = {
         reason: input.reason,
         countId: input.countId ?? null,
       })
+      auditInventory(
+        state,
+        actor,
+        'inventory_adjustment',
+        movement.id,
+        input.reason,
+        {
+          branch_id: item.branchId,
+          inventory_item_id: item.id,
+          theoretical_quantity: beforeQuantity,
+        },
+        {
+          branch_id: item.branchId,
+          inventory_item_id: item.id,
+          theoretical_quantity: theoreticalQuantity(state, item.id),
+          stock_delta: movement.stockDelta,
+        },
+      )
       return { error: null }
     } catch (error) {
       return { error: messageOf(error) }
@@ -625,7 +677,13 @@ export const demoApi: DataApi = {
     const actor = currentDemoUser()
     const movement = state.movements.find((m) => m.id === input.movementId)
     if (!movement) return { error: 'Hareket bulunamadı.' }
-    if (!actor || !canInv(actor, 'inventory.adjust', movement.branchId))
+    // Reversal is owner/manager only — narrower than 'inventory.adjust', which
+    // branch_manager also holds for adjustments and count-void (see permissions.ts).
+    if (
+      !actor ||
+      !canInv(actor, 'inventory.adjust', movement.branchId) ||
+      !isOrgWide(actor.roles)
+    )
       return { error: NOT_AUTHORIZED }
     if (!input.reason.trim()) return { error: 'Gerekçe zorunludur.' }
     if (movement.salesReportId)
@@ -634,7 +692,8 @@ export const demoApi: DataApi = {
           'Satışa bağlı hareketler, satış raporu düzenlenerek veya iptal edilerek düzeltilir.',
       }
     try {
-      addMovement(state, {
+      const beforeQuantity = theoreticalQuantity(state, movement.inventoryItemId)
+      const reversal = addMovement(state, {
         itemId: movement.inventoryItemId,
         type: 'REVERSAL',
         at: state.now(),
@@ -642,6 +701,25 @@ export const demoApi: DataApi = {
         reversesMovementId: movement.id,
         reason: input.reason,
       })
+      auditInventory(
+        state,
+        actor,
+        'inventory_movement_reversal',
+        reversal.id,
+        input.reason,
+        {
+          branch_id: movement.branchId,
+          inventory_item_id: movement.inventoryItemId,
+          theoretical_quantity: beforeQuantity,
+        },
+        {
+          branch_id: movement.branchId,
+          inventory_item_id: movement.inventoryItemId,
+          theoretical_quantity: theoreticalQuantity(state, movement.inventoryItemId),
+          reverses_movement_id: movement.id,
+          stock_delta: reversal.stockDelta,
+        },
+      )
       return { error: null }
     } catch (error) {
       return { error: messageOf(error) }
@@ -684,7 +762,16 @@ export const demoApi: DataApi = {
     if (!input.reason.trim()) return { error: 'Gerekçe zorunludur.' }
     if (count.status !== 'submitted')
       return { error: 'Yalnızca gönderilmiş bir sayım iptal edilebilir.' }
+    const before = {
+      branch_id: count.branchId,
+      status: count.status,
+      lines: structuredClone(count.lines),
+    }
     count.status = 'voided'
+    auditInventory(state, actor, 'inventory_count_void', count.id, input.reason, before, {
+      ...before,
+      status: count.status,
+    })
     return { error: null }
   },
 }

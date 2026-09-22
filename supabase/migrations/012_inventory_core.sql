@@ -106,6 +106,7 @@ on conflict do nothing;
 create or replace function public.inventory_prevent_mutation()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   raise exception '% is append-only: % is not permitted (corrections use a REVERSAL movement / a new cost row)',
@@ -236,6 +237,7 @@ create trigger inventory_count_items_no_update before update or delete on public
 create or replace function public.inventory_guard_count_update()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   if tg_op = 'DELETE' then
@@ -405,3 +407,6 @@ order by ci.inventory_item_id, c.submitted_at desc;
 
 comment on view public.inventory_last_counts is
   'Most recent non-voided physical count line per item, with its theoretical snapshot and variance.';
+
+-- Fix the shared timestamp trigger search path without rewriting migration 001.
+alter function public.set_updated_at() set search_path = public;

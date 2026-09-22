@@ -22,12 +22,22 @@ export function ManagementPage() {
           Kullanılabilir
         </h2>
         <Stack gap="sm">
+          {(roles.includes('owner') || roles.includes('manager')) && (
+            <RowCard
+              title="Stok denetimi"
+              subtitle="Kim, ne zaman, hangi gerekçeyle değiştirdi? Önceki ve sonraki değerler."
+            >
+              <LinkButton to="/app/manager/inventory/audit" variant="secondary">
+                Denetimi Aç
+              </LinkButton>
+            </RowCard>
+          )}
           {canItems && (
             <RowCard
               title="Ürün yönetimi"
               subtitle="Stok ürünlerini ekleyin, düzenleyin, pasifleştirin."
             >
-              <LinkButton to="inventory/items" variant="secondary">
+              <LinkButton to="/app/manager/inventory/items" variant="secondary">
                 Ürünler
               </LinkButton>
             </RowCard>
@@ -38,10 +48,10 @@ export function ManagementPage() {
               subtitle="Geçerlilik tarihli ürün maliyetleri (geçmiş silinmez) ve brüt kâr."
             >
               <Stack gap="sm">
-                <LinkButton to="inventory/costs" variant="secondary">
+                <LinkButton to="/app/manager/inventory/costs" variant="secondary">
                   Maliyet
                 </LinkButton>
-                <LinkButton to="inventory/profit" variant="secondary">
+                <LinkButton to="/app/manager/inventory/profit" variant="secondary">
                   Brüt Kâr
                 </LinkButton>
               </Stack>
@@ -51,7 +61,7 @@ export function ManagementPage() {
             title="Mutabakat kuyruğu"
             subtitle="Kasa ve kategori toplamı uyuşmayan raporlar."
           >
-            <LinkButton to="reports/reconciliation" variant="secondary">
+            <LinkButton to="/app/manager/reports/reconciliation" variant="secondary">
               Kuyruğu Aç
             </LinkButton>
           </RowCard>
@@ -59,7 +69,7 @@ export function ManagementPage() {
             title="Stok hareketleri ve düzeltme"
             subtitle="Defter kayıtları, gerekçeli düzeltme ve geri alma."
           >
-            <LinkButton to="inventory/movements" variant="secondary">
+            <LinkButton to="/app/manager/inventory/movements" variant="secondary">
               Hareketler
             </LinkButton>
           </RowCard>

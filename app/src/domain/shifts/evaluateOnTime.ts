@@ -1,15 +1,37 @@
 import type { ShiftTimingRule } from './types'
 
-/**
- * Resolves a shift's cutoff to a concrete instant for a given business
- * date, so "past midnight" cutoffs (e.g. an evening shift closing at
- * 01:00 the next day) are unambiguous — unlike comparing bare "HH:mm"
- * clock strings, which can't tell 00:45 tonight from 00:45 two days ago.
- */
+// Compare business wall-clock values in Europe/Istanbul. UTC methods below
+// are only calendar arithmetic; neither value depends on the device timezone.
+const businessClock = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Europe/Istanbul',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+})
+
+function businessTimestamp(date: Date): number {
+  const parts = businessClock.formatToParts(date)
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((entry) => entry.type === type)?.value)
+  return Date.UTC(
+    part('year'),
+    part('month') - 1,
+    part('day'),
+    part('hour'),
+    part('minute'),
+    part('second'),
+    date.getUTCMilliseconds(),
+  )
+}
+
 function resolveCutoffInstant(businessDate: string, rule: ShiftTimingRule): Date {
-  const cutoff = new Date(`${businessDate}T00:00:00`)
-  cutoff.setDate(cutoff.getDate() + rule.cutoffDayOffset)
-  cutoff.setHours(rule.cutoffHour, rule.cutoffMinute, 0, 0)
+  const cutoff = new Date(`${businessDate}T00:00:00Z`)
+  cutoff.setUTCDate(cutoff.getUTCDate() + rule.cutoffDayOffset)
+  cutoff.setUTCHours(rule.cutoffHour, rule.cutoffMinute, 0, 0)
   return cutoff
 }
 
@@ -40,5 +62,5 @@ export function evaluateOnTime({
   if (isBackdated) return false
 
   const cutoffInstant = resolveCutoffInstant(businessDate, rule)
-  return submittedAt.getTime() <= cutoffInstant.getTime()
+  return businessTimestamp(submittedAt) <= cutoffInstant.getTime()
 }

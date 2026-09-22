@@ -211,7 +211,7 @@ declare
   v_id uuid;
 begin
   select id, branch_id, is_active, allows_decimal into v_item
-  from public.inventory_items where id = p_item_id;
+  from public.inventory_items where id = p_item_id for update;
   if not found then
     raise exception 'inventory item % not found', p_item_id using errcode = '22023';
   end if;
@@ -271,7 +271,7 @@ revoke all on function public.inventory_insert_movement(uuid, text, numeric, uui
 
 -- Validates an optional shift for a branch-scoped inventory action and returns
 -- the business date to attribute it to. An ordinary caller must be assigned
--- to the shift; a caller with inventory.adjust in that branch may act on any
+-- to the shift; an owner/manager or branch_manager with inventory.adjust in that branch may act on any
 -- of its shifts. No shift -> today's date in Istanbul.
 create or replace function public.inventory_resolve_shift_context(p_shift_id uuid, p_branch_id uuid)
 returns date
@@ -302,7 +302,9 @@ begin
       select 1 from public.shift_assignments
       where shift_id = p_shift_id and user_id = auth.uid() and status <> 'cancelled'
     )
-    or public.current_user_can_inventory('inventory.adjust', p_branch_id)
+    or (public.current_user_can_inventory('inventory.adjust', p_branch_id)
+        and (public.current_user_is_owner_or_manager()
+             or 'branch_manager' in (select public.current_user_role_keys())))
   ) then
     raise exception 'not authorized: not assigned to this shift' using errcode = '42501';
   end if;
@@ -441,7 +443,7 @@ as $$
 declare
   v_item record;
 begin
-  select id, branch_id, is_active into v_item from public.inventory_items where id = p_item_id;
+  select id, branch_id, is_active into v_item from public.inventory_items where id = p_item_id for update;
   if not found then
     raise exception 'inventory item % not found', p_item_id using errcode = '22023';
   end if;
@@ -489,7 +491,7 @@ declare
   v_cost_id uuid;
   v_effective timestamptz := coalesce(p_effective_from, now());
 begin
-  select id, branch_id into v_item from public.inventory_items where id = p_item_id;
+  select id, branch_id into v_item from public.inventory_items where id = p_item_id for update;
   if not found then
     raise exception 'inventory item % not found', p_item_id using errcode = '22023';
   end if;
@@ -670,8 +672,9 @@ declare
   v_count record;
   v_type text;
   v_id uuid;
+  v_before numeric;
 begin
-  select id, branch_id into v_item from public.inventory_items where id = p_item_id;
+  select id, branch_id into v_item from public.inventory_items where id = p_item_id for update;
   if not found then
     raise exception 'inventory item % not found', p_item_id using errcode = '22023';
   end if;
@@ -698,11 +701,13 @@ begin
     end if;
   end if;
 
+  v_before := public.inventory_stock_quantity(p_item_id);
   v_id := public.inventory_insert_movement(p_item_id, v_type, p_quantity, null, null, p_count_id, null, p_reason, null, null);
 
   perform public.write_audit_log(
-    'inventory_adjustment', 'inventory_movements', v_id::text, null,
-    jsonb_build_object('inventory_item_id', p_item_id, 'movement_type', v_type, 'quantity', p_quantity, 'inventory_count_id', p_count_id),
+    'inventory_adjustment', 'inventory_movements', v_id::text,
+    jsonb_build_object('branch_id', v_item.branch_id, 'inventory_item_id', p_item_id, 'theoretical_quantity', v_before),
+    jsonb_build_object('inventory_item_id', p_item_id, 'movement_type', v_type, 'quantity', p_quantity, 'inventory_count_id', p_count_id, 'branch_id', v_item.branch_id, 'theoretical_quantity', public.inventory_stock_quantity(p_item_id)),
     p_reason
   );
 
@@ -732,12 +737,20 @@ as $$
 declare
   v_move record;
   v_id uuid;
+  v_before numeric;
 begin
   select * into v_move from public.inventory_movements where id = p_movement_id;
   if not found then
     raise exception 'movement % not found', p_movement_id using errcode = '22023';
   end if;
-  if not public.current_user_can_inventory('inventory.adjust', v_move.branch_id) then
+  -- Movement reversal is owner/manager only: inventory.adjust alone (held by
+  -- branch_manager, for in-branch stock adjustments) is NOT enough here.
+  -- branch_manager can adjust but cannot reverse or void-count's stock effect
+  -- away; only owner/manager corrects a wrongly-recorded movement this way.
+  if not (
+    public.current_user_can_inventory('inventory.adjust', v_move.branch_id)
+    and public.current_user_is_owner_or_manager()
+  ) then
     raise exception 'not authorized' using errcode = '42501';
   end if;
   if p_reason is null or length(trim(p_reason)) = 0 then
@@ -750,14 +763,16 @@ begin
     raise exception 'sale-linked movements are corrected by editing or cancelling the sales report' using errcode = '22023';
   end if;
 
+  perform 1 from public.inventory_items where id = v_move.inventory_item_id for update;
+  v_before := public.inventory_stock_quantity(v_move.inventory_item_id);
   v_id := public.inventory_insert_movement(
     v_move.inventory_item_id, 'REVERSAL', null, null, null, null, null, p_reason, null, p_movement_id
   );
 
   perform public.write_audit_log(
     'inventory_movement_reversal', 'inventory_movements', v_id::text,
-    jsonb_build_object('reversed_movement_id', p_movement_id, 'movement_type', v_move.movement_type, 'quantity', v_move.quantity),
-    jsonb_build_object('reversal_id', v_id), p_reason
+    jsonb_build_object('branch_id', v_move.branch_id, 'inventory_item_id', v_move.inventory_item_id, 'theoretical_quantity', v_before, 'reversed_movement_id', p_movement_id, 'movement_type', v_move.movement_type, 'quantity', v_move.quantity),
+    jsonb_build_object('branch_id', v_move.branch_id, 'inventory_item_id', v_move.inventory_item_id, 'theoretical_quantity', public.inventory_stock_quantity(v_move.inventory_item_id), 'reverses_movement_id', p_movement_id, 'reversal_id', v_id), p_reason
   );
 
   return v_id;
@@ -867,7 +882,7 @@ as $$
 declare
   v_count record;
 begin
-  select id, branch_id, status into v_count from public.inventory_counts where id = p_count_id;
+  select id, branch_id, status into v_count from public.inventory_counts where id = p_count_id for update;
   if not found then
     raise exception 'inventory count % not found', p_count_id using errcode = '22023';
   end if;
@@ -887,7 +902,8 @@ begin
 
   perform public.write_audit_log(
     'inventory_count_void', 'inventory_counts', p_count_id::text,
-    jsonb_build_object('status', 'submitted'), jsonb_build_object('status', 'voided'), p_reason
+    jsonb_build_object('branch_id', v_count.branch_id, 'status', 'submitted'),
+    jsonb_build_object('branch_id', v_count.branch_id, 'status', 'voided'), p_reason
   );
 end;
 $$;
@@ -1227,8 +1243,9 @@ begin
     raise exception 'not authorized: not assigned to this shift' using errcode = '42501';
   end if;
 
-  v_cutoff_instant := (v_shift.business_date + (v_shift.cutoff_day_offset || ' days')::interval)::date
-    + make_interval(hours => v_shift.cutoff_hour, mins => v_shift.cutoff_minute);
+  v_cutoff_instant := ((v_shift.business_date + v_shift.cutoff_day_offset)::timestamp
+    + make_interval(hours => v_shift.cutoff_hour, mins => v_shift.cutoff_minute))
+    at time zone 'Europe/Istanbul';
 
   if now() > v_cutoff_instant and not v_is_privileged then
     raise exception 'submission window has closed for this shift' using errcode = '22023';
@@ -1402,3 +1419,6 @@ $$;
 
 comment on function public.cancel_sales_report(uuid, text) is
   'Cancels a sales report (status lifecycle, never a raw DELETE). Its SALE movements are reversed, not deleted. Audited (report_delete).';
+
+-- Internal audit writer: only trusted SECURITY DEFINER RPCs may append audit rows.
+revoke all on function public.write_audit_log(text, text, text, jsonb, jsonb, text) from public, anon, authenticated;

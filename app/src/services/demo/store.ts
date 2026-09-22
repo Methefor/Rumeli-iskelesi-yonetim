@@ -1,3 +1,4 @@
+import type { InventoryAuditEntry } from '../supabase/inventoryAudit'
 /**
  * Centralised, deterministic, SYNTHETIC fixture store for Preview demo mode
  * (VITE_DEMO_MODE=true). Nothing here is real data, nothing is a 2026
@@ -94,6 +95,7 @@ export interface DemoState {
     previous: ReconciliationStatus
     next: ReconciliationStatus
   }>
+  inventoryAudit: InventoryAuditEntry[]
   auditLog: Array<{ action: string; entityId: string; reason: string | null; at: string }>
   now: () => Date
   seq: number
@@ -646,6 +648,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
     movements: [],
     counts: [],
     overrides: [],
+    inventoryAudit: [],
     auditLog: [],
     now: () => new Date(),
     seq: 0,
