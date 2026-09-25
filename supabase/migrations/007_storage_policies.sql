@@ -46,12 +46,26 @@ create policy avatars_v4_select on storage.objects
   for select
   using (bucket_id = 'avatars-v4');
 
+-- The Storage API implements "replace an existing object" (PUT) as
+-- `INSERT ... ON CONFLICT (name, bucket_id) DO UPDATE`, not a plain SQL
+-- UPDATE — confirmed against the real local Storage service, not just read
+-- from its source. Postgres RLS requires the INSERT policy's WITH CHECK to
+-- pass for that statement regardless of which branch (insert vs. the
+-- on-conflict update) actually fires, so the employee.manage override MUST
+-- be here too, not only on avatars_v4_update — otherwise a manager's
+-- replace of someone else's avatar is silently rejected by RLS even though
+-- avatars_v4_update alone reads as if it should be allowed. (2026-09,
+-- backdated-policy validation pass: found and fixed via a real executable
+-- Storage API test, not by reading the SQL — see docs/LOCAL_VALIDATION.)
 create policy avatars_v4_insert on storage.objects
   for insert
   with check (
     bucket_id = 'avatars-v4'
     and auth.role() = 'authenticated'
-    and (storage.foldername(name))[1] = auth.uid()::text
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.current_user_has_permission('employee.manage')
+    )
   );
 
 create policy avatars_v4_update on storage.objects

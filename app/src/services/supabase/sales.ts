@@ -45,6 +45,14 @@ export interface CreateSalesReportInput {
   averageBasket?: number | null
   notes?: string | null
   items: SalesReportItemInput[]
+  /**
+   * Required only when the shift's business_date is more than 3 Istanbul
+   * calendar days in the past and the caller is owner/manager — the server
+   * (015_sales_backdated_policy.sql) rejects a normal operational user's
+   * (cashier/employee/branch_manager) backdated submission outright, and
+   * rejects an owner/manager one without this reason.
+   */
+  backdatedReason?: string | null
 }
 
 export async function createSalesReport(
@@ -58,6 +66,7 @@ export async function createSalesReport(
     p_transaction_count: input.transactionCount ?? null,
     p_average_basket: input.averageBasket ?? null,
     p_notes: input.notes ?? null,
+    p_backdated_reason: input.backdatedReason ?? null,
     p_items: input.items.map((item) =>
       item.inventoryItemId
         ? {

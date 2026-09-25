@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { canInventory } from '../../../domain/inventory'
+import { canInventory, isOwnerOrManager } from '../../../domain/inventory'
 import { reconcile } from '../../../domain/reconciliation'
+import { evaluateBackdatedEntry } from '../../../domain/shifts'
+import { istanbulDate } from '../../../utils/dates'
 import { formatMoney } from '../../../utils/format'
 import {
   Button,
@@ -72,6 +74,7 @@ export function NewSalesReportPage() {
   const [amounts, setAmounts] = useState<Record<string, number | null>>({})
   const [quantities, setQuantities] = useState<Record<string, number | null>>({})
   const [productAmounts, setProductAmounts] = useState<Record<string, number | null>>({})
+  const [backdatedReason, setBackdatedReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(
@@ -101,6 +104,7 @@ export function NewSalesReportPage() {
       transactionCount,
       notes: notes.trim() || null,
       items,
+      backdatedReason: backdatedReason.trim() || null,
     })
     setSubmitting(false)
     if (error) {
@@ -129,6 +133,11 @@ export function NewSalesReportPage() {
             )
           }
           const { assignment, categories, items } = data
+          const backdated = evaluateBackdatedEntry(
+            assignment.shift.businessDate,
+            isOwnerOrManager(roles),
+            istanbulDate(),
+          )
           const trackedCategories = new Set(items.map((i) => i.salesCategoryId as string))
           const categoryIds = categories.map((c) => c.id)
           const itemIds = items.map((i) => i.id)
@@ -154,6 +163,24 @@ export function NewSalesReportPage() {
                 })
               : null
 
+          if (backdated.deniedForRole || backdated.isFuture) {
+            return (
+              <EmptyState
+                icon="🔒"
+                title={
+                  backdated.isFuture
+                    ? 'İleri bir tarih için rapor girilemez'
+                    : 'Bu vardiya için rapor girme süresi doldu'
+                }
+                description={
+                  backdated.isFuture
+                    ? 'Seçilen vardiyanın tarihi henüz gelmedi.'
+                    : 'Yalnızca bugün ve önceki 3 gün için rapor girebilirsiniz. Daha eski bir tarih için yönetici veya işletme sahibinden gerekçeli olarak girmesini isteyin.'
+                }
+              />
+            )
+          }
+
           return (
             <form
               onSubmit={(e) => {
@@ -165,6 +192,25 @@ export function NewSalesReportPage() {
                 <Note>
                   {assignment.shift.branchName} — {assignment.shift.definition.name}
                 </Note>
+                {backdated.requiresOverrideReason && (
+                  <Card>
+                    <Stack gap="sm">
+                      <StatusChip tone="warning">Geriye dönük giriş</StatusChip>
+                      <Note>
+                        Bu vardiyanın tarihi 3 günden eskidir. Normal kullanıcılar bu
+                        tarihe rapor giremez; yönetici/işletme sahibi olarak devam etmek
+                        için bir gerekçe girmelisiniz. Bu işlem ayrıca denetim
+                        kaydına yazılır.
+                      </Note>
+                      <Input
+                        label="Gerekçe (zorunlu)"
+                        value={backdatedReason}
+                        onChange={(e) => setBackdatedReason(e.target.value)}
+                        maxLength={200}
+                      />
+                    </Stack>
+                  </Card>
+                )}
                 <Card>
                   <Stack gap="sm">
                     <SegmentedControl
@@ -267,7 +313,11 @@ export function NewSalesReportPage() {
                     size="lg"
                     fullWidth
                     loading={submitting}
-                    disabled={grossRevenue === null || halfFilled}
+                    disabled={
+                      grossRevenue === null ||
+                      halfFilled ||
+                      (backdated.requiresOverrideReason && !backdatedReason.trim())
+                    }
                   >
                     Raporu Gönder
                   </Button>

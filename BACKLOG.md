@@ -188,3 +188,10 @@ Previous Docker installation, fresh 001– 014 reset, real Auth/PostgREST invent
 - Cashier `inventory.adjust` grant reverted; cashier/employee now identical for inventory (read/record/count, own branch, nothing privileged).
 - branch_manager additionally lost `reverse_inventory_movement` (owner/manager only from now on) — a deliberate narrowing beyond just undoing the cashier grant.
 - Still open: local Vector Docker log connection refusal (cosmetic); audit pagination/date filtering beyond last 100 entries; backdated-entry policy review (separate from the timezone fix). No production deployment authorized.
+
+### 2026-09-24 — backdated policy shipped; Storage/Edge Function validated
+
+- Backdated-entry policy review above is now resolved: see `015_sales_backdated_policy.sql` and `DECISIONS.md`.
+- New: `storage.buckets` has RLS enabled with zero policies by default (a Supabase Storage default, not something 007 introduced) — the `/storage/v1/bucket/:id` metadata endpoint 404s for every role. Does not affect object read/write. Worth a one-line policy addition only if the client ever needs to list/query bucket metadata directly (it currently doesn't).
+- `pin-login`'s "not live-verified against a real Supabase project" note in `AUTH_ARCHITECTURE.md` is now materially stronger (real local HTTP, real edge runtime, real lockout/concurrency/session checks) but still not a hosted/staging run — that smoke test is still recommended before any deployment.
+- Still open: local Vector Docker log connection refusal (cosmetic); audit pagination/date filtering beyond last 100 entries. No production deployment or hosted migration authorized.

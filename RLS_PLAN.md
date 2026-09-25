@@ -206,3 +206,16 @@ reversal — see `INVENTORY_SECURITY.md` and `DECISIONS.md`). Re-run on a
 fresh local reset: 137/137 real Auth/PostgREST assertions, including own-branch
 (not just cross-branch) denial for cashier and branch_manager's reversal
 attempt. Still local only.
+
+**2026-09-24:** `storage.objects` policies (`007_storage_policies.sql`) were
+exercised for the first time with a real executable test against the real
+local Storage API and real Auth JWTs (`supabase/tests/storage_policy.test.mjs`,
+48 assertions) rather than by reading the SQL — this found and fixed a real
+gap: the `employee.manage` manager-override was present on
+`avatars_v4_update`/`avatars_v4_delete` but missing from `avatars_v4_insert`,
+which is what actually governs a Storage "replace" (the local Storage API
+implements it as `INSERT ... ON CONFLICT DO UPDATE`, so Postgres RLS enforces
+the INSERT policy's `WITH CHECK` regardless). Also newly confirmed:
+`storage.buckets` itself has RLS enabled with zero policies (a Supabase
+Storage default; object access is unaffected since those policies never join
+against `storage.buckets`). See `docs/LOCAL_VALIDATION_2026-09-24.md`.

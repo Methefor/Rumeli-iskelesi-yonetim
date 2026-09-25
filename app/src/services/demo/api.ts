@@ -12,9 +12,11 @@ import {
   effectiveCostAt,
   type InventoryPermission,
 } from '../../domain/inventory'
+import { evaluateBackdatedEntry } from '../../domain/shifts'
 import { currentDemoUser } from '../../features/auth/demoSession'
 import type { DemoUser } from '../../features/auth/demoUsers'
 import type { DataApi } from '../data/real'
+import { istanbulDate } from '../../utils/dates'
 import { demoState } from './state'
 import {
   addMovement,
@@ -279,6 +281,24 @@ export const demoApi: DataApi = {
       !canManageShifts(actor, shift.branchId)
     ) {
       return { reportId: null, error: 'Bu vardiyaya atanmış değilsiniz.' }
+    }
+    const backdated = evaluateBackdatedEntry(
+      shift.businessDate,
+      isOrgWide(actor.roles),
+      istanbulDate(state.now()),
+    )
+    if (backdated.isFuture) {
+      return { reportId: null, error: 'İleri bir tarih için rapor girilemez.' }
+    }
+    if (backdated.deniedForRole) {
+      return {
+        reportId: null,
+        error:
+          'Yalnızca bugün ve önceki 3 gün için rapor girebilirsiniz. Daha eski bir tarih için yönetici/işletme sahibi gerekçeli olarak girebilir.',
+      }
+    }
+    if (backdated.requiresOverrideReason && !input.backdatedReason?.trim()) {
+      return { reportId: null, error: '3 günden eski bir tarih için gerekçe zorunludur.' }
     }
     try {
       const report = createReport(

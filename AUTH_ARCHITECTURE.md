@@ -141,6 +141,24 @@ not send mail; (c) the real `AuthProvider`/`ProtectedRoute`/`RoleGuard` chain
 in `app/` correctly authenticates and authorizes using these tokens end to
 end (see `WORKLOG.md`, 2026-09-17 local staging entry).
 
+**2026-09-24 — real local HTTP test of the deployed-locally function
+itself** (`supabase/tests/pin_login.test.mjs`, 45 assertions, still not
+deployed to any hosted project): beyond the 2026-09-17 flow check, this
+called the function over real HTTP as a browser would and additionally
+confirmed — identity is `employee_code` only, never a legacy id shape;
+wrong PIN, wrong employee_code, an inactive user, and a user with no
+`pin_credentials` row all fail with the **byte-for-byte identical** generic
+`401`; server-side PIN format validation rejects malformed input before any
+DB lookup; `verify_pin`'s row lock correctly serializes 5 concurrent
+wrong-PIN requests to exactly 5 recorded failures and exactly one lockout
+audit row (no lost updates, no audit flooding); a correct PIN presented
+while locked is still rejected; a successful login resets the failure
+counter; the returned session both resolves via `/auth/v1/user` and
+authorizes a real RLS-scoped PostgREST read; the refresh-token flow works;
+and — checked against the local Mailpit catcher, not just read from the
+source — no email is sent by a successful login. No defects found this
+time. See `docs/LOCAL_VALIDATION_2026-09-24.md`.
+
 Two real defects surfaced ONLY by this live run (both fixed, see
 `DECISIONS.md`):
 1. `verify_pin()` (and the `admin_reset_pin()` RPC copying its pattern)

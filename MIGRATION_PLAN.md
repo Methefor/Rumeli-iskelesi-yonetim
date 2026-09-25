@@ -117,6 +117,7 @@ onward) read/write only the new schema. See `CURRENT_STATE.md` and
 | 012 | `012_inventory_core.sql` | inventory permissions + role grants, `inventory_items`, `inventory_item_costs`, `inventory_movements`, `inventory_counts`, `inventory_count_items`, append-only guards, `sales_report_items` product link, two views | 001-003, 009 |
 | 013 | `013_inventory_rls.sql` | `current_user_can_inventory`, `inventory_item_branch_id`, privileges, RLS (SELECT only), cost column grant | 012 |
 | 014 | `014_inventory_rpcs.sql` | 10 public RPCs, internal helpers, replaces `create/edit/cancel_sales_report` | 011, 012, 013 |
+| 015 | `015_sales_backdated_policy.sql` | Backdated-entry policy: redefines `create_sales_report` (new optional `p_backdated_reason` param) and `edit_sales_report` (body only) | 009, 011, 014 |
 
 Rollback notes are in each file. Sign-off before staging: run
 `supabase/tests/inventory_security.test.sql` on a **local** Supabase reset.
@@ -132,3 +133,16 @@ run and its limitations. **This is still only local** — no hosted/staging
 Supabase project has been touched, and this checklist's sign-off items above
 (staging run, explicit approval for the production step) are unchanged and
 still unmet.
+
+**2026-09-24 update:** `015_sales_backdated_policy.sql` (Europe/Istanbul
+calendar-date backdated-entry limit on `create_sales_report`/
+`edit_sales_report`) applies cleanly on top of 001-014 from a fresh reset,
+validated the same way (`backdated_entry.test.sql`,
+`backdated_entry_timezone.test.sql`, 24 timezone cases). Also, for the first
+time, the local Storage API (`007_storage_policies.sql`'s `avatars-v4`
+bucket) and the `pin-login` Edge Function were exercised with real
+executable HTTP tests rather than SQL inspection — see
+`docs/LOCAL_VALIDATION_2026-09-24.md`. The Storage test found and fixed a
+real bug in 007 (the `employee.manage` override was missing from the INSERT
+policy, which is what actually governs a Storage "replace"). Still only
+local; the staging sign-off item above remains unmet.

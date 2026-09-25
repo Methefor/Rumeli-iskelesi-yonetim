@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEMO_STORAGE_KEY } from '../../features/auth/demoSession'
+import { addDaysIso, istanbulDate } from '../../utils/dates'
 import { demoApi } from './api'
 import { resetDemoState } from './state'
 import {
@@ -425,5 +426,98 @@ describe('manager (org-wide) keeps full adjust/reverse/void, with mandatory reas
     ).toBeNull()
     expect(state.counts.find((c) => c.id === count.countId)?.status).toBe('voided')
     expect(theoreticalQuantity(state, 'demo-item-a')).toBe(stockBeforeVoid)
+  })
+})
+
+describe('backdated sales report policy (Europe/Istanbul calendar date, mirrors 015)', () => {
+  function backdatedShift(state: ReturnType<typeof resetDemoState>, offsetDays: number) {
+    const def = state.shiftDefinitions.find((d) => d.branchId === D && d.key === 'evening')!
+    const { branchId: _branchId, ...definition } = def
+    void _branchId
+    const shift = {
+      id: `demo-shift-backdated-${offsetDays}`,
+      branchId: D,
+      branchName: 'İskele Dondurma',
+      businessDate: addDaysIso(istanbulDate(NOW), offsetDays),
+      status: 'closed' as const,
+      definition,
+    }
+    state.shifts.push(shift)
+    return shift
+  }
+
+  function assign(state: ReturnType<typeof resetDemoState>, shiftId: string, userId: string) {
+    state.assignments.push({
+      id: `demo-assign-${shiftId}`,
+      shiftId,
+      userId,
+      status: 'confirmed',
+      isOnTime: null,
+      lateOverride: null,
+    })
+  }
+
+  it('employee: -4 days is denied with a clear reason, -3 is allowed', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('D001')
+    const tooOld = backdatedShift(state, -4)
+    assign(state, tooOld.id, 'demo-d001')
+    const deniedResult = await demoApi.createSalesReport({
+      shiftId: tooOld.id,
+      reportType: 'Z',
+      grossRevenue: 10,
+      items: [],
+    })
+    expect(deniedResult.error).toMatch(/bugün ve önceki 3 gün/)
+    expect(deniedResult.reportId).toBeNull()
+
+    const okShift = backdatedShift(state, -3)
+    assign(state, okShift.id, 'demo-d001')
+    const okResult = await demoApi.createSalesReport({
+      shiftId: okShift.id,
+      reportType: 'Z',
+      grossRevenue: 10,
+      items: [],
+    })
+    expect(okResult.error).toBeNull()
+    expect(okResult.reportId).not.toBeNull()
+  })
+
+  it('a future business date is always denied, even for a manager', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('M001')
+    const future = backdatedShift(state, 1)
+    const result = await demoApi.createSalesReport({
+      shiftId: future.id,
+      reportType: 'Z',
+      grossRevenue: 10,
+      items: [],
+    })
+    expect(result.error).toMatch(/İleri bir tarih/)
+    expect(result.reportId).toBeNull()
+  })
+
+  it('manager: -4 days requires a reason, then succeeds', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('M001')
+    const tooOld = backdatedShift(state, -5)
+    const withoutReason = await demoApi.createSalesReport({
+      shiftId: tooOld.id,
+      reportType: 'X',
+      grossRevenue: 10,
+      items: [],
+    })
+    expect(withoutReason.error).toMatch(/gerekçe/i)
+    expect(withoutReason.reportId).toBeNull()
+
+    const withReason = await demoApi.createSalesReport({
+      shiftId: tooOld.id,
+      reportType: 'X',
+      grossRevenue: 10,
+      items: [],
+      backdatedReason: 'Geç bildirilen kağıt makbuz',
+    })
+    expect(withReason.error).toBeNull()
+    expect(withReason.reportId).not.toBeNull()
   })
 })

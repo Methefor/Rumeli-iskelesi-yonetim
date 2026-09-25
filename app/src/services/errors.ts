@@ -10,6 +10,19 @@
 const PHRASES: ReadonlyArray<readonly [RegExp, string]> = [
   [/submission window has closed/i, 'Bu vardiya için rapor gönderme süresi doldu.'],
   [/not assigned to this shift/i, 'Bu vardiyaya atanmış değilsiniz.'],
+  [/cannot submit a report for a future business date/i, 'İleri bir tarih için rapor girilemez.'],
+  [
+    /submission is limited to today and the previous 3/i,
+    'Yalnızca bugün ve önceki 3 gün için rapor girebilirsiniz. Daha eski bir tarih için yönetici/işletme sahibi gerekçeli olarak girebilir.',
+  ],
+  [
+    /editing is limited to reports from today and the previous 3/i,
+    'Yalnızca bugün ve önceki 3 güne ait raporlar düzenlenebilir. Daha eski bir rapor için yönetici/işletme sahibi gerekçeli olarak düzenleyebilir.',
+  ],
+  [
+    /reason is required to submit for a business date more than 3 days/i,
+    '3 günden eski bir tarih için gerekçe zorunludur.',
+  ],
   [/a reason is required|reason.*required|gerekçe/i, 'Gerekçe zorunludur.'],
   [/report already exists/i, 'Bu vardiya için bu tipte bir rapor zaten var.'],
   [/already exists in this branch/i, 'Bu koda sahip bir ürün bu şubede zaten var.'],

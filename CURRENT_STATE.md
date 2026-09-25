@@ -192,12 +192,14 @@ session.
 
 | Item | Status |
 |---|---|
-| Phase E application / domain / UI tests (typecheck, lint, 163 unit + demo-flow tests, build) | **VALIDATED** |
-| Migrations 012-014 | **PREPARED**, validated on a real local Supabase stack; **not applied to any hosted project** |
-| Fresh local Supabase `db reset` (001-014 from zero) | **VALIDATED LOCALLY** (2026-09-22, real Docker/Postgres/GoTrue/PostgREST) |
-| SQL security/timezone suites (`inventory_security.test.sql`, `timezone_regression.test.sql`, `timezone_rpc.test.sql`, ~155+32 assertions incl. the cashier/branch_manager rollback) against real local Postgres roles | **VALIDATED LOCALLY** |
+| Phase E application / domain / UI tests (typecheck, lint, 175 unit + demo-flow tests, build) | **VALIDATED** |
+| Migrations 012-015 | **PREPARED**, validated on a real local Supabase stack; **not applied to any hosted project** |
+| Fresh local Supabase `db reset` (001-015 from zero) | **VALIDATED LOCALLY** (2026-09-24, real Docker/Postgres/GoTrue/PostgREST) |
+| SQL security/timezone/backdated suites (`inventory_security.test.sql`, `timezone_regression.test.sql`, `timezone_rpc.test.sql`, `backdated_entry.test.sql`, `backdated_entry_timezone.test.sql`) against real local Postgres roles | **VALIDATED LOCALLY** |
 | Real local Auth + PostgREST integration (`local_inventory_api.mjs`, 137 assertions, real password sessions/JWTs, every role) | **VALIDATED LOCALLY** |
-| Timezone invariance (session TZ UTC / Europe/Istanbul / America/New_York / Asia/Tokyo all produce the same business result) | **VALIDATED LOCALLY** |
+| Real local Storage API (`storage_policy.test.mjs`, `avatars-v4`, 48 assertions, real Auth JWTs) | **VALIDATED LOCALLY** — one real bug found and fixed (see `docs/LOCAL_VALIDATION_2026-09-24.md`) |
+| Real local Edge Function (`pin_login.test.mjs`, `pin-login`, 45 assertions, real HTTP) | **VALIDATED LOCALLY** — no fix needed |
+| Backdated-entry policy timezone invariance (session TZ UTC / Europe/Istanbul / America/New_York / Asia/Tokyo all produce the same decision) | **VALIDATED LOCALLY** |
 | Hosted / staging validation | **NOT DONE** |
 | Production | **UNTOUCHED** |
 
@@ -221,3 +223,38 @@ Supersedes the previous Docker-blocked/OPEN entry. Fresh local Supabase reset ap
 The user's explicit approval reversed the cashier grant above and narrowed the design further: **cashier/employee have no privileged inventory access at all** (no adjust, no reversal, no count-void, no cost, no receive — same as before Phase E's cashier experiment). **branch_manager keeps own-branch adjust and count-void, but not `reverse_inventory_movement`** — reversal is now owner/manager only, the one substantive change from the original Phase E design. See `DECISIONS.md` "cashier grant rolled back; final inventory authorization scope" for the full rationale.
 
 Re-validated end to end on a fresh real local Supabase reset (Docker): `inventory_security.test.sql` (with a new section testing the rollback against real own-branch fixtures for cashier and branch_manager, not just cross-branch), `timezone_regression.test.sql`, `timezone_rpc.test.sql` (32/32), and `local_inventory_api.mjs` (rewritten, 137/137 real Auth+PostgREST assertions) all pass. App suite: typecheck, lint, 165 tests, build — all pass. No commit/push; production and hosted Supabase untouched.
+
+### 2026-09-24 — backdated-entry policy, real Storage/Edge Function validation
+
+New `015_sales_backdated_policy.sql`: server-side backdated-entry policy for
+sales reports (`create_sales_report`/`edit_sales_report`), Europe/Istanbul
+**calendar date**. Normal operational users (cashier, employee,
+branch_manager) may create/edit only today or the previous 3 Istanbul
+calendar days; a future date is always denied for everyone; owner/manager
+may go further back only with a mandatory reason, audited separately
+(`sales_report_backdated_override`). branch_manager's `sales.edit_all` does
+NOT count as privileged for this rule (it still bypasses the unrelated
+same-day cutoff, unchanged) — this is the one behavioral narrowing here.
+Frontend mirror: `domain/shifts/backdatedPolicy.ts`, wired into
+`NewSalesReportPage` (clear Turkish message, reason field for an
+owner/manager override) and `services/errors.ts`.
+
+Also, for the first time, the local Storage API (`avatars-v4`) and the
+`pin-login` Edge Function were validated with REAL executable tests against
+the real local stack — not SQL inspection or source reading. The Storage
+test found and fixed one real bug: `avatars_v4_insert`'s `WITH CHECK` was
+missing the `employee.manage` override, which silently broke a
+manager/owner's ability to replace another user's avatar (Supabase's local
+Storage API implements "replace" as an upsert, so the INSERT policy — not
+just UPDATE — gates it). The Edge Function test needed no fix: identity,
+generic-failure shape, lockout/concurrency (a 5-way concurrent wrong-PIN
+race lands on exactly 5 failures and exactly one lockout audit row), session
+issuance/refresh, and "no email is ever sent" (checked against the local
+Mailpit catcher) all passed as designed.
+
+Full re-validation from a fresh reset: all SQL/timezone/backdated suites,
+`local_inventory_api.mjs` (137), the new `storage_policy.test.mjs` (48) and
+`pin_login.test.mjs` (45) all pass; app: typecheck, lint, 175 tests, build —
+all pass. No commit/push; hosted Supabase and production untouched. See
+`docs/LOCAL_VALIDATION_2026-09-24.md` for the full report and the access
+matrix.
