@@ -19,6 +19,7 @@ function authValue(status: AuthStatus): AuthContextValue {
     isDemo: false,
     profile: null,
     signInDemo: vi.fn(),
+    signInWithPin: vi.fn(),
   }
 }
 

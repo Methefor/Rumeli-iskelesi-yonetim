@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/assert-local-supabase.mjs development && vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -12,7 +12,9 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -b",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "dev:local": "node scripts/assert-local-supabase.mjs development && vite",
+    "build:local": "node scripts/assert-local-supabase.mjs production && tsc -b && vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

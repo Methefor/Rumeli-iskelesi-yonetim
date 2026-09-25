@@ -1,6 +1,12 @@
 export { supabase } from './client'
 export { env, isDemoModeEnabled } from './env'
 export {
+  requestPinLogin,
+  establishSession,
+  type PinLoginResult,
+  type PinLoginFailure,
+} from './pinLogin'
+export {
   fetchAuthorizationContext,
   signOut,
   type AuthorizationContext,

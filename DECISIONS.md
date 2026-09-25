@@ -380,3 +380,39 @@ New migration `015_sales_backdated_policy.sql` rather than editing 011/014 in pl
 First real (not SQL-inspection) test of the local Storage API and the `pin-login` Edge Function. The Storage test found a genuine bug that reading `007_storage_policies.sql` would not have caught: Supabase's local Storage API implements a file "replace" (PUT) as `INSERT ... ON CONFLICT DO UPDATE`, so Postgres RLS enforces the **INSERT** policy's `WITH CHECK` for that statement — not just the UPDATE policy that was clearly written to carry the `employee.manage` manager-override. `avatars_v4_insert` was missing that override, so a manager attempting to replace another employee's avatar was silently rejected. Fixed by adding the same `employee.manage` check to `avatars_v4_insert`. Documented rather than further restricted: this also lets a manager/owner upload a brand-new avatar under someone else's path, not just replace an existing one — an acceptable, disclosed superset of "manager override," not a narrower one Postgres RLS can easily express without an extra existence check.
 
 The Edge Function test needed no fix — every listed check (identity via employee_code only, identical generic-failure shape across every failure reason, a 5-way concurrent-request lockout race producing exactly one audit row, session issuance/refresh, and confirmation via the local Mailpit catcher that no email is ever actually sent) passed as designed. See `docs/LOCAL_VALIDATION_2026-09-24.md` for the full access matrix and assertion counts.
+
+## 2026-09-26 — local-first completion and controlled direct production cutover
+
+**Decision:** Keep Supabase. Do not create a paid staging project and do not
+repurpose either of the two active Free Plan projects. Complete real login,
+Management Center, realistic catalog/configuration and migration rehearsals
+against the real local Supabase stack. When those gates pass, use the existing
+cashier Supabase project only through a separately approved maintenance-window
+cutover.
+
+The production change must be side-by-side: retain the legacy tables, Storage
+objects and frontend while adding V4 objects; never reset production and never
+use destructive cleanup as rollback. Production read-only inspection, backups,
+the first migration/function deployment, frontend activation and later legacy
+retirement each retain their own explicit approval gates. The legacy
+application remains available during development; expected interruption is
+limited to the final controlled cutover window.
+
+**Why:** both free hosted projects are important and cannot be paused. Changing
+backend platforms would require rewriting Supabase Auth, RLS, PostgREST/RPC,
+Storage and Edge Function work that is already locally validated. A temporary
+paid staging project is deferred to avoid cost. The accepted tradeoff is that
+hosted-only behavior is first verified during the controlled production window,
+mitigated by full local validation, verified backups, target guards, a small
+pilot group and immediate frontend rollback.
+
+### 2026-09-26 - Client authorization fails closed; local env guard
+
+`fetchAuthorizationContext` returns `active:false` on any lookup error, a
+missing/deactivated profile, or a user without a role, and `AuthProvider`
+discards the session (sign out) instead of treating "nothing known" as
+"logged in with no permissions". Real login uses one generic credential
+message for every authentication failure. Local development for real login
+uses gitignored higher-priority env files plus a guard script that aborts
+unless the effective Supabase host is local, because a developer
+`app/.env.local` may point at production.

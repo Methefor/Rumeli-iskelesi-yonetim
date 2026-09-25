@@ -258,3 +258,29 @@ Full re-validation from a fresh reset: all SQL/timezone/backdated suites,
 all pass. No commit/push; hosted Supabase and production untouched. See
 `docs/LOCAL_VALIDATION_2026-09-24.md` for the full report and the access
 matrix.
+
+## 2026-09-26 execution strategy
+
+The owner approved a local-first completion path because both available Free
+Plan Supabase projects are active and important. Supabase remains the backend;
+no paid staging project is planned. Remaining login, Management Center,
+catalog/configuration and migration rehearsal work will run against the real
+local Supabase stack.
+
+Production remains untouched and unauthorized. After the local gates pass, a
+separate production-readiness stage will prepare read-only collision checks,
+verified database/Storage backups, target guards, a short maintenance window
+and frontend rollback. V4 will then be added beside the retained legacy
+objects, followed by a limited pilot. See
+`docs/HOSTED_EXECUTION_ROADMAP.md` for the current sequence.
+
+### 2026-09-26 - Stage 1: real login on local Supabase (uncommitted)
+
+The non-demo login is wired: `LoginPage` -> `AuthContext.signInWithPin` ->
+`pin-login` -> `supabase.auth.setSession()`, with fail-closed authorization,
+session restore/refresh/logout and role redirect. Validated ONLY against the
+local Supabase stack (real browser flows for owner, manager, branch_manager,
+cashier, employee; wrong PIN, unknown code, inactive, lockout, reload, refresh,
+logout, unauthorized routes) plus the full local backend suites and 207 app
+tests. Hosted/staging: NOT DONE. Production: untouched. Demo mode unchanged
+and zero-network. See `docs/LOCAL_LOGIN_VALIDATION_2026-09-26.md`.

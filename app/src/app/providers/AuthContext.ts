@@ -1,5 +1,6 @@
 import { createContext } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
+import type { PinLoginFailure } from '../../services/supabase/pinLogin'
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated'
 
@@ -38,6 +39,17 @@ export interface AuthContextValue {
    * caller (LoginPage) can redirect appropriately.
    */
   signInDemo: (employeeCode: string, pin: string) => { roles: string[] } | null
+  /**
+   * Real login through the `pin-login` Edge Function. Resolves `{ ok: true }`
+   * only once the session exists AND the user's roles/branches are loaded, so
+   * callers can redirect immediately without a half-loaded state. Every
+   * authentication failure is the same `invalid_credentials`. Never makes a
+   * network call in demo mode.
+   */
+  signInWithPin: (
+    employeeCode: string,
+    pin: string,
+  ) => Promise<{ ok: true } | { ok: false; reason: PinLoginFailure }>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

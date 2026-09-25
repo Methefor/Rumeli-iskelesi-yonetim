@@ -369,3 +369,21 @@ Wrote and ran, for the first time, REAL executable tests (not SQL inspection) ag
 - `pin_login.test.mjs` (45 assertions, real HTTP against the local edge runtime) found no defects — identity, generic-failure parity, lockout/concurrency (5 parallel wrong-PIN attempts → exactly 5 failures, exactly one lockout audit row, no flooding), session issuance/refresh, and "no email sent" (checked against the local Mailpit catcher) all passed.
 
 Fresh `supabase db reset --local --no-seed`: migrations 001-015 apply clean. All SQL/timezone/backdated suites, `local_inventory_api.mjs` (137), `storage_policy.test.mjs` (48), `pin_login.test.mjs` (45) pass. App: typecheck, lint, 175 tests, build — all pass. No commit/push; hosted Supabase and production untouched. Full report: `docs/LOCAL_VALIDATION_2026-09-24.md`.
+
+### 2026-09-26 — local-first execution strategy approved
+
+Recorded the owner's decision to keep Supabase, preserve both important Free
+Plan projects and avoid a paid staging project. Replaced the hosted-first
+roadmap with a gated local-first sequence: local real login, Management Center,
+realistic configuration and migration rehearsal, followed by a separately
+authorized production-readiness package and short side-by-side cutover. No
+production access, deployment, commit or push was performed.
+
+### 2026-09-26 - Stage 1 real login (local)
+
+Added `pinLogin.ts`, `signInWithPin`, fail-closed `fetchAuthorizationContext`,
+LoginPage wiring, local env guard (`assert-local-supabase.mjs`, `dev:local`,
+`build:local`, gitignored `.env.development.local`/`.env.production.local`),
+`local_login_fixtures.mjs`, tests (207 total). Real browser flows all pass on
+the local stack; full local backend regression passes. No commit/push, no
+hosted or production contact.

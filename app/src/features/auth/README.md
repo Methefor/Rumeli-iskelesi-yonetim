@@ -1,19 +1,41 @@
-# auth (Phase C: preparation only)
+# auth
 
-Status: frontend scaffold exists, backend is not deployed.
+Status (2026-09-26): real login is wired and validated against the **local**
+Supabase stack only. Hosted/staging: not done. Production: untouched.
 
-- `routes/LoginPage.tsx` — a real UI shell (employee code + PIN fields,
-  submit button) that is **not wired to Supabase**. Submitting shows an
-  explicit "not ready" toast instead of faking success.
-- The session model itself (`AuthProvider`/`useAuth`, `ProtectedRoute`,
-  `RoleGuard`, `BranchGuard`) lives in `app/providers/` and
-  `app/router/guards/` — it already tracks a real Supabase Auth session
-  today, there's just no way to create one yet, because:
-  - the `pin-login` Edge Function is prepared but not deployed
-    (`supabase/functions/pin-login/`, two open TODOs), and
-  - the `profiles`/`pin_credentials`/`roles` schema it depends on is
-    prepared but not applied (`supabase/migrations/001-006`).
+- `routes/LoginPage.tsx` - employee code + PIN. Real mode calls
+  `AuthContext.signInWithPin`, which runs the `pin-login` Edge Function
+  (`services/supabase/pinLogin.ts`), hands the returned tokens to
+  `supabase.auth.setSession()`, loads roles/branches, and only then resolves,
+  so the redirect (`/app/manager` for owner/manager/branch_manager,
+  `/app/employee` otherwise) never sees a half-loaded state. Every credential
+  failure (wrong PIN, unknown code, inactive, locked) shows the same message;
+  only a connectivity problem and an unexpected backend response differ.
+  Raw backend text, PINs and tokens are never shown or logged.
+- `app/providers/AuthProvider.tsx` - session restore on reload, silent token
+  refresh (no reload of authorization for the same user), logout, and
+  **fail-closed** authorization: a failed lookup, a missing/deactivated
+  profile, or a user with no role discards the session instead of logging in
+  with no permissions. Only the newest lookup may write state.
+- Demo mode (`VITE_DEMO_MODE=true`, Preview only) is unchanged and makes zero
+  Supabase/Auth/Function requests; `requestPinLogin` and `signInWithPin`
+  refuse to run in demo mode even if imported.
+- Route protection: `ProtectedRoute` / `RoleGuard` / `BranchGuard` in
+  `app/router/guards/`. UI guards are convenience; RLS and the RPCs are the
+  real boundary.
 
-See `AUTH_ARCHITECTURE.md` at the repo root for the full login-flow design
-and rationale, and `DECISIONS.md` for why the legacy plaintext-PIN pattern
-was not ported here as a stopgap.
+## Local development environment
+
+`app/.env.local` in a developer checkout may point at the PRODUCTION project.
+Do not use it for V4 work. Local real-login development uses the gitignored
+`app/.env.development.local` and `app/.env.production.local` (Vite gives them
+higher priority than `.env.local`), pointing at `http://127.0.0.1:54321`.
+`npm run dev:local` and `npm run build:local` first run
+`scripts/assert-local-supabase.mjs`, which resolves the effective URL the way
+Vite does and aborts unless the host is 127.0.0.1/localhost. Never put the
+service-role key in any `VITE_*` variable.
+
+Fake local identities (codes L001-L007, PIN 2027, `.invalid` emails):
+`node supabase/tests/local_login_fixtures.mjs` on a fresh local reset.
+
+See `AUTH_ARCHITECTURE.md` and `docs/LOCAL_LOGIN_VALIDATION_2026-09-26.md`.

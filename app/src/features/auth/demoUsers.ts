@@ -55,6 +55,11 @@ export function findDemoUser(employeeCode: string, pin: string): DemoUser | unde
   return DEMO_USERS.find((u) => u.employeeCode === normalizedCode && u.pin === pin)
 }
 
+/** Home route for a set of role keys — mirrors the router's manager/employee split. */
+export function homePathForRoles(roles: readonly string[]): string {
+  return roles.some((role) => MANAGER_ROLES.includes(role)) ? '/app/manager' : '/app/employee'
+}
+
 /** Where a demo user should land after "logging in" — mirrors the real router's role split. */
 export function demoHomePath(user: DemoUser): string {
   return user.roles.some((role) => MANAGER_ROLES.includes(role))

@@ -195,3 +195,33 @@ Previous Docker installation, fresh 001– 014 reset, real Auth/PostgREST invent
 - New: `storage.buckets` has RLS enabled with zero policies by default (a Supabase Storage default, not something 007 introduced) — the `/storage/v1/bucket/:id` metadata endpoint 404s for every role. Does not affect object read/write. Worth a one-line policy addition only if the client ever needs to list/query bucket metadata directly (it currently doesn't).
 - `pin-login`'s "not live-verified against a real Supabase project" note in `AUTH_ARCHITECTURE.md` is now materially stronger (real local HTTP, real edge runtime, real lockout/concurrency/session checks) but still not a hosted/staging run — that smoke test is still recommended before any deployment.
 - Still open: local Vector Docker log connection refusal (cosmetic); audit pagination/date filtering beyond last 100 entries. No production deployment or hosted migration authorized.
+
+### 2026-09-26 — approved local-first priority order
+
+The earlier standalone hosted-staging task is superseded by the approved
+local-first sequence in `docs/HOSTED_EXECUTION_ROADMAP.md`:
+
+1. Wire and validate real PIN login against local Supabase.
+2. Build and validate Management Center/user provisioning locally.
+3. Load and approve realistic catalog and operating configuration locally.
+4. Rehearse legacy reconciliation and migration locally.
+5. Prepare a separately authorized production inspection, backup and cutover
+   package.
+6. Perform a short, controlled side-by-side production deployment and limited
+   pilot only after a new explicit approval.
+
+Do not use the production-bound gitignored `app/.env.local` for local
+non-demo work. No paid staging project, production access or production
+mutation is authorized by this backlog update.
+
+### 2026-09-26 - after Stage 1
+
+- Server-side revocation: RLS/RPCs do not check `profiles.is_active`; an issued
+  token of a deactivated user lives until expiry (Stage 2 with user management:
+  ban the auth user and/or add an active check to the RLS helpers).
+- `app/.env.local` (developer machines) still points at production. Local
+  development and local builds must continue through the guarded scripts and
+  higher-priority gitignored local env files. Remove or replace the stale file
+  during the later production-readiness configuration review.
+- Stage 2 (Management Center) has not started. Separate hosted staging is no
+  longer planned; the next gate remains local-only under the approved roadmap.

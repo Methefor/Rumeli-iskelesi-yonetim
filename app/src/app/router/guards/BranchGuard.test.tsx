@@ -18,6 +18,7 @@ function authValue(overrides: Partial<AuthContextValue>): AuthContextValue {
     isDemo: false,
     profile: null,
     signInDemo: vi.fn(),
+    signInWithPin: vi.fn(),
     ...overrides,
   }
 }

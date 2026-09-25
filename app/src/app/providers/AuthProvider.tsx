@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../../services/supabase/client'
 import { isDemoModeEnabled } from '../../services/supabase/env'
@@ -6,6 +6,11 @@ import {
   fetchAuthorizationContext,
   signOut as signOutRequest,
 } from '../../services/supabase/auth'
+import {
+  establishSession,
+  requestPinLogin,
+  type PinLoginFailure,
+} from '../../services/supabase/pinLogin'
 import { findDemoUser, type DemoUser } from '../../features/auth/demoUsers'
 import {
   clearStoredDemoCredentials,
@@ -95,6 +100,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return initialState
   })
   const mountedRef = useRef(true)
+  // Only the newest authorization lookup may write state: a slow lookup for an
+  // old session must never overwrite a newer login/logout.
+  const sequenceRef = useRef(0)
+  // While signInWithPin is applying its own session, the SIGNED_IN event it
+  // triggers is skipped so the lookup is not done twice.
+  const explicitSignInRef = useRef(false)
+  const stateRef = useRef(state)
+  useEffect(() => {
+    stateRef.current = state
+  }, [state])
+
+  /**
+   * Applies a session. Fail-closed: if the user's authorization cannot be
+   * loaded, the profile is inactive, or they hold no role, the session is
+   * discarded and the app is unauthenticated. Returns whether the session
+   * was honoured.
+   */
+  const applySession = useCallback(async (session: Session | null): Promise<boolean> => {
+    const sequence = ++sequenceRef.current
+    if (!session) {
+      if (mountedRef.current) setState(unauthenticatedState)
+      return false
+    }
+
+    const authz = await fetchAuthorizationContext(session.user.id)
+    if (!mountedRef.current || sequence !== sequenceRef.current) return false
+
+    if (!authz.active) {
+      setState(unauthenticatedState)
+      try {
+        await signOutRequest()
+      } catch {
+        // Local session state is already cleared above; nothing else to do.
+      }
+      return false
+    }
+
+    setState({
+      status: 'authenticated',
+      session,
+      user: session.user,
+      roles: authz.roles,
+      branchIds: authz.branchIds,
+      profile: authz.profile ?? null,
+      isDemo: false,
+    })
+    return true
+  }, [])
 
   useEffect(() => {
     mountedRef.current = true
@@ -108,31 +161,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    async function applySession(session: Session | null) {
-      if (!session) {
-        if (mountedRef.current) setState(unauthenticatedState)
-        return
-      }
-
-      const authz = await fetchAuthorizationContext(session.user.id)
-      if (mountedRef.current) {
-        setState({
-          status: 'authenticated',
-          session,
-          user: session.user,
-          roles: authz.roles,
-          branchIds: authz.branchIds,
-          profile: authz.profile ?? null,
-          isDemo: false,
-        })
-      }
-    }
-
     supabase.auth.getSession().then(({ data }) => {
       void applySession(data.session)
     })
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && explicitSignInRef.current) return
+      // A silent access-token refresh keeps the same user: swap the session in
+      // place instead of reloading authorization (which would flash the whole
+      // app back to "loading").
+      const current = stateRef.current
+      if (
+        event === 'TOKEN_REFRESHED' &&
+        session &&
+        current.status === 'authenticated' &&
+        current.user?.id === session.user.id
+      ) {
+        setState({ ...current, session, user: session.user })
+        return
+      }
       void applySession(session)
     })
 
@@ -140,7 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mountedRef.current = false
       subscription.subscription.unsubscribe()
     }
-  }, [])
+  }, [applySession])
 
   const value = useMemo(
     () => ({
@@ -159,6 +206,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setState(demoState(demoUser))
         return { roles: demoUser.roles }
       },
+      async signInWithPin(
+        employeeCode: string,
+        pin: string,
+      ): Promise<{ ok: true } | { ok: false; reason: PinLoginFailure }> {
+        if (isDemoModeEnabled) return { ok: false, reason: 'unexpected' }
+        const result = await requestPinLogin({ employeeCode, pin })
+        if (!result.ok) return result
+        explicitSignInRef.current = true
+        try {
+          if (!(await establishSession(result))) return { ok: false, reason: 'unexpected' }
+          const { data } = await supabase.auth.getSession()
+          const honoured = await applySession(data.session)
+          return honoured ? { ok: true } : { ok: false, reason: 'unexpected' }
+        } finally {
+          explicitSignInRef.current = false
+        }
+      },
       async signOut() {
         if (state.isDemo) {
           clearStoredDemoCredentials()
@@ -168,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await signOutRequest()
       },
     }),
-    [state],
+    [state, applySession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
