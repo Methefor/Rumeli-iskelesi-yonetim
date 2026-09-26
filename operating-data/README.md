@@ -75,7 +75,7 @@ actor must be an active owner; every change is audited under that owner
 ## Files and their keys
 
 `branches`, `sales_categories`, `registers`, `shift_definitions`,
-`category_branches`, `inventory_items`, `product_categories`, `item_costs`,
+`category_branches`, `category_branch_removals`, `inventory_items`, `product_categories`, `item_costs`,
 `opening_stock`, `reconciliation_thresholds`, `waste_reasons` — see
 `contract.mjs` for columns, units, limits. Units: adet, kg, g, lt, ml, paket,
 kutu, porsiyon. Decimals use a dot; quantities ≤ 3 decimals, costs ≤ 4.
@@ -83,3 +83,14 @@ Waste reason codes are fixed by the database (expired, damaged, spilled,
 quality, sample, other).
 
 See `SOURCE_PROVENANCE_MATRIX.md` and `OWNER_INPUT_CHECKLIST.md`.
+
+## Removing an obsolete branch/category mapping
+
+Leaving a row out of `category_branches.csv` cannot remove a mapping that a
+migration seeded. Use `real/category_branch_removals.csv` (columns branch_key,
+category_key, reason, provenance, approval_status, source). A removal is audited
+(`operating_data_mapping_removal`), recorded in provenance, idempotent (already
+absent = `unchanged`), reported as `updated` ("mapping removed"), and part of the
+same all-or-nothing transaction. It is refused while inventory items in that
+branch still use the category. The global category is never deleted. Migration 018
+implements it; mappings can no longer be written through the Data API.

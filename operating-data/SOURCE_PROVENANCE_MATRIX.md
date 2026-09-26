@@ -16,7 +16,7 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 | Shift, Balık Ekmek | `daily` "Tek vardiya" 14:00–00:00, cutoff 00:00 next day, active | confirmed / approved | owner statement 2026-09-26 | none | yes |
 | Sales categories | Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek | legacy_observed / approved | 10 fields in `entry.html`; owner approval 2026-09-26 | seeded (009) | yes |
 | Category → branch (Rumeli: all 10) | | legacy_observed / approved | Rumeli cashier form shows all 10; owner approval 2026-09-26 | 9 seeded (Dondurma not) | yes |
-| Category → branch (İskele Dondurma: Dondurma, Sıcak İçecek, Soğuk İçecek) | 3 mappings | confirmed / approved | owner approval 2026-09-26 (`real/category_branches.csv`) | seeded by 009 (same three) | yes; provenance changes from unknown/pending to confirmed/approved |
+| Category → branch (İskele Dondurma: Dondurma, Su) | 2 mappings; `su` is a new global category | confirmed / approved | owner correction 2026-09-26; **supersedes** the earlier Dondurma + Sıcak İçecek + Soğuk İçecek approval | 009 seeded dondurma, sicak_icecek, soguk_icecek | dondurma kept; `su` created; sicak_icecek and soguk_icecek mappings removed by explicit, audited removal rows |
 | Category `balik_ekmek` (global) | Balık Ekmek | confirmed / approved | owner approval 2026-09-26 | none | yes |
 | Category → branch (Balık Ekmek: `balik_ekmek`, `soguk_icecek`) | 2 mappings; more may be added later | confirmed / approved | owner approval 2026-09-26 | none | yes |
 | Legacy revenue fields → branches | Rumeli evening report `balik_ekmek` → branch `balik_ekmek`; `dondurma` → branch `iskele_dondurma` | confirmed / approved (mapping decision) | owner statement 2026-09-26 | — | decision recorded for the future Stage 4 adapter; no adapter built |
@@ -32,3 +32,9 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 Migrations 001-016 are immutable; wrong or unproven seeds are not edited.
 Migration 017 records their classification in `operating_data_provenance`
 (without changing any value) so the UI can label them.
+
+Removals (`real/category_branch_removals.csv`): İskele Dondurma / `sicak_icecek` and
+İskele Dondurma / `soguk_icecek`, confirmed / approved, owner correction 2026-09-26,
+reason "Owner corrected Dondurma category set to Dondurma + Su". Recorded in
+`operating_data_provenance` as entity type `category_branch_removal`; the obsolete
+mapping provenance rows are deleted.

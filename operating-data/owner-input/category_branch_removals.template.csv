@@ -1,0 +1,5 @@
+# OWNER INPUT TEMPLATE: category_branch_removals
+# Remove a branch/category mapping that is no longer correct. Refused while inventory items in that branch still use the category. The global category is never deleted.
+# Copy this file to ../real/category_branch_removals.csv, delete these comment lines, fill real rows.
+# EXAMPLE: iskele_dondurma,sicak_icecek,Why it is removed,confirmed,pending,Owner statement <date>
+branch_key,category_key,reason,provenance,approval_status,source

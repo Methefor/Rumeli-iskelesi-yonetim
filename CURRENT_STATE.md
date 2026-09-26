@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-26 (Stage 3: Rumeli configuration, İskele Dondurma S900/seasonal shifts, all-branch 2%/5% thresholds and six waste reasons owner-approved and locally validated; İskele Dondurma categories and Balık Ekmek (S900, daily 14:00-00:00 shift, two categories) owner-approved; remaining input: Pavo, catalogue, product mapping, opening stock, dated costs; see docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md).
+Last updated: 2026-09-26 (Stage 3: Rumeli configuration, İskele Dondurma S900/seasonal shifts, all-branch 2%/5% thresholds and six waste reasons owner-approved and locally validated; İskele Dondurma categories corrected to Dondurma + Su (supersedes the earlier three-category decision; obsolete mappings removed via migration 018) and Balık Ekmek (S900, daily 14:00-00:00 shift, two categories) owner-approved; remaining input: Pavo, catalogue, product mapping, opening stock, dated costs; see docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md).
 
 ## Two applications live in this repo right now
 

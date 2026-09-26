@@ -150,3 +150,4 @@ local; the staging sign-off item above remains unmet.
 | 016 | `016_management_center.sql` | Inactive-aware helpers, `enforce_active_user` db_pre_request hook, storage active check, rank-based admin RPCs (activate/code/PIN/role/branch/shift/thresholds), `internal_provision_employee`, raw-write revokes | 001-015 |
 
 | 017 | `017_operating_data_loader.sql` | `operating_data_provenance` (source/approval registry, seeds classified), `internal_run_operating_data` (service_role only, one transaction, dry-run rolls back) | 003, 009, 012, 014, 016 |
+| 018 | `018_operating_data_mapping_removals.sql` | Loader wrapper `internal_od_apply` + `internal_od_remove_mappings` (audited, transactional branch/category mapping removal; refuses while items use the category); revokes raw writes on `sales_category_branches` | 017 |

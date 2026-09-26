@@ -471,3 +471,10 @@ rejected 0. Validator 22/22, loader suite 89/89 on a fresh 001-017 reset. Legacy
 revenue mapping (balik_ekmek -> balik_ekmek, dondurma -> iskele_dondurma)
 recorded as a decision only. Remaining Gate 3 input: Pavo, catalogue,
 product/category mapping, opening stock, dated costs. No push.
+
+### 2026-09-26 - Dondurma category correction (Dondurma + Su)
+
+Migration 018, `category_branch_removals` contract/validator/data, new global `su`,
+Dondurma mappings corrected. Supersedes the three-category approval. Real dry run:
+created 20, updated 6, unchanged 25, skipped 0, rejected 0. Validator 25/25, loader
+119/119 on a fresh 001-018 reset; existing SQL/HTTP suites pass. No push.

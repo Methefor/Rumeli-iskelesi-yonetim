@@ -49,22 +49,77 @@ test('real dataset: all owner-approved operating configuration is ready to apply
     'registers',
     'shift_definitions',
     'category_branches',
+    'category_branch_removals',
     'reconciliation_thresholds',
     'waste_reasons',
   ])
   assert.equal(res.counts.skipped, 0)
 })
 
-test('real dataset: the three owner-approved Dondurma category mappings are applied as confirmed', () => {
+test('real dataset: Dondurma reports exactly dondurma + su; the two obsolete mappings are approved removals', () => {
   const files = {}
   const dir = join(HERE, '..', 'real')
   for (const g of GROUPS) { try { files[g] = readFileSync(join(dir, `${g}.csv`), 'utf8') } catch { files[g] = null } }
   const res = validateDataset({ dataset: 'real', files, today: TODAY })
   const rows = res.entries.filter((e) => e.group === 'category_branches' && e.data.branch_key === 'iskele_dondurma')
-  assert.deepEqual(rows.map((e) => e.data.category_key).sort(), ['dondurma', 'sicak_icecek', 'soguk_icecek'])
+  assert.deepEqual(rows.map((e) => e.data.category_key).sort(), ['dondurma', 'su'])
   assert.ok(rows.every((e) => e.status === 'ok' && e.data.provenance === 'confirmed' && e.data.approval_status === 'approved'))
+  const rem = res.entries.filter((e) => e.group === 'category_branch_removals')
+  assert.deepEqual(rem.map((e) => `${e.data.branch_key}/${e.data.category_key}`).sort(), ['iskele_dondurma/sicak_icecek', 'iskele_dondurma/soguk_icecek'])
+  assert.ok(rem.every((e) => e.status === 'ok' && e.data.provenance === 'confirmed' && e.data.approval_status === 'approved' && /Dondurma \+ Su/.test(e.data.reason)))
+  assert.ok(res.entries.some((e) => e.group === 'sales_categories' && e.key === 'su' && e.status === 'ok'))
+  // global categories stay defined for Rumeli and Balık Ekmek
+  assert.ok(res.entries.some((e) => e.group === 'sales_categories' && e.key === 'sicak_icecek' && e.status === 'ok'))
+  assert.ok(res.entries.some((e) => e.group === 'category_branches' && e.key === 'rumeli_iskelesi/sicak_icecek' && e.status === 'ok'))
   assert.equal(res.counts.rejected, 0)
   assert.equal(res.counts.skipped, 0)
+})
+
+test('removals: unknown refs, duplicates, unapproved/unknown/demo rows, bad reason, conflicts are handled', () => {
+  const h = `branch_key,category_key,reason,${M}\n`
+  const good = 'no longer sold here'
+  const r = run({
+    category_branches: `branch_key,category_key,level,${M}\nb1,c1,category,${OK}\nb1,c2,category,${OK}\n`,
+    category_branch_removals: h +
+      `nope,c1,${good},${OK}\n` + // unknown branch
+      `b1,nope,${good},${OK}\n` + // unknown category
+      `b2,c1,${good},${OK}\nb2,c1,${good},${OK}\n` + // duplicate
+      `b2,c2,${good},legacy_observed,pending,legacy\n` + // pending -> skipped
+      `b1,c2,${good},confirmed,rejected,owner said no\n` + // rejected -> skipped
+      `b2,c3x,${good},unknown,approved,nobody\n` + // unknown approved -> rejected
+      `b2,c4x,${good},demo_only,approved,demo\n` + // demo -> rejected
+      `b2,c1,,${OK}\n` + // missing reason (also duplicate key)
+      `b1,c9x,abc,${OK}\n` + // malformed (too short reason)
+      `b1,c1,${good},${OK}\n`, // conflicts with the enabled mapping
+  })
+  const rem = find(r, 'category_branch_removals')
+  assert.match(msg(rem[0]), /unknown branch 'nope'/)
+  assert.match(msg(rem[1]), /unknown category 'nope'/)
+  assert.ok(rem[2].status === 'rejected' && rem[3].status === 'rejected' && /duplicate/.test(msg(rem[2])))
+  assert.equal(rem[4].status, 'skipped')
+  assert.equal(rem[5].status, 'skipped')
+  assert.equal(rem[6].status, 'rejected')
+  assert.match(msg(rem[7]), /demo_only data can never be part of the real dataset/)
+  assert.match(msg(rem[8]), /reason is required/)
+  assert.match(msg(rem[9]), /reason is required/)
+  assert.match(msg(rem[10]), /both enabled and removed/)
+  assert.match(msg(find(r, 'category_branches', (e) => e.key === 'b1/c1')[0]), /both enabled and removed/)
+  assert.equal(find(r, 'category_branches', (e) => e.key === 'b1/c2')[0].status, 'ok')
+})
+
+test('a removal is rejected when a product row in the same dataset needs the mapping', () => {
+  const r = run({
+    category_branches: `branch_key,category_key,level,${M}\nb1,c1,category,${OK}\n`,
+    product_categories: `branch_key,item_code,category_key,level,${M}\nb1,A1,c1,product,${OK}\n`,
+    category_branch_removals: `branch_key,category_key,reason,${M}\nb1,c1,no longer sold,${OK}\n`,
+  })
+  assert.match(msg(find(r, 'category_branch_removals')[0]), /both enabled and removed|required by product row/)
+})
+
+test('a removal of a not-enabled pair on its own is valid and applied', () => {
+  const r = run({ category_branch_removals: `branch_key,category_key,reason,${M}\nb2,c2,no longer sold,${OK}\n` })
+  assert.equal(find(r, 'category_branch_removals')[0].status, 'ok')
+  assert.equal(buildPayload('real', r.entries).category_branch_removals.length, 1)
 })
 
 test('real dataset: Balık Ekmek register, daily shift and two categories are applied as confirmed', () => {

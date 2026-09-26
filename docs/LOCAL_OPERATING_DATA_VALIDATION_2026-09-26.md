@@ -58,7 +58,7 @@ or category. İskele Dondurma now has a confirmed register and seasonal shifts,
 and its three owner-approved category mappings. Thresholds are approved for all three
 branches. Synthetic items remain labelled "Yalnızca test verisi".
 
-## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 89 assertions)
+## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 119 assertions after the 2026-09-26 category correction; the count was 89 before it)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
 right rows; second apply creates/updates nothing; controlled update (rename,
 category survives); back-dated cost, different cost for an existing date,
@@ -132,3 +132,32 @@ absent, and a second apply that creates and updates nothing. No application
 code changed (UI suite not re-run). Hosted and production untouched.
 Remaining Gate 3 input: Pavo activation name/date, real product catalogue,
 product-to-category mapping, opening stock, dated unit costs.
+
+## Update: Dondurma category correction and mapping removals (2026-09-26)
+The owner correction of 2026-09-26 supersedes the earlier three-category Dondurma decision. İskele Dondurma now reports exactly `dondurma` and `su`; the mappings to
+`sicak_icecek` and `soguk_icecek` are removed through explicit removal rows (the
+global categories stay; Rumeli and Balık Ekmek keep theirs). Balık Ekmek is
+unchanged (`balik_ekmek`, `soguk_icecek`).
+
+Migration 018 wraps the 017 row processor (renamed `internal_od_apply_core`) with
+`internal_od_apply`, which runs the core and then `internal_od_remove_mappings`
+inside the same loader transaction; all helpers are revoked from PUBLIC, anon and
+authenticated, and only `internal_run_operating_data` (service_role) is callable.
+Migration 018 also revokes raw INSERT/UPDATE/DELETE on `sales_category_branches`
+(a pre-existing 010 policy let owner/manager change mappings with no audit trail;
+the app only reads the table).
+
+Real dry run (fresh 001-018 reset): created 20 | updated 6 | unchanged 25 |
+skipped 0 | rejected 0. Versus the earlier 18/4/27: +1 `su` category, +1 Dondurma→su
+mapping (created 20); the two removals count as `updated` (6); the two former
+Dondurma mapping rows (sicak/soguk) are no longer in the mapping file, so unchanged
+drops by two (25). Every difference from 18/4/27 is accounted for. Validator: 25 tests.
+Loader suite: 119/119, including audit rows (actor, branch, category, reason, server
+time), removal provenance, idempotent second apply, a removal refused while an item
+uses the category, rollback of a valid register create in the same load, and denial
+of every internal function to anon/owner/manager/branch-manager/cashier JWTs plus a
+raw DELETE that removes nothing. SQL suites (timezone, inventory, backdated,
+management) and the inventory API (137), PIN login (45), management HTTP (76) and
+storage (48) suites still pass. No application code changed; UI suite not re-run.
+Hosted and production untouched. Remaining Gate 3 input: Pavo activation name/date,
+real product catalogue, product-to-category mapping, opening stock, dated unit costs.

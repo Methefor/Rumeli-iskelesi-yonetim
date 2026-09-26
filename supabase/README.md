@@ -66,3 +66,10 @@ Function directory is only served after `supabase stop` + `start`.
 Tests: `tests/operating_data_loader.test.mjs` (79 assertions incl. the full daily
 flow on the synthetic catalogue). If Storage returns 500/42P10 after many
 resets, run `supabase stop` + `start`.
+
+## Migration 018 / mapping removals
+
+`018_operating_data_mapping_removals.sql` adds transactional, audited removal of
+obsolete branch/category mappings to the operating-data loader (service_role only)
+and revokes raw writes on `sales_category_branches`. Covered by
+`tests/operating_data_loader.test.mjs` (119 assertions).

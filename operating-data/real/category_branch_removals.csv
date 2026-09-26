@@ -1,0 +1,6 @@
+# Explicit removal of obsolete branch/category mappings (audited, idempotent, all-or-nothing with the rest of the load).
+# Needed because migration 009 seeded mappings that leaving a row out of category_branches.csv cannot remove.
+# Global categories (sicak_icecek, soguk_icecek) stay: Rumeli and Balik Ekmek use them.
+branch_key,category_key,reason,provenance,approval_status,source
+iskele_dondurma,sicak_icecek,Owner corrected Dondurma category set to Dondurma + Su,confirmed,approved,Owner correction 2026-09-26
+iskele_dondurma,soguk_icecek,Owner corrected Dondurma category set to Dondurma + Su,confirmed,approved,Owner correction 2026-09-26

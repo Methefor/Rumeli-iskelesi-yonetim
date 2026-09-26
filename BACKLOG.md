@@ -258,3 +258,8 @@ mutation is authorized by this backlog update.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).
 - [x] Legacy sabah/aksam map to V4 morning/evening.
 - [x] Balık Ekmek / Dondurma revenue fields map to their branches (approved 2026-09-26).
+
+- [x] Owner corrected İskele Dondurma categories to Dondurma + Su (supersedes the
+      earlier three-category approval); mapping removals built (migration 018).
+- [ ] Remaining Gate 3 input: Pavo activation name/date; real product catalogue;
+      product-to-category mapping; opening stock; dated unit costs.

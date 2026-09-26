@@ -227,3 +227,9 @@ Helpers are inactive-aware; `enforce_active_user` refuses any request whose
 outrank the target; branch_manager is limited to shared branches and
 sub-roles. `shift_definitions` and `reconciliation_thresholds` accept writes
 only through audited RPCs.
+
+## 018 - sales_category_branches writes (2026-09-26, local only)
+
+Raw INSERT/UPDATE/DELETE on `sales_category_branches` is revoked from anon and
+authenticated (the 010 owner/manager write policy had no audit trail). Mappings
+change only through the audited operating-data loader.

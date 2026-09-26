@@ -1,5 +1,6 @@
 # The legacy Rumeli cashier form reports all 10 categories on the main register. Owner approved 2026-09-26.
-# Category use by Iskele Dondurma and Balik Ekmek is UNKNOWN (owner-input/).
+# Iskele Dondurma: exactly dondurma + su (owner correction 2026-09-26; supersedes the earlier dondurma/sicak_icecek/soguk_icecek approval).
+# Balik Ekmek: balik_ekmek + soguk_icecek. Obsolete mappings are removed via category_branch_removals.csv.
 branch_key,category_key,level,provenance,approval_status,source
 rumeli_iskelesi,gida,category,legacy_observed,approved,Owner approved 2026-09-26; entry.html category form (Rumeli cashier)
 rumeli_iskelesi,kahvalti,category,legacy_observed,approved,Owner approved 2026-09-26; entry.html category form (Rumeli cashier)
@@ -11,8 +12,7 @@ rumeli_iskelesi,salata,category,legacy_observed,approved,Owner approved 2026-09-
 rumeli_iskelesi,tatli,category,legacy_observed,approved,Owner approved 2026-09-26; entry.html category form (Rumeli cashier)
 rumeli_iskelesi,dondurma,category,legacy_observed,approved,Owner approved 2026-09-26; entry.html category form (Rumeli cashier)
 rumeli_iskelesi,borek_corek,category,legacy_observed,approved,Owner approved 2026-09-26; entry.html category form (Rumeli cashier)
-iskele_dondurma,dondurma,category,confirmed,approved,Owner approval 2026-09-26
-iskele_dondurma,sicak_icecek,category,confirmed,approved,Owner approval 2026-09-26
-iskele_dondurma,soguk_icecek,category,confirmed,approved,Owner approval 2026-09-26
+iskele_dondurma,dondurma,category,confirmed,approved,Owner correction 2026-09-26
+iskele_dondurma,su,category,confirmed,approved,Owner correction 2026-09-26
 balik_ekmek,balik_ekmek,category,confirmed,approved,Owner approval 2026-09-26
 balik_ekmek,soguk_icecek,category,confirmed,approved,Owner approval 2026-09-26

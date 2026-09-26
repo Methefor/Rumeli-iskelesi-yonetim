@@ -488,3 +488,13 @@ Soğuk İçecek (more may be added later). Owner also approved the legacy mappin
 the future Stage 4 adapter: Rumeli evening-report `balik_ekmek` revenue belongs to
 branch `balik_ekmek`, and `dondurma` revenue to branch `iskele_dondurma`. The
 adapter is not built. Pavo stays absent; hosted/production untouched.
+
+### 2026-09-26 - Dondurma categories corrected; audited mapping removals
+
+Owner correction: İskele Dondurma reports exactly Dondurma and Su. This
+**supersedes** the earlier decision (Dondurma, Sıcak İçecek, Soğuk İçecek). Global
+Sıcak/Soğuk İçecek stay for Rumeli and Balık Ekmek; Balık Ekmek keeps Balık Ekmek and
+Soğuk İçecek. Categories may change later, so migration 018 adds an audited,
+idempotent, all-or-nothing removal of branch/category mappings to the loader
+(refused while items use the category) and closes the unaudited raw-write path on
+`sales_category_branches`. Migrations 001-017 were not rewritten.

@@ -123,6 +123,14 @@ function validateFields(group, v, ctx) {
       if (v.level !== 'category')
         errors.push("level must be 'category' in this file (product-level mappings belong in product_categories)")
       break
+    case 'category_branch_removals': {
+      key('branch_key'); key('category_key')
+      const reason = v.reason ?? ''
+      if (reason.length < 5 || reason.length > 200 || /[\u0000-\u001f]/.test(reason))
+        errors.push('reason is required (5-200 characters, one line): why is this mapping removed?')
+      data.reason = reason
+      break
+    }
     case 'inventory_items': {
       key('branch_key'); itemCode(); text('name'); bool('is_active'); bool('allows_decimal')
       if (!SUPPORTED_UNITS.includes(v.unit))
@@ -336,6 +344,10 @@ export function validateDataset({ dataset = 'real', files, baseBranchKeys = [], 
         if (dependOn(e, branchKnown(d.branch_key), `branch '${d.branch_key}'`))
           dependOn(e, known('sales_categories', d.category_key), `category '${d.category_key}'`)
         break
+      case 'category_branch_removals':
+        if (dependOn(e, branchKnown(d.branch_key), `branch '${d.branch_key}'`))
+          dependOn(e, known('sales_categories', d.category_key), `category '${d.category_key}'`)
+        break
       case 'product_categories': {
         const item = itemKnown(d.branch_key, d.item_code)
         if (!item) {
@@ -370,6 +382,18 @@ export function validateDataset({ dataset = 'real', files, baseBranchKeys = [], 
       }
       default:
     }
+  }
+
+  // 5. a mapping cannot be enabled and removed in one dataset, nor removed while a product row needs it
+  for (const rem of byGroup.category_branch_removals) {
+    if (rem.status !== 'ok' || !rem.data) continue
+    const same = (x) => x.status !== 'rejected' && x.data && x.data.branch_key === rem.data.branch_key && x.data.category_key === rem.data.category_key
+    for (const en of byGroup.category_branches.filter(same)) {
+      reject(en, `category '${en.data.category_key}' is both enabled and removed for branch '${en.data.branch_key}'`)
+      reject(rem, `category '${rem.data.category_key}' is both enabled and removed for branch '${rem.data.branch_key}'`)
+    }
+    for (const pc of byGroup.product_categories.filter(same))
+      reject(rem, `mapping is required by product row '${pc.data.item_code}' in this dataset`)
   }
 
   const counts = { ok: 0, skipped: 0, rejected: 0 }

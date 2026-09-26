@@ -63,13 +63,14 @@ const load = (argv, extraEnv = {}) => runLoader({ argv, env: { ...env, ...extraE
 const counts = () => sql(`select (select count(*) from public.inventory_items)||','||(select count(*) from public.sales_categories)||','||(select count(*) from public.registers)||','||(select count(*) from public.operating_data_provenance)||','||(select count(*) from public.audit_logs)||','||(select count(*) from public.inventory_movements)`);
 const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minute||'-'||cutoff_hour||':'||cutoff_minute, ',' order by key) from public.shift_definitions sd where branch_id='${rumeli}'`);
 
+const EXP_CREATED = 20, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a real dry run (see docs)
 // ---- 1. real dataset: dry run changes nothing ---------------------------------
 {
   const before = counts();
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 27 && report.totals.created === 18 && report.totals.updated === 4,
+  check(report.totals.unchanged === EXP_UNCHANGED && report.totals.created === EXP_CREATED && report.totals.updated === EXP_UPDATED,
     "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
   check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
@@ -96,10 +97,22 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
     "Dondurma has only the current winter seasonal shift active");
   check(sql("select key||':'||name from public.registers where branch_id='" + dondurma + "'") === "s900:S900",
     "Dondurma has the owner-confirmed current S900 register");
-  check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + dondurma + "'") === "dondurma,sicak_icecek,soguk_icecek",
-    "Dondurma reports exactly the three owner-approved categories");
-  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key like 'iskele_dondurma/%' and classification='confirmed' and approval_status='approved'") === "3",
-    "all three Dondurma category mappings are confirmed + approved");
+  check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + dondurma + "'") === "dondurma,su",
+    "Dondurma reports exactly dondurma and su");
+  check(sql("select count(*) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + dondurma + "' and c.key in ('sicak_icecek','soguk_icecek')") === "0",
+    "Dondurma no longer has sicak_icecek or soguk_icecek");
+  check(sql("select count(*) from public.sales_categories where key in ('sicak_icecek','soguk_icecek','su') and is_active") === "3",
+    "the global Sicak/Soguk Icecek categories still exist (and su was added)");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key like 'iskele_dondurma/%' and classification='confirmed' and approval_status='approved'") === "2",
+    "the two Dondurma mappings are confirmed + approved");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key in ('iskele_dondurma/sicak_icecek','iskele_dondurma/soguk_icecek')") === "0",
+    "provenance of the removed mappings is gone");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch_removal' and classification='confirmed' and approval_status='approved' and note like '%Dondurma + Su%'") === "2",
+    "removal provenance is recorded (confirmed, approved, with the reason)");
+  check(sql("select count(*) from public.audit_logs a join public.profiles p on p.id=a.actor_user_id where a.action='operating_data_mapping_removal' and p.employee_code='P01' and a.entity_type='sales_category_branches' and a.reason like '%Dondurma + Su%' and a.old_values ->> 'branch'='iskele_dondurma' and a.old_values ->> 'category' in ('sicak_icecek','soguk_icecek') and a.created_at > now() - interval '1 hour'") === "2",
+    "each removal is audited with actor, branch, category, reason and server time");
+  check(sql("select count(*) from public.sales_category_branches where branch_id='" + rumeli + "'") === "10" && sql("select count(*) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + rumeli + "' and c.key in ('sicak_icecek','soguk_icecek')") === "2",
+    "Rumeli's ten mappings are unchanged");
   const balik = sql("select id from public.branches where key='balik_ekmek'");
   check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + balik + "'") === "balik_ekmek,soguk_icecek",
     "Balik Ekmek reports exactly balik_ekmek and soguk_icecek");
@@ -116,6 +129,8 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   check(sql("select count(*) from public.registers where lower(key) like '%pavo%' or lower(name) like '%pavo%'") === "0", "Pavo is absent (future transition, not activated)");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
+  check(again.report.details.filter((x) => x.group === "category_branch_removals").every((x) => x.status === "unchanged") && again.report.details.filter((x) => x.group === "category_branch_removals").length === 2,
+    "second apply: both removals are idempotent (already absent -> unchanged)");
 }
 
 // ---- 3. approved legacy row: created, unchanged, updated, audited -------------
@@ -165,6 +180,31 @@ const branchesCsv = `branch_key,name,is_active,${M}\nrumeli_iskelesi,Rumeli İsk
   check(r.exitCode === 2 && r.report.applied === false, "a row the database rejects (back-dated cost) makes the load exit 2 / applied:false");
   check(r.report.rows.some((x) => x.group === "item_costs" && /earlier than the latest recorded cost/.test(x.message)), "the rejected row is named with a clear reason");
   check(counts() === before, "the valid rows of the same file were rolled back too: no partial load");
+}
+
+// ---- 4b. removal conflict, rollback, and no direct access -------------------
+{
+  const T = "demo_only,approved,synthetic";
+  const before = counts();
+  const mapBefore = sql("select count(*) from public.sales_category_branches");
+  const dir = tmp("rmconflict", {
+    sales_categories: `category_key,name,is_active,${M}\ntest_grup_a,TEST Ürün Grubu A,true,${T}\n`,
+    registers: `branch_key,register_key,name,is_active,${M}\niskele_dondurma,test_kasa,TEST Kasa,true,${T}\n`,
+    category_branch_removals: `branch_key,category_key,reason,${M}\niskele_dondurma,test_grup_a,conflict rehearsal,${T}\n`,
+  });
+  const r = await load(["--dataset", "test-only", "--allow-test-data", "--apply", "--dir", dir]);
+  check(r.exitCode === 2 && r.report.applied === false && r.report.rows.some((x) => x.group === "category_branch_removals" && /still use the category/.test(x.message)),
+    "a removal that would orphan an item's category is rejected with a clear reason");
+  check(counts() === before && sql("select count(*) from public.sales_category_branches") === mapBefore && sql("select count(*) from public.registers where key='test_kasa'") === "0",
+    "the rejected removal rolled back the valid register create in the same load");
+  for (const fn of ["internal_od_remove_mappings", "internal_od_apply", "internal_od_apply_core", "internal_run_operating_data"]) {
+    for (const [who, tok] of [["anon", anon], ["owner JWT", users.P01.token], ["manager JWT", users.P02.token], ["branch manager JWT", users.P03.token], ["cashier JWT", users.P04.token]]) {
+      const x = await req(`/rest/v1/rpc/${fn}`, { token: tok, method: "POST", body: { p_actor: users.P01.id, p_actor_code: "P01", p_payload: {}, p_dataset: "real", p_commit: false } });
+      check(x.status === 401 || x.status === 403 || x.status === 404, `${who} cannot call ${fn} through the Data API`);
+    }
+  }
+  const raw = await req(`/rest/v1/sales_category_branches?branch_id=eq.${dondurma}`, { token: users.P01.token, method: "DELETE" });
+  check(sql("select count(*) from public.sales_category_branches") === mapBefore, "a raw DELETE by an owner JWT removes no mapping (status " + raw.status + ")");
 }
 
 // ---- 5. append-only rules and controlled changes -----------------------------
