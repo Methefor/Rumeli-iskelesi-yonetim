@@ -1,0 +1,13 @@
+# The legacy Rumeli cashier form reports all 10 categories on the main register. legacy_observed, pending.
+# Category use by Iskele Dondurma and Balik Ekmek is UNKNOWN (owner-input/).
+branch_key,category_key,level,provenance,approval_status,source
+rumeli_iskelesi,gida,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,kahvalti,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,kahve,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,meyve_suyu,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,sicak_icecek,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,soguk_icecek,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,salata,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,tatli,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,dondurma,category,legacy_observed,pending,entry.html category form (Rumeli cashier)
+rumeli_iskelesi,borek_corek,category,legacy_observed,pending,entry.html category form (Rumeli cashier)

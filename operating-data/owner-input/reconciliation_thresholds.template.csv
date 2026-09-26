@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: reconciliation_thresholds
+# Percent tolerance per branch: warning must be LOWER than error (0-100, max 2 decimals). The 2/5 values in the database are a generic seed, not confirmed.
+# Copy this file to ../real/reconciliation_thresholds.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: rumeli_iskelesi,2.00,5.00,confirmed,pending,Owner decision <date>
+branch_key,warning_percentage,error_percentage,provenance,approval_status,source

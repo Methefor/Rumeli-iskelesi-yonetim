@@ -72,3 +72,9 @@ own membership doesn't establish. Reason is mandatory; every call writes an
   exists in RLS/RPCs; only the Management Center screen doesn't).
 - Recurring shift scheduling (currently one `schedule_shift()` call per
   concrete date).
+
+## Note (Stage 3, 2026-09-26)
+
+The morning/evening times seeded by migration 009 are generic starting values
+(classified demo_only). The legacy app shows Sabah 09:00-17:30 and Akşam
+16:00-01:00; they are waiting for owner approval in `operating-data/real/`.

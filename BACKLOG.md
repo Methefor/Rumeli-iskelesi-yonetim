@@ -236,3 +236,13 @@ mutation is authorized by this backlog update.
 - [ ] No lateness-tolerance column exists in the schema; not offered in UI.
 - [ ] Demo owner/branch_manager profiles are non-login demo records.
 - [ ] New Edge Functions need `supabase stop` + `start` locally to be served.
+
+## Stage 3 follow-ups (operating data)
+
+- [ ] **Owner input** (Gate 3): see `operating-data/OWNER_INPUT_CHECKLIST.md`
+      (approve legacy categories/registers/shift times; Balık Ekmek and Iskele
+      Dondurma structure; thresholds; catalogue, opening stock, costs).
+- [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
+- [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).
+- [ ] Decide how legacy sabah/aksam and the Balık Ekmek / Dondurma revenue
+      fields map to V4 (needed by the Stage 4 adapter).

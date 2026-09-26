@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: opening_stock
+# Counted opening quantity per item. Dot decimal, max 3 decimals, never negative. as_of_date = day of the physical count (not in the future).
+# Copy this file to ../real/opening_stock.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: iskele_dondurma,ORNEK-001,12.500,2026-09-26,confirmed,pending,Owner physical count <date>
+branch_key,item_code,quantity,as_of_date,provenance,approval_status,source

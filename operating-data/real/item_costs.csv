@@ -1,0 +1,2 @@
+# No confirmed item costs exist yet. Nothing may be invented here: see ../owner-input/item_costs.template.csv.
+branch_key,item_code,unit_cost,effective_from,provenance,approval_status,source

@@ -127,3 +127,12 @@ The PGlite harness result described in earlier Phase E docs has been
 superseded by the above real local Supabase run; see
 `docs/LOCAL_VALIDATION_2026-09-22.md`. Do not describe any of this as
 hosted/staging-validated until it has actually run there.
+
+## Operating data and provenance (Stage 3)
+
+No product, cost or stock data exists in the repo or the legacy app. Real data is
+loaded only through `operating-data/` (idempotent, local-only, owner-approved
+rows). A synthetic `TEST-*` catalogue in `operating-data/test-only/` proves the
+technical flow and is labelled test data in the UI. Opening stock is a RECEIPT
+with reference `OPENING-STOCK <date>` (append-only; a different quantity is
+rejected).

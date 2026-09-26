@@ -3,6 +3,7 @@ import * as shifts from '../supabase/shifts'
 import * as sales from '../supabase/sales'
 import * as inventory from '../supabase/inventory'
 import * as management from '../supabase/management'
+import { getDataQuality } from '../supabase/dataQuality'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -59,6 +60,7 @@ export const realApi = {
   getReconciliationThresholds: management.getReconciliationThresholds,
   setReconciliationThresholds: management.setReconciliationThresholds,
   listManagementAudit: management.listManagementAudit,
+  getDataQuality,
 }
 
 export type DataApi = typeof realApi

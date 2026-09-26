@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: registers
+# One row per register per branch. Legacy shows only Rumeli: ana_kasa and iki_kasa. Fill iskele_dondurma and balik_ekmek registers if they have any.
+# Copy this file to ../real/registers.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: iskele_dondurma,kasa_1,Kasa 1,true,confirmed,pending,Owner statement <date>
+branch_key,register_key,name,is_active,provenance,approval_status,source

@@ -429,3 +429,16 @@ never modifiable through RPCs, self changes are refused, the last active owner
 is protected, and every action needs a reason and is audited. Employees are
 created only through the `employee-provision` Edge Function, never from the
 browser with a service key.
+
+### 2026-09-26 - Operating data: provenance, approval and a local-only loader
+
+Business configuration carries provenance (confirmed / legacy_observed /
+demo_only / unknown) and approval (approved / pending / rejected). Only approved
+confirmed or legacy_observed rows are applied; pending rows are skipped;
+demo_only in the real dataset and unknown-but-approved rows are rejected. The
+loader is local-only, dry-run by default, all-or-nothing (any rejected row rolls
+back the whole load) and idempotent; it is not a production loader. It writes
+through migration 017's service_role-only function, which binds the audit actor
+to a verified active owner and reuses the audited inventory RPCs. Wrong seeds in
+001-016 are classified, never edited. Synthetic test data lives in a separate
+folder and is loadable only with an explicit flag.

@@ -1,0 +1,3 @@
+category_key,name,is_active,provenance,approval_status,source
+test_grup_a,TEST Ürün Grubu A,true,demo_only,approved,synthetic test fixture (NOT business data)
+test_grup_b,TEST Ürün Grubu B,true,demo_only,approved,synthetic test fixture (NOT business data)

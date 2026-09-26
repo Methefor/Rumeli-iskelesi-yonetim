@@ -1,0 +1,5 @@
+# Registers seen in the legacy app for the Rumeli cashier: kasa = ana_kasa (Ana Kasa) and iki_kasa (2. Kasa).
+# legacy_observed, owner approval pending. Other branches: register layout is UNKNOWN (see owner-input/).
+branch_key,register_key,name,is_active,provenance,approval_status,source
+rumeli_iskelesi,ana_kasa,Ana Kasa,true,legacy_observed,pending,js/supabase-client.js register_name Ana Kasa
+rumeli_iskelesi,iki_kasa,2. Kasa,true,legacy_observed,pending,js/supabase-client.js register_name 2. Kasa

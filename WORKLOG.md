@@ -413,3 +413,16 @@ policies' deprecated `auth.role()` predicate with `TO authenticated`, and
 made the HTTP test runner work with Windows' npx-only Supabase CLI setup. Fresh
 001-016 reset, real-role SQL assertions and 76/76 management HTTP assertions
 pass after the fix.
+
+### 2026-09-26 - Stage 3 realistic local catalog and operating configuration (local)
+
+Added migration 017 (provenance registry + service-role-only loader function),
+`operating-data/` (contract, validator, idempotent local loader, real/test-only/
+owner-input files, provenance matrix, owner checklist), a read-only data-quality
+screen, and 75 + 20 + 6 new tests. Only the three branches are confirmed; every
+other legacy observation (categories, Rumeli registers, sabah/aksam times) is
+pending owner approval and was not applied; the 009 shift times and 2/5
+thresholds are classified demo_only. No catalogue, stock, cost or waste data
+exists anywhere, so a synthetic test-only catalogue proves the full daily flow.
+Gate 3: INPUT REQUIRED. No commit/push; hosted and production untouched.
+Report: `docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md`.

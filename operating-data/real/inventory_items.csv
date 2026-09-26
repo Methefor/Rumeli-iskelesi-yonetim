@@ -1,0 +1,2 @@
+# No confirmed inventory items exist yet. Nothing may be invented here: see ../owner-input/inventory_items.template.csv.
+branch_key,item_code,name,unit,allows_decimal,is_active,provenance,approval_status,source

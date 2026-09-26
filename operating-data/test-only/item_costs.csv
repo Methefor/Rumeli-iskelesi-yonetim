@@ -1,0 +1,3 @@
+branch_key,item_code,unit_cost,effective_from,provenance,approval_status,source
+iskele_dondurma,TEST-A01,10.0000,2026-09-01,demo_only,approved,synthetic test fixture (NOT business data)
+iskele_dondurma,TEST-B01,50.0000,2026-09-01,demo_only,approved,synthetic test fixture (NOT business data)

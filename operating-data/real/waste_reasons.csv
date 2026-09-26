@@ -1,0 +1,2 @@
+# No confirmed waste reasons exist yet. Nothing may be invented here: see ../owner-input/waste_reasons.template.csv.
+reason_code,name,is_active,provenance,approval_status,source

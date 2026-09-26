@@ -1,0 +1,3 @@
+reason_code,name,is_active,provenance,approval_status,source
+expired,TEST son kullanma tarihi,true,demo_only,approved,synthetic test fixture (NOT business data)
+damaged,TEST hasarlı,true,demo_only,approved,synthetic test fixture (NOT business data)

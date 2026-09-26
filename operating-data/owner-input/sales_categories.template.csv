@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: sales_categories
+# Only for categories that are NOT in the legacy list (Gida, Kahvalti, Kahve, Meyve Suyu, Sicak Icecek, Soguk Icecek, Salata, Tatli, Dondurma, Borek & Corek).
+# Copy this file to ../real/sales_categories.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: yeni_kategori,Yeni Kategori,true,confirmed,pending,Owner statement <date>
+category_key,name,is_active,provenance,approval_status,source

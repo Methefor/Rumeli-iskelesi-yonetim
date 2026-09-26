@@ -18,6 +18,7 @@ import type { DemoUser } from '../../features/auth/demoUsers'
 import type { DataApi } from '../data/real'
 import { istanbulDate } from '../../utils/dates'
 import { demoManagement } from './management'
+import { demoDataQuality } from './dataQuality'
 import { demoState } from './state'
 import {
   addMovement,
@@ -118,6 +119,7 @@ function auditInventory(
 }
 export const demoApi: DataApi = {
   ...demoManagement,
+  ...demoDataQuality,
   async listInventoryAudit(branchId, limit = 100) {
     const actor = currentDemoUser()
     if (!actor || !isOrgWide(actor.roles)) return []

@@ -1,0 +1,13 @@
+# Sales categories seen in the legacy cashier form (entry.html, 10 fields). legacy_observed: NOT yet approved by the owner.
+# To apply: the owner reviews the list, then sets approval_status to approved.
+category_key,name,is_active,provenance,approval_status,source
+gida,Gıda,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+kahvalti,Kahvaltı,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+kahve,Kahve,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+meyve_suyu,Meyve Suyu,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+sicak_icecek,Sıcak İçecek,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+soguk_icecek,Soğuk İçecek,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+salata,Salata,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+tatli,Tatlı,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+dondurma,Dondurma,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field
+borek_corek,Börek & Çörek,true,legacy_observed,pending,entry.html + js/supabase-client.js (running legacy app) category field

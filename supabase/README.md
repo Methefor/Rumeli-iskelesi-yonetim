@@ -59,3 +59,10 @@ project.
 `tests/management_center.test.sql` (real roles) and
 `tests/management_center.test.mjs` (real HTTP, 76 assertions). A new Edge
 Function directory is only served after `supabase stop` + `start`.
+
+## Migration 017 / operating-data loader
+
+`017_operating_data_loader.sql`; loader and data in `../operating-data/`.
+Tests: `tests/operating_data_loader.test.mjs` (75 assertions incl. the full daily
+flow on the synthetic catalogue). If Storage returns 500/42P10 after many
+resets, run `supabase stop` + `start`.

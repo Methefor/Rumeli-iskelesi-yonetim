@@ -160,3 +160,27 @@ describe('demo mode: Management Center', () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
+
+describe('demo mode: data quality view', () => {
+  it('manager sees the summary with every demo value labelled as test data — zero network', async () => {
+    await bootApp('/')
+    const user = await login('M001')
+    await openManagement(user, 'Özeti Aç')
+    expect(await screen.findByRole('heading', { name: 'Veri kalitesi' })).toBeInTheDocument()
+    expect(await screen.findByText(/Doğrulanmış 0/)).toBeInTheDocument()
+    expect(screen.getByText(/Bilinmeyen 0/)).toBeInTheDocument()
+    expect(screen.getByText(/yalnızca test\/örnek veridir/)).toBeInTheDocument()
+    expect(screen.queryByText('Doğrulanmış', { selector: 'span' })).not.toBeInTheDocument()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('cashier cannot open the data-quality route directly', async () => {
+    await bootApp('/')
+    await login('K001')
+    await screen.findByRole('heading', { name: /Merhaba/ })
+    window.history.pushState({}, '', '/app/manager/management/data-quality')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Veri kalitesi' })).not.toBeInTheDocument())
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+})

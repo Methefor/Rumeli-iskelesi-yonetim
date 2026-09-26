@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: waste_reasons
+# Waste reasons the business wants. The database only supports: expired, damaged, spilled, quality, sample, other. A different code needs a schema change (ask for it; do not invent one).
+# Copy this file to ../real/waste_reasons.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: expired,Son kullanma tarihi geçti,true,confirmed,pending,Owner decision <date>
+reason_code,name,is_active,provenance,approval_status,source

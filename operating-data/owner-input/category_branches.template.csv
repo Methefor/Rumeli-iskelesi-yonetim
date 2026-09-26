@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: category_branches
+# Which categories each branch reports. Rumeli is legacy-observed (all 10). Iskele Dondurma and Balik Ekmek are UNKNOWN.
+# Copy this file to ../real/category_branches.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: iskele_dondurma,dondurma,category,confirmed,pending,Owner statement <date>
+branch_key,category_key,level,provenance,approval_status,source

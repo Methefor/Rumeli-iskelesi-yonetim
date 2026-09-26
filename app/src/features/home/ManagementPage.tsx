@@ -50,6 +50,16 @@ export function ManagementPage() {
           )}
           {(roles.includes('owner') || roles.includes('manager')) && (
             <RowCard
+              title="Veri kalitesi"
+              subtitle="Yapılandırmanın kaynağı, onay durumu ve eksik eşlemeler."
+            >
+              <LinkButton to="/app/manager/management/data-quality" variant="secondary">
+                Özeti Aç
+              </LinkButton>
+            </RowCard>
+          )}
+          {(roles.includes('owner') || roles.includes('manager')) && (
+            <RowCard
               title="Stok denetimi"
               subtitle="Kim, ne zaman, hangi gerekçeyle değiştirdi? Önceki ve sonraki değerler."
             >

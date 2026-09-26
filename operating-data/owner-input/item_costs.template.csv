@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: item_costs
+# Unit cost per item, effective-dated (YYYY-MM-DD, not more than 30 days ahead). Dot decimal, max 4 decimals. A later cost is a NEW row; earlier history is never rewritten.
+# Copy this file to ../real/item_costs.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: iskele_dondurma,ORNEK-001,85.5000,2026-09-26,confirmed,pending,Owner cost sheet <date>
+branch_key,item_code,unit_cost,effective_from,provenance,approval_status,source

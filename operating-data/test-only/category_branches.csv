@@ -1,0 +1,3 @@
+branch_key,category_key,level,provenance,approval_status,source
+iskele_dondurma,test_grup_a,category,demo_only,approved,synthetic test fixture (NOT business data)
+iskele_dondurma,test_grup_b,category,demo_only,approved,synthetic test fixture (NOT business data)

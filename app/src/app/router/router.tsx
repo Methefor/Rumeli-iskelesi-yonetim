@@ -27,6 +27,7 @@ import { EmployeeCreatePage } from '../../features/management/routes/EmployeeCre
 import { EmployeeDetailPage } from '../../features/management/routes/EmployeeDetailPage'
 import { SettingsPage } from '../../features/management/routes/SettingsPage'
 import { ManagementAuditPage } from '../../features/management/routes/ManagementAuditPage'
+import { DataQualityPage } from '../../features/management/routes/DataQualityPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
 
@@ -98,6 +99,14 @@ export const router = createBrowserRouter([
         element: (
           <RoleGuard allow={['owner', 'manager']}>
             <ManagementAuditPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'management/data-quality',
+        element: (
+          <RoleGuard allow={['owner', 'manager']}>
+            <DataQualityPage />
           </RoleGuard>
         ),
       },

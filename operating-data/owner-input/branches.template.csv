@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: branches
+# Only needed for a NEW branch. The three existing branches are already confirmed.
+# Copy this file to ../real/branches.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: yeni_sube,Yeni Şube Adı,true,confirmed,pending,Owner statement <date>
+branch_key,name,is_active,provenance,approval_status,source

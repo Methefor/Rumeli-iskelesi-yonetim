@@ -1,0 +1,6 @@
+# Legacy sabah/aksam shifts (entry.html labels + js/supabase-client.js on-time rule).
+# Keys use the V4 morning/evening (legacy sabah -> morning, aksam -> evening).
+# legacy_observed, owner approval pending. Migration 009 seeded DIFFERENT generic times (08:00-16:00, 16:00-23:59).
+branch_key,shift_key,name,start_time,end_time,cutoff_time,cutoff_day_offset,is_active,provenance,approval_status,source
+rumeli_iskelesi,morning,Sabah,09:00,17:30,17:30,0,true,legacy_observed,pending,entry.html shift-time 09:00-17:30; isOnTime until 17:30
+rumeli_iskelesi,evening,Akşam,16:00,01:00,01:00,1,true,legacy_observed,pending,entry.html shift-time 16:00-01:00; isOnTime until 01:00

@@ -1,0 +1,5 @@
+# Confirmed branches. Names appear in the frozen 2026 per-branch management totals (BACKLOG.md).
+branch_key,name,is_active,provenance,approval_status,source
+rumeli_iskelesi,Rumeli İskelesi,true,confirmed,approved,BACKLOG.md frozen 2026 per-branch totals + migration 003
+iskele_dondurma,İskele Dondurma,true,confirmed,approved,BACKLOG.md frozen 2026 per-branch totals + migration 003
+balik_ekmek,Balık Ekmek,true,confirmed,approved,BACKLOG.md frozen 2026 per-branch totals + migration 003

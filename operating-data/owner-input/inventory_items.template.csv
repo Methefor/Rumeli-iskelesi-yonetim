@@ -1,0 +1,7 @@
+# OWNER INPUT TEMPLATE: inventory_items
+# One row per stock item per branch. item_code UPPER CASE (A-Z 0-9 . _ -). unit is one of: adet, kg, g, lt, ml, paket, kutu, porsiyon. allows_decimal false = whole units only.
+# Copy this file to ../real/inventory_items.csv, delete these comment lines, fill real rows.
+# provenance: confirmed (you state it) | legacy_observed | unknown. Set approval_status to approved ONLY after you checked the value.
+# The example row below is a FORMAT EXAMPLE, not data. The loader never reads this folder.
+# EXAMPLE: iskele_dondurma,ORNEK-001,Ürün Adı,kg,true,true,confirmed,pending,Owner product list <date>
+branch_key,item_code,name,unit,allows_decimal,is_active,provenance,approval_status,source
