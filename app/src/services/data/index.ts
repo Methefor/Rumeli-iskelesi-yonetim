@@ -14,6 +14,21 @@ const api: DataApi = isDemoModeEnabled ? demoApi : realApi
 
 export const {
   listInventoryAudit,
+  listEmployees,
+  createEmployee,
+  setEmployeeActive,
+  resetEmployeePin,
+  setEmployeeCode,
+  assignEmployeeRole,
+  revokeEmployeeRole,
+  assignEmployeeBranch,
+  removeEmployeeBranch,
+  listShiftSettings,
+  updateShiftSettings,
+  getReconciliationThresholds,
+  setReconciliationThresholds,
+  listManagementAudit,
+
   listMyShiftAssignments,
   listBranchShifts,
   listBranches,
@@ -72,3 +87,13 @@ export type {
   WasteReasonCode,
   MutationResult,
 } from '../supabase/inventory'
+
+export type {
+  BranchThresholds,
+  CreateEmployeeInput,
+  CreateEmployeeResult,
+  ManagedEmployee,
+  ManagementAuditEntry,
+  MgmtResult,
+  ShiftSettings,
+} from '../supabase/management'

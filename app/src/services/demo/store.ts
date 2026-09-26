@@ -1,4 +1,5 @@
 import type { InventoryAuditEntry } from '../supabase/inventoryAudit'
+import type { ManagementAuditEntry } from '../supabase/management'
 /**
  * Centralised, deterministic, SYNTHETIC fixture store for Preview demo mode
  * (VITE_DEMO_MODE=true). Nothing here is real data, nothing is a 2026
@@ -39,6 +40,17 @@ const THRESHOLDS = { warningPercentage: 2, errorPercentage: 5 }
 
 export interface DemoEmployee extends BranchEmployee {
   branchIds: string[]
+  /** Synthetic role keys; the demo Management Center applies the same hierarchy as the SQL. */
+  roles: string[]
+  isActive: boolean
+}
+
+export interface DemoShiftDefinition extends ShiftDefinitionSummary {
+  branchId: string
+  cutoffHour: number
+  cutoffMinute: number
+  cutoffDayOffset: number
+  isActive: boolean
 }
 
 export interface DemoAssignment {
@@ -79,7 +91,9 @@ export interface DemoMovement extends InventoryMovementRow {
 export interface DemoState {
   branches: BranchOption[]
   employees: DemoEmployee[]
-  shiftDefinitions: Array<ShiftDefinitionSummary & { branchId: string }>
+  shiftDefinitions: DemoShiftDefinition[]
+  thresholds: Record<string, { warningPercentage: number; errorPercentage: number }>
+  managementAudit: ManagementAuditEntry[]
   shifts: ShiftSummary[]
   assignments: DemoAssignment[]
   categories: CategoryOption[]
@@ -590,37 +604,68 @@ export function createDemoState(now: Date = new Date()): DemoState {
     ],
     employees: [
       {
+        id: 'demo-o001',
+        fullName: 'O001 — Demo Sahip',
+        employeeCode: 'O001',
+        branchIds: [],
+        roles: ['owner'],
+        isActive: true,
+      },
+      {
         id: 'demo-m001',
         fullName: 'M001 — Demo Yönetici',
         employeeCode: 'M001',
         branchIds: [DEMO_BRANCH_RUMELI],
+        roles: ['manager'],
+        isActive: true,
+      },
+      {
+        id: 'demo-b001',
+        fullName: 'B001 — Demo Şube Müdürü',
+        employeeCode: 'B001',
+        branchIds: [DEMO_BRANCH_DONDURMA],
+        roles: ['branch_manager'],
+        isActive: true,
       },
       {
         id: 'demo-k001',
         fullName: 'K001 — Demo Kasiyer',
         employeeCode: 'K001',
         branchIds: [DEMO_BRANCH_RUMELI],
+        roles: ['cashier'],
+        isActive: true,
       },
       {
         id: 'demo-k002',
         fullName: 'K002 — Demo Kasiyer 2',
         employeeCode: 'K002',
         branchIds: [DEMO_BRANCH_RUMELI],
+        roles: ['cashier'],
+        isActive: true,
       },
       {
         id: 'demo-d001',
         fullName: 'D001 — Demo Çalışan',
         employeeCode: 'D001',
         branchIds: [DEMO_BRANCH_DONDURMA],
+        roles: ['employee'],
+        isActive: true,
       },
       {
         id: 'demo-d002',
         fullName: 'D002 — Demo Çalışan 2',
         employeeCode: 'D002',
         branchIds: [DEMO_BRANCH_DONDURMA],
+        roles: ['employee'],
+        isActive: true,
       },
     ],
     shiftDefinitions: [],
+    thresholds: {
+      [DEMO_BRANCH_RUMELI]: { ...THRESHOLDS },
+      [DEMO_BRANCH_DONDURMA]: { ...THRESHOLDS },
+    },
+    managementAudit: [],
     shifts: [],
     assignments: [],
     categories: CATEGORY_DEFS.map(([key, name]) => ({
@@ -671,6 +716,10 @@ export function createDemoState(now: Date = new Date()): DemoState {
         startMinute: 0,
         endHour: eh,
         endMinute: em,
+        cutoffHour: key === 'morning' ? 16 : 1,
+        cutoffMinute: key === 'morning' ? 30 : 0,
+        cutoffDayOffset: key === 'morning' ? 0 : 1,
+        isActive: true,
       })
     }
   }

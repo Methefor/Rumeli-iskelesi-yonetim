@@ -387,3 +387,29 @@ LoginPage wiring, local env guard (`assert-local-supabase.mjs`, `dev:local`,
 `local_login_fixtures.mjs`, tests (207 total). Real browser flows all pass on
 the local stack; full local backend regression passes. No commit/push, no
 hosted or production contact.
+
+### 2026-09-26 - Stage 2 Management Center and local provisioning (local)
+
+Added migration `016_management_center.sql`: inactive-aware `current_user_*`
+helpers, a PostgREST `db_pre_request` hook (`enforce_active_user`) so an old
+JWT of a deactivated user is refused on every Data API/RPC call, storage
+avatar policies with the active check, GoTrue ban + session deletion on
+deactivation, a strict rank hierarchy (owner 4 > manager 3 > branch_manager 2 >
+rest 1) with audited RPCs (activate, code, PIN reset, role, branch, shift
+definition, reconciliation thresholds), and raw-write revokes on the settings
+tables. New Edge Function `employee-provision` (service role server-side only,
+caller JWT verified, authority read from the DB, one-transaction provisioning,
+compensating auth-user delete). Management Center UI (list/filter/search,
+create, detail, settings, audit) with demo mirror and 240 app tests. Local
+validation only: full regression passes on a fresh reset (001-016). No
+commit/push, no hosted or production contact. Report:
+`docs/LOCAL_MANAGEMENT_VALIDATION_2026-09-26.md`.
+
+Independent review then found and fixed one hierarchy defect in the prepared
+migration: owner could grant/provision another owner despite the documented
+strict outrank rule, creating an RPC-immutable privileged account. The review
+also restored permission checks alongside rank, replaced the recreated avatar
+policies' deprecated `auth.role()` predicate with `TO authenticated`, and
+made the HTTP test runner work with Windows' npx-only Supabase CLI setup. Fresh
+001-016 reset, real-role SQL assertions and 76/76 management HTTP assertions
+pass after the fix.

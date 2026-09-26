@@ -219,3 +219,11 @@ the INSERT policy's `WITH CHECK` regardless). Also newly confirmed:
 `storage.buckets` itself has RLS enabled with zero policies (a Supabase
 Storage default; object access is unaffected since those policies never join
 against `storage.buckets`). See `docs/LOCAL_VALIDATION_2026-09-24.md`.
+
+## 016 - Management Center (2026-09-26, local only)
+
+Helpers are inactive-aware; `enforce_active_user` refuses any request whose
+`auth.uid()` has no active profile. Management RPCs require the actor to
+outrank the target; branch_manager is limited to shared branches and
+sub-roles. `shift_definitions` and `reconciliation_thresholds` accept writes
+only through audited RPCs.

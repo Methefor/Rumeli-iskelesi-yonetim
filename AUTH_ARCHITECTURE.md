@@ -250,3 +250,11 @@ alongside those tables, following this same pattern.
 - No real login is possible in the V4 app yet — `LoginPage` is a shell.
 - The legacy app's plaintext-PIN login, `?cashier_id=` pattern, and
   unguarded admin dashboard are all still live in production, unchanged.
+
+## Deactivation and provisioning (Stage 2, local)
+
+Deactivating a user bans the auth user, deletes sessions, and the database
+refuses any remaining token (`enforce_active_user`). pin-login already rejects
+inactive users. New employees are created by the `employee-provision` Edge
+Function: caller JWT verified server-side, role/branch authority read from
+the database, the service role never reaches the browser, `.invalid` emails.

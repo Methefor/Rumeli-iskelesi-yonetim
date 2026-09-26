@@ -146,3 +146,5 @@ executable HTTP tests rather than SQL inspection — see
 real bug in 007 (the `employee.manage` override was missing from the INSERT
 policy, which is what actually governs a Storage "replace"). Still only
 local; the staging sign-off item above remains unmet.
+
+| 016 | `016_management_center.sql` | Inactive-aware helpers, `enforce_active_user` db_pre_request hook, storage active check, rank-based admin RPCs (activate/code/PIN/role/branch/shift/thresholds), `internal_provision_employee`, raw-write revokes | 001-015 |

@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-21 (Phase E).
+Last updated: 2026-09-26 (Stage 2: Management Center, local only; see docs/LOCAL_MANAGEMENT_VALIDATION_2026-09-26.md).
 
 ## Two applications live in this repo right now
 

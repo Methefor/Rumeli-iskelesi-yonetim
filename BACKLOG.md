@@ -225,3 +225,14 @@ mutation is authorized by this backlog update.
   during the later production-readiness configuration review.
 - Stage 2 (Management Center) has not started. Separate hosted staging is no
   longer planned; the next gate remains local-only under the approved roadmap.
+
+## Stage 2 follow-ups (Management Center)
+
+- [x] Server-side `is_active` enforcement for old JWTs (closed by 016).
+- [ ] Hosted/staging validation of 016 and `employee-provision` (NOT DONE;
+      local only).
+- [ ] Owner-only role management for owner/manager grants (owners are
+      intentionally not modifiable via RPC today).
+- [ ] No lateness-tolerance column exists in the schema; not offered in UI.
+- [ ] Demo owner/branch_manager profiles are non-login demo records.
+- [ ] New Edge Functions need `supabase stop` + `start` locally to be served.

@@ -8,6 +8,14 @@
  * message keyed on the SQLSTATE class where that is meaningful.
  */
 const PHRASES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/cannot modify your own account/i, 'Kendi hesabınızı bu ekrandan değiştiremezsiniz.'],
+  [/last active owner/i, 'Son aktif sahip devre dışı bırakılamaz veya kaldırılamaz.'],
+  [/equal or higher rank/i, 'Bu kullanıcı üzerinde işlem yetkiniz yok.'],
+  [/may only (manage|act|add|assign|revoke)/i, 'Yalnızca kendi şubenizdeki kullanıcılar üzerinde işlem yapabilirsiniz.'],
+  [/PIN must be 4-6 digits/i, 'PIN 4-6 haneli olmalıdır.'],
+  [/invalid thresholds/i, 'Eşik değerleri geçersiz: uyarı, hata eşiğinden büyük olamaz.'],
+  [/invalid employee_code format/i, 'Çalışan kodu geçersiz (bir harf ve 2-4 rakam, örn. K012).'],
+  [/account inactive/i, 'Hesabınız devre dışı bırakılmış.'],
   [/submission window has closed/i, 'Bu vardiya için rapor gönderme süresi doldu.'],
   [/not assigned to this shift/i, 'Bu vardiyaya atanmış değilsiniz.'],
   [/cannot submit a report for a future business date/i, 'İleri bir tarih için rapor girilemez.'],

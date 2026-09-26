@@ -22,6 +22,32 @@ export function ManagementPage() {
           Kullanılabilir
         </h2>
         <Stack gap="sm">
+          <RowCard
+            title="Çalışanlar"
+            subtitle="Ara, oluştur, rol/şube ata, PIN sıfırla, aktif/pasif yap."
+          >
+            <LinkButton to="/app/manager/management/employees" variant="secondary">
+              Çalışanları Yönet
+            </LinkButton>
+          </RowCard>
+          <RowCard
+            title="Ayarlar"
+            subtitle="Vardiya rapor saatleri ve mutabakat eşikleri."
+          >
+            <LinkButton to="/app/manager/management/settings" variant="secondary">
+              Ayarları Aç
+            </LinkButton>
+          </RowCard>
+          {(roles.includes('owner') || roles.includes('manager')) && (
+            <RowCard
+              title="Yönetim denetimi"
+              subtitle="Kullanıcı, rol, şube ve ayar değişiklikleri: kim, ne zaman, neden."
+            >
+              <LinkButton to="/app/manager/management/audit" variant="secondary">
+                Denetimi Aç
+              </LinkButton>
+            </RowCard>
+          )}
           {(roles.includes('owner') || roles.includes('manager')) && (
             <RowCard
               title="Stok denetimi"

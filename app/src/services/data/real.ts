@@ -2,6 +2,7 @@ import { listInventoryAudit } from '../supabase/inventoryAudit'
 import * as shifts from '../supabase/shifts'
 import * as sales from '../supabase/sales'
 import * as inventory from '../supabase/inventory'
+import * as management from '../supabase/management'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -43,6 +44,21 @@ export const realApi = {
   reverseInventoryMovement: inventory.reverseInventoryMovement,
   submitInventoryCount: inventory.submitInventoryCount,
   voidInventoryCount: inventory.voidInventoryCount,
+  // management center
+  listEmployees: management.listEmployees,
+  createEmployee: management.createEmployee,
+  setEmployeeActive: management.setEmployeeActive,
+  resetEmployeePin: management.resetEmployeePin,
+  setEmployeeCode: management.setEmployeeCode,
+  assignEmployeeRole: management.assignEmployeeRole,
+  revokeEmployeeRole: management.revokeEmployeeRole,
+  assignEmployeeBranch: management.assignEmployeeBranch,
+  removeEmployeeBranch: management.removeEmployeeBranch,
+  listShiftSettings: management.listShiftSettings,
+  updateShiftSettings: management.updateShiftSettings,
+  getReconciliationThresholds: management.getReconciliationThresholds,
+  setReconciliationThresholds: management.setReconciliationThresholds,
+  listManagementAudit: management.listManagementAudit,
 }
 
 export type DataApi = typeof realApi

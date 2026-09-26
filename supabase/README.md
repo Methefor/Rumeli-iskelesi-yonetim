@@ -52,3 +52,10 @@ found and fixed a real bug in 007 (see `../DECISIONS.md` and
 `../docs/LOCAL_VALIDATION_2026-09-24.md`); the Edge Function test found none.
 Both remain local-only — nothing here has been deployed to any hosted
 project.
+
+## Migration 016 / employee-provision
+
+`016_management_center.sql` plus `functions/employee-provision`. Tests:
+`tests/management_center.test.sql` (real roles) and
+`tests/management_center.test.mjs` (real HTTP, 76 assertions). A new Edge
+Function directory is only served after `supabase stop` + `start`.

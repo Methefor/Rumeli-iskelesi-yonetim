@@ -22,6 +22,11 @@ import { InventoryItemsPage } from '../../features/inventory/routes/InventoryIte
 import { CostManagementPage } from '../../features/inventory/routes/CostManagementPage'
 import { GrossProfitPage } from '../../features/inventory/routes/GrossProfitPage'
 import { MovementHistoryPage } from '../../features/inventory/routes/MovementHistoryPage'
+import { EmployeesPage } from '../../features/management/routes/EmployeesPage'
+import { EmployeeCreatePage } from '../../features/management/routes/EmployeeCreatePage'
+import { EmployeeDetailPage } from '../../features/management/routes/EmployeeDetailPage'
+import { SettingsPage } from '../../features/management/routes/SettingsPage'
+import { ManagementAuditPage } from '../../features/management/routes/ManagementAuditPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
 
@@ -84,6 +89,18 @@ export const router = createBrowserRouter([
         ),
       },
       { path: 'management', element: <ManagementPage /> },
+      { path: 'management/employees', element: <EmployeesPage /> },
+      { path: 'management/employees/new', element: <EmployeeCreatePage /> },
+      { path: 'management/employees/:id', element: <EmployeeDetailPage /> },
+      { path: 'management/settings', element: <SettingsPage /> },
+      {
+        path: 'management/audit',
+        element: (
+          <RoleGuard allow={['owner', 'manager']}>
+            <ManagementAuditPage />
+          </RoleGuard>
+        ),
+      },
       { path: 'branches', element: <Navigate to="/app/manager/management" replace /> },
       { path: 'employees', element: <Navigate to="/app/manager/management" replace /> },
     ],

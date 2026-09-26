@@ -416,3 +416,16 @@ message for every authentication failure. Local development for real login
 uses gitignored higher-priority env files plus a guard script that aborts
 unless the effective Supabase host is local, because a developer
 `app/.env.local` may point at production.
+
+### 2026-09-26 - Server-side inactive-user blocking and management hierarchy
+
+Deactivation is enforced in the database, not only by client logout: the
+`current_user_*` helpers require an active profile, and `enforce_active_user`
+runs as PostgREST `db_pre_request` for every request (Storage bypasses
+PostgREST, so its avatar policies check activity directly). Deactivation also
+bans the auth user and deletes their sessions. Management actions use a strict
+rank rule: the actor must outrank the target and the granted role; owners are
+never modifiable through RPCs, self changes are refused, the last active owner
+is protected, and every action needs a reason and is audited. Employees are
+created only through the `employee-provision` Edge Function, never from the
+browser with a service key.
