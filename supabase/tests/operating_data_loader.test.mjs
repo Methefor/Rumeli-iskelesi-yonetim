@@ -127,10 +127,13 @@ const EXP_CREATED = 20, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a r
     "Rumeli shifts are unchanged");
   check(sql("select count(*) from public.sales_category_branches where branch_id='" + rumeli + "'") === "10", "Rumeli still reports its 10 categories");
   check(sql("select count(*) from public.registers where lower(key) like '%pavo%' or lower(name) like '%pavo%'") === "0", "Pavo is absent (future transition, not activated)");
+  const provenanceBefore = sql("select md5(string_agg(entity_type||'/'||entity_key||'/'||updated_at::text||'/'||coalesce(updated_by::text,''), ',' order by entity_type,entity_key)) from public.operating_data_provenance");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
   check(again.report.details.filter((x) => x.group === "category_branch_removals").every((x) => x.status === "unchanged") && again.report.details.filter((x) => x.group === "category_branch_removals").length === 2,
     "second apply: both removals are idempotent (already absent -> unchanged)");
+  check(sql("select md5(string_agg(entity_type||'/'||entity_key||'/'||updated_at::text||'/'||coalesce(updated_by::text,''), ',' order by entity_type,entity_key)) from public.operating_data_provenance") === provenanceBefore,
+    "second apply preserves provenance timestamps and actor: unchanged means no database-state mutation");
 }
 
 // ---- 3. approved legacy row: created, unchanged, updated, audited -------------
@@ -283,13 +286,22 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   check(mine.ok && mine.data.length === 1, "the assigned cashier sees and selects the shift");
   check((await req(`/rest/v1/shifts?select=id&id=eq.${shiftId}`, { token: users.P05.token })).data.length === 0, "a cashier of another branch cannot see the shift");
 
+  // Keep the rehearsal valid at any wall-clock time. Ordinary cashiers must
+  // not bypass a closed cutoff; an org-wide manager is the authorized actor
+  // after cutoff. The production RPC remains server-time authoritative.
+  const afterCutoff = sql(`select now() > (((s.business_date + sd.cutoff_day_offset)::timestamp
+    + make_interval(hours => sd.cutoff_hour, mins => sd.cutoff_minute)) at time zone 'Europe/Istanbul')
+    from public.shifts s join public.shift_definitions sd on sd.id=s.shift_definition_id where s.id='${shiftId}'`) === "t";
+  const reportToken = afterCutoff ? mgr : cashier;
+  const reportActorId = afterCutoff ? users.P02.id : users.P04.id;
+
   // sales report with product quantities
   const items = [
     { inventory_item_id: A, inventory_quantity: 5, amount: 150 },
     { inventory_item_id: B, inventory_quantity: 2.5, amount: 310 },
   ];
-  const rep = await rpc(cashier, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "Z", p_gross_revenue: 460, p_transaction_count: 12, p_average_basket: null, p_notes: "daily rehearsal", p_items: items });
-  check(rep.ok, "4. cashier submits a Z report with product-level lines");
+  const rep = await rpc(reportToken, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "Z", p_gross_revenue: 460, p_transaction_count: 12, p_average_basket: null, p_notes: "daily rehearsal", p_items: items });
+  check(rep.ok, afterCutoff ? "4. manager submits after the server-authoritative cutoff" : "4. cashier submits within the server-authoritative cutoff");
   check(Number(stockOf(A)) === 15 && Number(stockOf(B)) === 8, "product quantities reduced stock (20-5, 10.5-2.5)");
   check((await rpc(cashier, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "Z", p_gross_revenue: 1, p_transaction_count: 1, p_average_basket: null, p_notes: null, p_items: [] })).status >= 400, "a duplicate Z report for the shift is refused");
   const wholeUnits = await rpc(mgr, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "X", p_gross_revenue: 15, p_transaction_count: 1, p_average_basket: null, p_notes: null, p_items: [{ inventory_item_id: A, inventory_quantity: 1.5, amount: 15 }] });
@@ -337,7 +349,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const audits = await req(`/rest/v1/audit_logs?select=action,actor_user_id&order=created_at.desc&limit=400`, { token: owner });
   const has = (a, u) => audits.data.some((x) => x.action === a && (!u || x.actor_user_id === u));
   check(has("operating_data_load", users.P01.id), "11. audit: operating-data load by the owner");
-  check(has("report_edit", users.P04.id), "audit: report submitted by the cashier");
+  check(has("report_edit", reportActorId), "audit: report records the actual authorized submitter");
   check(has("inventory_receipt", users.P03.id), "audit: receipt by the branch manager");
   check(audits.data.some((x) => x.action.startsWith("inventory_") && x.actor_user_id === users.P04.id), "audit: cashier waste/count recorded");
   check(!JSON.stringify(audits.data).includes(service), "audit rows hold no secret");

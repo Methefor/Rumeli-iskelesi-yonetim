@@ -72,4 +72,5 @@ resets, run `supabase stop` + `start`.
 `018_operating_data_mapping_removals.sql` adds transactional, audited removal of
 obsolete branch/category mappings to the operating-data loader (service_role only)
 and revokes raw writes on `sales_category_branches`. Covered by
-`tests/operating_data_loader.test.mjs` (119 assertions).
+`tests/operating_data_loader.test.mjs` (120 assertions, including unchanged
+provenance timestamps on a second apply).

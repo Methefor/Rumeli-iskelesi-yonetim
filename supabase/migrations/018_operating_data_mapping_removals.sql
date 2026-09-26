@@ -1,7 +1,8 @@
 -- =============================================================================
 -- 018_operating_data_mapping_removals.sql
 -- =============================================================================
--- STATUS: LOCAL ONLY (Stage 3). Not applied to any hosted Supabase project.
+-- STATUS: PREPARED; VALIDATED ON LOCAL SUPABASE ONLY (Stage 3).
+-- Not applied to any hosted Supabase project.
 --
 -- Purpose: let the transactional operating-data loader (017) REMOVE an
 -- obsolete branch/category mapping. Omitting a row from category_branches.csv
@@ -99,6 +100,45 @@ $$;
 revoke all on function public.internal_od_remove_mappings(uuid, jsonb, text) from public, anon, authenticated;
 revoke all on function public.internal_od_apply(uuid, jsonb, text) from public, anon, authenticated;
 revoke all on function public.internal_od_apply_core(uuid, jsonb, text) from public, anon, authenticated;
+
+-- Migration 017's provenance upsert refreshed updated_at even when every
+-- business value was identical. That made a reported `unchanged` re-apply
+-- mutate database state. Keep the original API, but update only when source
+-- data actually changed so the loader is state-idempotent too.
+create or replace function public.internal_od_provenance(
+  p_type text, p_key text, p_class text, p_approval text, p_source text, p_dataset text, p_note text
+)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into public.operating_data_provenance
+    (entity_type, entity_key, classification, approval_status, dataset, source, note, updated_at, updated_by)
+  values (p_type, p_key, p_class, p_approval, p_dataset, nullif(p_source, ''), nullif(p_note, ''), now(), auth.uid())
+  on conflict (entity_type, entity_key) do update
+    set classification = excluded.classification,
+        approval_status = excluded.approval_status,
+        dataset = excluded.dataset,
+        source = excluded.source,
+        note = excluded.note,
+        updated_at = now(),
+        updated_by = auth.uid()
+  where (operating_data_provenance.classification,
+         operating_data_provenance.approval_status,
+         operating_data_provenance.dataset,
+         operating_data_provenance.source,
+         operating_data_provenance.note)
+    is distinct from
+        (excluded.classification,
+         excluded.approval_status,
+         excluded.dataset,
+         excluded.source,
+         excluded.note);
+$$;
+
+revoke all on function public.internal_od_provenance(text, text, text, text, text, text, text)
+  from public, anon, authenticated;
 
 comment on function public.internal_od_remove_mappings(uuid, jsonb, text) is
   'INTERNAL. Removes obsolete branch/category mappings for the operating-data loader; rejects when items still use the category. Audited; runs inside the loader transaction.';

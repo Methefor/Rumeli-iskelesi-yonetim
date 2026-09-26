@@ -498,3 +498,7 @@ Soğuk İçecek. Categories may change later, so migration 018 adds an audited,
 idempotent, all-or-nothing removal of branch/category mappings to the loader
 (refused while items use the category) and closes the unaudited raw-write path on
 `sales_category_branches`. Migrations 001-017 were not rewritten.
+
+Migration 018 also makes provenance writes state-idempotent: re-applying an
+identical approved dataset preserves `updated_at` and `updated_by`. Those fields
+change only when provenance, approval, dataset, source or note actually changes.

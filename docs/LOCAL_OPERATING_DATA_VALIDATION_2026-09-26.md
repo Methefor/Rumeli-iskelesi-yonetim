@@ -58,7 +58,7 @@ or category. İskele Dondurma now has a confirmed register and seasonal shifts,
 and its three owner-approved category mappings. Thresholds are approved for all three
 branches. Synthetic items remain labelled "Yalnızca test verisi".
 
-## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 119 assertions after the 2026-09-26 category correction; the count was 89 before it)
+## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 120 assertions after the 2026-09-26 category correction; the count was 89 before it)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
 right rows; second apply creates/updates nothing; controlled update (rename,
 category survives); back-dated cost, different cost for an existing date,
@@ -152,8 +152,9 @@ skipped 0 | rejected 0. Versus the earlier 18/4/27: +1 `su` category, +1 Dondurm
 mapping (created 20); the two removals count as `updated` (6); the two former
 Dondurma mapping rows (sicak/soguk) are no longer in the mapping file, so unchanged
 drops by two (25). Every difference from 18/4/27 is accounted for. Validator: 25 tests.
-Loader suite: 119/119, including audit rows (actor, branch, category, reason, server
-time), removal provenance, idempotent second apply, a removal refused while an item
+Loader suite: 120/120, including audit rows (actor, branch, category, reason, server
+time), removal provenance, a state-idempotent second apply that preserves provenance
+timestamps/actor, a removal refused while an item
 uses the category, rollback of a valid register create in the same load, and denial
 of every internal function to anon/owner/manager/branch-manager/cashier JWTs plus a
 raw DELETE that removes nothing. SQL suites (timezone, inventory, backdated,

@@ -478,3 +478,11 @@ Migration 018, `category_branch_removals` contract/validator/data, new global `s
 Dondurma mappings corrected. Supersedes the three-category approval. Real dry run:
 created 20, updated 6, unchanged 25, skipped 0, rejected 0. Validator 25/25, loader
 119/119 on a fresh 001-018 reset; existing SQL/HTTP suites pass. No push.
+
+Independent review found that an `unchanged` second apply still refreshed every
+provenance `updated_at` value. Migration 018 now redefines the provenance upsert
+to update only when a business/source field changes. A new assertion compares
+all provenance timestamps and actors before/after re-apply. The full loader
+suite passes 120/120 on a fresh 001-018 reset. The daily-operation rehearsal is
+also wall-clock safe: before cutoff the cashier submits; after cutoff the
+authorized manager submits, preserving the server-authoritative cutoff rule.
