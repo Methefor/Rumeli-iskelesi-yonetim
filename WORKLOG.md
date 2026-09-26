@@ -436,3 +436,11 @@ suite prove that dry-run is non-mutating, apply creates both registers and the
 missing Dondurma category mapping, replaces the two generic Rumeli shift seeds
 with 09:00-17:30 / 16:00-01:00, records provenance/audit, and is idempotent.
 The 20 validator tests also pass. Hosted and production were not contacted.
+
+### 2026-09-26 - Threshold and waste-reason owner approval
+
+Added the owner-approved 2%/5% thresholds for all three branches and six
+approved waste reasons to the real dataset. Fresh local reset plus the expanded
+77-assertion loader suite proves all three threshold rows, trusted provenance,
+reconciliation behavior, idempotency and access controls. The 20 validator
+tests pass. Hosted and production were not contacted.

@@ -241,8 +241,10 @@ mutation is authorized by this backlog update.
 
 - [x] Owner approved Rumeli legacy categories, category mapping, registers and
       shift times on 2026-09-26; locally validated through the real loader.
+- [x] Owner approved 2% warning / 5% error thresholds for all branches and the
+      six supported waste reasons on 2026-09-26; locally validated.
 - [ ] **Remaining owner input** (Gate 3): Balık Ekmek and İskele Dondurma
-      structure; thresholds; waste reasons; catalogue, opening stock and costs.
+      structure; catalogue, opening stock and costs.
       See `operating-data/OWNER_INPUT_CHECKLIST.md`.
 - [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).

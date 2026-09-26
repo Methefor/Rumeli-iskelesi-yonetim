@@ -452,3 +452,12 @@ Metehan approved the ten legacy sales categories, their use by Rumeli, the
 owner-approved rows may replace the generic migration 009 seed through the
 audited operating-data loader. This does not approve İskele Dondurma or Balık
 Ekmek structure, thresholds, waste reasons, catalogue, costs or opening stock.
+
+### 2026-09-26 - Reconciliation thresholds and waste reasons approved
+
+Metehan approved a 2% warning and 5% error threshold for all three branches.
+He also approved the six schema-supported waste reasons: son kullanma tarihi
+geçmiş (`expired`), hasarlı (`damaged`), dökülme (`spilled`), kalite sorunu
+(`quality`), ikram/numune (`sample`) and diğer (`other`). These are confirmed
+operating data. The fixed reason codes remain stable for audit/reporting; the
+Turkish labels are recorded in provenance.

@@ -1,2 +1,8 @@
-# No confirmed waste reasons exist yet. Nothing may be invented here: see ../owner-input/waste_reasons.template.csv.
+# Owner approved the six schema-supported waste reasons on 2026-09-26.
 reason_code,name,is_active,provenance,approval_status,source
+expired,Son kullanma tarihi geçmiş,true,confirmed,approved,Owner approval 2026-09-26
+damaged,Hasarlı,true,confirmed,approved,Owner approval 2026-09-26
+spilled,Dökülme,true,confirmed,approved,Owner approval 2026-09-26
+quality,Kalite sorunu,true,confirmed,approved,Owner approval 2026-09-26
+sample,İkram/numune,true,confirmed,approved,Owner approval 2026-09-26
+other,Diğer,true,confirmed,approved,Owner approval 2026-09-26

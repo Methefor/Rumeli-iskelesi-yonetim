@@ -1,2 +1,5 @@
-# No confirmed reconciliation thresholds exist yet. Nothing may be invented here: see ../owner-input/reconciliation_thresholds.template.csv.
+# Owner approved 2% warning / 5% error for all three branches on 2026-09-26.
 branch_key,warning_percentage,error_percentage,provenance,approval_status,source
+rumeli_iskelesi,2.00,5.00,confirmed,approved,Owner approval 2026-09-26
+iskele_dondurma,2.00,5.00,confirmed,approved,Owner approval 2026-09-26
+balik_ekmek,2.00,5.00,confirmed,approved,Owner approval 2026-09-26

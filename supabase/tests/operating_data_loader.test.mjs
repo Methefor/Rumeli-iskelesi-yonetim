@@ -69,7 +69,7 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 22 && report.totals.created === 3 && report.totals.updated === 2,
+  check(report.totals.unchanged === 24 && report.totals.created === 10 && report.totals.updated === 2,
     "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
   check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
@@ -88,6 +88,10 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   check(branchProv === "confirmed/approved,confirmed/approved,confirmed/approved", "branches are recorded as confirmed + approved");
   const approvedShift = sql("select classification||'/'||approval_status from public.operating_data_provenance where entity_key='rumeli_iskelesi/morning'");
   check(approvedShift === "legacy_observed/approved", "the Rumeli morning shift is recorded as legacy-observed and owner-approved");
+  check(sql("select count(*) from public.reconciliation_thresholds where warning_percentage=2 and error_percentage=5") === "3",
+    "owner-approved 2/5 reconciliation thresholds exist for all three branches");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='waste_reason' and classification='confirmed' and approval_status='approved'") === "6",
+    "all six owner-approved waste reasons are recorded as trusted configuration");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
 }
@@ -265,7 +269,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const bad = await rpc(mgr, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "X", p_gross_revenue: 1000, p_transaction_count: 3, p_average_basket: null, p_notes: null, p_items: [{ category_id: catA, amount: 100 }] });
   check(bad.ok, "a category-level X report is accepted");
   const recBad = await req(`/rest/v1/sales_reports?select=reconciliation_status&id=eq.${bad.data}`, { token: mgr });
-  check(recBad.data[0].reconciliation_status === "ERROR", "a large mismatch (1000 vs 100) is ERROR under the seeded (unapproved) thresholds");
+  check(recBad.data[0].reconciliation_status === "ERROR", "a large mismatch (1000 vs 100) is ERROR under the owner-approved 2/5 thresholds");
 
   // audit
   const audits = await req(`/rest/v1/audit_logs?select=action,actor_user_id&order=created_at.desc&limit=400`, { token: owner });

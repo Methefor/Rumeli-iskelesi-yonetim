@@ -17,8 +17,8 @@ Anything you do not know stays out: nothing is invented for you.
 
 - [ ] Balık Ekmek is already one of the three confirmed branches. Define its registers, shifts and categories, and confirm whether the legacy Rumeli evening Z-report `balik_ekmek` revenue field belongs to this branch or remains part of Rumeli reporting.
 - [ ] İskele Dondurma: which categories does it report? Its registers? Its shift times and report deadlines?
-- [ ] Reconciliation tolerance per branch (warning % and error %). The current 2 / 5 is a generic seed, not a decision.
-- [ ] Waste reasons the business wants. The database supports only: expired, damaged, spilled, quality, sample, other. Ask for a change if these are wrong; do not invent codes.
+- [x] Reconciliation tolerance: 2% warning / 5% error for all three branches. Owner approved 2026-09-26.
+- [x] Waste reasons: son kullanma tarihi geçmiş, hasarlı, dökülme, kalite sorunu, ikram/numune, diğer. Owner approved 2026-09-26.
 
 ## C. Catalogue (nothing exists yet)
 

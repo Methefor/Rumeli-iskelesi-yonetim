@@ -26,23 +26,29 @@ other branches' configuration.**
 - Shift definitions (4, 009): generic seeds start as demo_only / pending. The
   owner approved Rumeli's legacy Sabah 09:00-17:30 and Akşam 16:00-01:00
   definitions on 2026-09-26; the loader replaces the two Rumeli seeds.
-- Thresholds 2/5 (2 rows): demo_only / pending.
+- Thresholds: 2% warning / 5% error for all three branches, owner-approved
+  2026-09-26. The loader upgrades the two matching seeds and creates Balık
+  Ekmek's missing threshold.
+- Waste reasons: six supported codes and Turkish labels, owner-approved
+  2026-09-26 and stored as trusted provenance.
 - No legacy product, price, cost, stock or waste data exists. No confirmed
   register/shift/category layout exists for İskele Dondurma or Balık Ekmek.
 
 ## Real dataset after owner approval (fresh reset, default dry run)
-created 3 | updated 2 | unchanged 22 | skipped 0 | rejected 0 - applied: no.
-The plan creates two Rumeli registers plus the missing Rumeli/Dondurma category
-mapping, updates the two Rumeli shift seeds, and leaves 22 already-present rows
-unchanged. Apply then succeeds; a second apply creates or updates nothing.
+created 10 | updated 2 | unchanged 24 | skipped 0 | rejected 0 - applied: no.
+The plan creates two Rumeli registers, the missing Rumeli/Dondurma category
+mapping, Balık Ekmek's threshold and six waste-reason provenance rows; updates
+the two Rumeli shift seeds; and leaves 24 already-present rows unchanged. Apply
+then succeeds; a second apply creates or updates nothing.
 
 ## Data-quality snapshot (local DB after loading the synthetic catalogue)
 The earlier browser snapshot preceded the owner's approval and is superseded by
 the locally validated real-data apply. Balık Ekmek still has no shift, register,
-category or threshold; İskele Dondurma still has no confirmed register/shift/
-category configuration. Synthetic items remain labelled "Yalnızca test verisi".
+category; İskele Dondurma still has no confirmed register/shift/category
+configuration. Thresholds are now approved for all three branches. Synthetic
+items remain labelled "Yalnızca test verisi".
 
-## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 75 assertions)
+## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 77 assertions)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
 right rows; second apply creates/updates nothing; controlled update (rename,
 category survives); back-dated cost, different cost for an existing date,
@@ -65,14 +71,14 @@ assignment -> shift selection -> Z report with product quantities (stock 20->15,
 on A, 0 on B; ledger unchanged) -> COGS 60 + 125 = 185 with the effective cost
 snapshot, gross profit 460 - 185 = 275 (gross, not net), no uncosted quantity
 -> reconciliation OK for a matching report, ERROR for 1000 vs 100 under the
-seeded (unapproved) thresholds -> audit rows for load, report, receipt, waste/
+owner-approved 2%/5% thresholds -> audit rows for load, report, receipt, waste/
 count. Cashier cannot receive, read costs or call the loader.
 
 ## Regression (fresh `supabase db reset --local --no-seed`, 001-017)
 SQL: timezone_regression, timezone_rpc (32), inventory_security, backdated_entry,
 backdated_entry_timezone (24), management_center - pass.
 HTTP: local_inventory_api 137, storage_policy 48, pin_login 45,
-management_center 76, operating_data_loader 75 - pass (each on its own reset).
+management_center 76, operating_data_loader 77 - pass (each on its own reset).
 App: typecheck, lint clean; 246 tests pass (3 consecutive runs); `build:local`
 ok; dist has 0 production-ref / service_role / loader-function matches;
 `git diff --check` clean. Browser (local stack, manager L002): data-quality,
@@ -87,9 +93,9 @@ overflow, showing the loaded synthetic catalogue.
 - One AuthProvider test flaked once under parallel load (passed on re-run).
 
 ## Not done / risks
-Hosted validation, real catalogue, and the remaining owner decisions (see
+Hosted validation, real catalogue, and the remaining branch decisions (see
 `operating-data/OWNER_INPUT_CHECKLIST.md`). Rumeli legacy categories, registers
-and shifts are approved. The loader is validated only
+and shifts plus all-branch thresholds and waste reasons are approved. The loader is validated only
 against local Supabase, and its CLI refuses non-local hosts. Migration 017 is
 part of the prepared migration chain and therefore requires a separate hosted
 deployment approval later. The audit actor of a load is the named owner, so run

@@ -20,8 +20,8 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 | Product → category mapping | — | unknown | | none | no |
 | Opening stock | — | unknown | | none | no |
 | Costs + effective dates | — | unknown | | none | no |
-| Waste reasons | expired, damaged, spilled, quality, sample, other | unknown (generic list) | fixed CHECK constraint from migration 012, a design default | constraint | no |
-| Reconciliation thresholds | 2 % warning / 5 % error | demo_only | 009 default; no source in legacy | seeded | no; seed classified `demo_only` |
+| Waste reasons | Son kullanma tarihi geçmiş, Hasarlı, Dökülme, Kalite sorunu, İkram/numune, Diğer (`expired`, `damaged`, `spilled`, `quality`, `sample`, `other`) | confirmed / approved | owner approval 2026-09-26; codes fixed by migration 012 | codes constrained; labels stored in provenance | yes |
+| Reconciliation thresholds | 2% warning / 5% error for all three branches | confirmed / approved | owner approval 2026-09-26 | Rumeli and İskele Dondurma seeded; Balık Ekmek absent | yes; approved values loaded for all branches |
 | Test catalogue | TEST-A01 (adet, whole), TEST-B01 (kg, decimal), 2 TEST categories, costs, opening stock | demo_only | `test-only/` | only if `--dataset test-only` was loaded | never as real |
 | Demo store (app) | "Demo …" people, "Örnek Ürün A…" | demo_only | `app/src/services/demo/store.ts` | not in DB | not a source of truth |
 
