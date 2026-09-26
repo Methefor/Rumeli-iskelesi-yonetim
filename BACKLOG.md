@@ -246,13 +246,15 @@ mutation is authorized by this backlog update.
 - [x] Owner confirmed İskele Dondurma's current S900 register and seasonal
       16:00-00:00 / 14:00-22:00 single-shift model; locally validated.
 - [x] Owner approved İskele Dondurma categories: Dondurma, Sıcak İçecek, Soğuk İçecek.
-- [ ] **Remaining owner input** (Gate 3): Pavo activation details/date; Balık Ekmek
-      register, shifts and categories; mapping of the legacy Balık Ekmek/Dondurma
-      revenue fields; real catalogue, product/category mapping, opening stock and
+- [x] Owner approved Balık Ekmek: S900 register, daily 14:00-00:00 shift (cutoff
+      00:00 next day), categories Balık Ekmek and Soğuk İçecek.
+- [x] Owner approved legacy revenue mapping: balik_ekmek -> branch balik_ekmek,
+      dondurma -> branch iskele_dondurma (for the Stage 4 adapter; not built).
+- [ ] **Remaining owner input** (Gate 3): Pavo activation name/date; real product
+      catalogue; product-to-category mapping; opening stock from a physical count;
       dated unit costs.
       See `operating-data/OWNER_INPUT_CHECKLIST.md`.
 - [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).
 - [x] Legacy sabah/aksam map to V4 morning/evening.
-- [ ] Decide how the Balık Ekmek / Dondurma revenue fields map to V4 (needed by
-      the Stage 4 adapter).
+- [x] Balık Ekmek / Dondurma revenue fields map to their branches (approved 2026-09-26).

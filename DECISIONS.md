@@ -479,3 +479,12 @@ The owner approved Dondurma, Sıcak İçecek and Soğuk İçecek as İskele Dond
 categories. Recorded in `operating-data/real/category_branches.csv` as
 confirmed / approved. Pavo remains a future transition and is not activated;
 hosted and production are untouched.
+
+### 2026-09-26 - Balık Ekmek configuration and legacy revenue mapping
+
+Owner approved Balık Ekmek as a separate branch with one S900 register, one daily
+shift 14:00-00:00 (cutoff 00:00 next day) and the categories Balık Ekmek and
+Soğuk İçecek (more may be added later). Owner also approved the legacy mapping for
+the future Stage 4 adapter: Rumeli evening-report `balik_ekmek` revenue belongs to
+branch `balik_ekmek`, and `dondurma` revenue to branch `iskele_dondurma`. The
+adapter is not built. Pavo stays absent; hosted/production untouched.

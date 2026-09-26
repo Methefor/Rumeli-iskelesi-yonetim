@@ -67,6 +67,30 @@ test('real dataset: the three owner-approved Dondurma category mappings are appl
   assert.equal(res.counts.skipped, 0)
 })
 
+test('real dataset: Balık Ekmek register, daily shift and two categories are applied as confirmed', () => {
+  const files = {}
+  const dir = join(HERE, '..', 'real')
+  for (const g of GROUPS) { try { files[g] = readFileSync(join(dir, `${g}.csv`), 'utf8') } catch { files[g] = null } }
+  const res = validateDataset({ dataset: 'real', files, today: TODAY })
+  const of = (g) => res.entries.filter((e) => e.group === g && e.data.branch_key === 'balik_ekmek')
+  assert.deepEqual(of('category_branches').map((e) => e.data.category_key).sort(), ['balik_ekmek', 'soguk_icecek'])
+  assert.deepEqual(of('registers').map((e) => e.data.register_key), ['s900'])
+  const shift = of('shift_definitions')
+  assert.equal(shift.length, 1)
+  assert.deepEqual(
+    [shift[0].data.start_hour, shift[0].data.end_hour, shift[0].data.cutoff_hour, shift[0].data.cutoff_minute, shift[0].data.cutoff_day_offset, shift[0].data.is_active],
+    [14, 0, 0, 0, 1, true],
+  )
+  for (const e of [...of('category_branches'), ...of('registers'), ...shift]) {
+    assert.equal(e.status, 'ok')
+    assert.equal(e.data.provenance, 'confirmed')
+    assert.equal(e.data.approval_status, 'approved')
+  }
+  assert.ok(res.entries.some((e) => e.group === 'sales_categories' && e.key === 'balik_ekmek' && e.status === 'ok'))
+  assert.equal(res.counts.rejected, 0)
+  assert.equal(res.counts.skipped, 0)
+})
+
 test('owner-input templates are never inside the loaded directories and hold no data rows', () => {
   for (const f of readdirSync(join(HERE, '..', 'owner-input'))) {
     const rows = parseCsv(readFileSync(join(HERE, '..', 'owner-input', f), 'utf8'))

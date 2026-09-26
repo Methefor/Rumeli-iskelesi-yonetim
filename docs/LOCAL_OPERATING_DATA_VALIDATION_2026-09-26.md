@@ -36,10 +36,13 @@ other branches' configuration.**
 - Waste reasons: six supported codes and Turkish labels, owner-approved
   2026-09-26 and stored as trusted provenance.
 - No legacy product, price, cost, stock or waste data exists. İskele Dondurma
-  categories and all Balık Ekmek operating structure remain unconfirmed.
+  categories are owner-approved. Balık Ekmek (separate branch) is owner-approved with one
+  S900 register, one daily shift 14:00-00:00 (cutoff 00:00 next day) and the
+  categories Balık Ekmek and Soğuk İçecek. Legacy `balik_ekmek` revenue maps to branch
+  `balik_ekmek`, legacy `dondurma` revenue to branch `iskele_dondurma` (decision only).
 
 ## Real dataset after owner approval (fresh reset, default dry run)
-created 13 | updated 4 | unchanged 27 | skipped 0 | rejected 0 - applied: no
+created 18 | updated 4 | unchanged 27 | skipped 0 | rejected 0 - applied: no
 (confirmed by a real dry run; migration 009 already holds the three Dondurma
 mappings, so they are unchanged rows whose provenance becomes confirmed/approved).
 The plan creates two Rumeli registers, the missing Rumeli/Dondurma category
@@ -55,7 +58,7 @@ or category. İskele Dondurma now has a confirmed register and seasonal shifts,
 and its three owner-approved category mappings. Thresholds are approved for all three
 branches. Synthetic items remain labelled "Yalnızca test verisi".
 
-## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 82 assertions)
+## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 89 assertions)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
 right rows; second apply creates/updates nothing; controlled update (rename,
 category survives); back-dated cost, different cost for an existing date,
@@ -85,7 +88,7 @@ count. Cashier cannot receive, read costs or call the loader.
 SQL: timezone_regression, timezone_rpc (32), inventory_security, backdated_entry,
 backdated_entry_timezone (24), management_center - pass.
 HTTP: local_inventory_api 137, storage_policy 48, pin_login 45,
-management_center 76, operating_data_loader 82 - pass (each on its own reset).
+management_center 76, operating_data_loader 89 - pass (each on its own reset).
 App: typecheck, lint clean; 246 tests pass (3 consecutive runs); `build:local`
 ok; dist has 0 production-ref / service_role / loader-function matches;
 `git diff --check` clean. Browser (local stack, manager L002): data-quality,
@@ -116,3 +119,16 @@ reports exactly those categories, the winter shift is the only active one, S900
 is the only register, Pavo is absent, and a second apply changes nothing. No
 application code changed, so the UI suite was not re-run. Hosted and production
 untouched.
+
+## Update: Balık Ekmek configuration (2026-09-26)
+Real dry run (confirmed, fresh 001-017 reset): created 18 | updated 4 | unchanged 27
+| skipped 0 | rejected 0. The five new creations are the global `balik_ekmek`
+category, its two branch mappings (`balik_ekmek`, `soguk_icecek`), the S900
+register and the `daily` shift; migration 009 holds none of them. Validator 22/22;
+loader suite 89/89, including explicit assertions for the two mappings
+(confirmed/approved), S900 as the only Balık Ekmek register, the active 14:00-00:00
+shift with next-day 00:00 cutoff, unchanged Rumeli/Dondurma configuration, Pavo
+absent, and a second apply that creates and updates nothing. No application
+code changed (UI suite not re-run). Hosted and production untouched.
+Remaining Gate 3 input: Pavo activation name/date, real product catalogue,
+product-to-category mapping, opening stock, dated unit costs.

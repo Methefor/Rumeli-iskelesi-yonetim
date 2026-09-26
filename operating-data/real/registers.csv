@@ -4,3 +4,4 @@ branch_key,register_key,name,is_active,provenance,approval_status,source
 rumeli_iskelesi,ana_kasa,Ana Kasa,true,legacy_observed,approved,Owner approved 2026-09-26; js/supabase-client.js register_name Ana Kasa
 rumeli_iskelesi,iki_kasa,2. Kasa,true,legacy_observed,approved,Owner approved 2026-09-26; js/supabase-client.js register_name 2. Kasa
 iskele_dondurma,s900,S900,true,confirmed,approved,Owner statement 2026-09-26; current single computer
+balik_ekmek,s900,S900,true,confirmed,approved,Owner statement 2026-09-26; current single S900 POS computer

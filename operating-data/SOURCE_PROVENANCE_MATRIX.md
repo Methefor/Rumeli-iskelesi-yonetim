@@ -10,15 +10,16 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 | Branches | Rumeli İskelesi, İskele Dondurma, Balık Ekmek | **confirmed** | Names carry the frozen 2026 per-branch management totals (BACKLOG.md); legacy admin dashboard; migration 003 | seeded | yes (`real/branches.csv`, unchanged) |
 | Registers, Rumeli | `ana_kasa` "Ana Kasa", `iki_kasa` "2. Kasa" | legacy_observed / approved | `entry.html` (1. Kasa / 2. Kasa), `js/supabase-client.js` `register_name`; owner approval 2026-09-26 | none | yes |
 | Register, İskele Dondurma | `s900` "S900" (current single computer); Pavo planned | confirmed / approved | owner statement 2026-09-26 | none | S900 yes; Pavo not loaded until transition |
-| Registers, Balık Ekmek | — | unknown | legacy has one cashier app; sub-revenues are fields, not registers | none | no |
+| Register, Balık Ekmek | `s900` "S900" (single S900 POS computer) | confirmed / approved | owner statement 2026-09-26 | none | yes |
 | Shifts, Rumeli | sabah 09:00–17:30 (report deadline 17:30); akşam 16:00–01:00 (deadline 01:00, next day) | legacy_observed / approved | `entry.html` shift labels; `isOnTime` rule in `js/supabase-client.js`; owner approval 2026-09-26 | **009 seeded 08:00–16:00 / 16:00–23:59, cutoff 16:30 / 01:00 (different)** | yes; approved values replace seed when loaded |
 | Shifts, İskele Dondurma | summer 16:00–00:00; cold season 14:00–22:00; one shift per day | confirmed / approved | owner statement 2026-09-26 | generic morning/evening seed | yes; generic pair disabled, winter active, summer prepared inactive |
-| Shifts, Balık Ekmek | — | unknown | not in legacy | none | no |
+| Shift, Balık Ekmek | `daily` "Tek vardiya" 14:00–00:00, cutoff 00:00 next day, active | confirmed / approved | owner statement 2026-09-26 | none | yes |
 | Sales categories | Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek | legacy_observed / approved | 10 fields in `entry.html`; owner approval 2026-09-26 | seeded (009) | yes |
 | Category → branch (Rumeli: all 10) | | legacy_observed / approved | Rumeli cashier form shows all 10; owner approval 2026-09-26 | 9 seeded (Dondurma not) | yes |
 | Category → branch (İskele Dondurma: Dondurma, Sıcak İçecek, Soğuk İçecek) | 3 mappings | confirmed / approved | owner approval 2026-09-26 (`real/category_branches.csv`) | seeded by 009 (same three) | yes; provenance changes from unknown/pending to confirmed/approved |
-| Category → branch (Balık Ekmek) | — | unknown | not in legacy | none | no |
-| Balık Ekmek / Dondurma revenue | "Balık Ekmek" and "Dondurma" amounts in the Rumeli evening Z report (`balik_ekmek`, `dondurma` columns) | legacy_observed | `js/supabase-client.js` | — | not modelled: both names also exist as confirmed branches, but the owner must decide how these legacy revenue fields map to those branches or remain in Rumeli reporting |
+| Category `balik_ekmek` (global) | Balık Ekmek | confirmed / approved | owner approval 2026-09-26 | none | yes |
+| Category → branch (Balık Ekmek: `balik_ekmek`, `soguk_icecek`) | 2 mappings; more may be added later | confirmed / approved | owner approval 2026-09-26 | none | yes |
+| Legacy revenue fields → branches | Rumeli evening report `balik_ekmek` → branch `balik_ekmek`; `dondurma` → branch `iskele_dondurma` | confirmed / approved (mapping decision) | owner statement 2026-09-26 | — | decision recorded for the future Stage 4 adapter; no adapter built |
 | Inventory items (codes, names, units, decimals) | — | unknown | no product data exists anywhere in the repo or legacy app | none | no |
 | Product → category mapping | — | unknown | | none | no |
 | Opening stock | — | unknown | | none | no |

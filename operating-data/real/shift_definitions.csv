@@ -9,3 +9,4 @@ iskele_dondurma,morning,Eski genel sabah,08:00,16:00,16:30,0,false,confirmed,app
 iskele_dondurma,evening,Eski genel akşam,16:00,23:59,01:00,1,false,confirmed,approved,Owner statement 2026-09-26; generic seed is not used by this branch
 iskele_dondurma,summer,Yaz vardiyası,16:00,00:00,00:00,1,false,confirmed,approved,Owner statement 2026-09-26; activate manually for summer season
 iskele_dondurma,winter,Kış vardiyası,14:00,22:00,22:00,0,true,confirmed,approved,Owner statement 2026-09-26; current cold-season schedule
+balik_ekmek,daily,Tek vardiya,14:00,00:00,00:00,1,true,confirmed,approved,Owner statement 2026-09-26; single daily shift; cutoff equals shift end

@@ -15,7 +15,8 @@ Anything you do not know stays out: nothing is invented for you.
 
 ## B. Decisions only the owner can make
 
-- [ ] Balık Ekmek is already one of the three confirmed branches. Define its registers, shifts and categories, and confirm whether the legacy Rumeli evening Z-report `balik_ekmek` revenue field belongs to this branch or remains part of Rumeli reporting.
+- [x] Balık Ekmek (separate branch `balik_ekmek`): one S900 register; one daily shift 14:00–00:00 (report cutoff 00:00 next day); categories Balık Ekmek and Soğuk İçecek (more may be added later, none invented). Owner approved 2026-09-26.
+- [x] Legacy Rumeli evening-report revenue mapping: `balik_ekmek` revenue → branch `balik_ekmek`; `dondurma` revenue → branch `iskele_dondurma`. Owner approved 2026-09-26 (decision only; the Stage 4 adapter is not built).
 - [x] İskele Dondurma currently has one S900 computer/register. Pavo is planned but not active yet. Owner statement 2026-09-26.
 - [x] İskele Dondurma has one seasonal shift: summer 16:00–00:00; cold season 14:00–22:00. Cold-season shift is currently active; cutoffs equal shift end. Owner statement 2026-09-26.
 - [x] İskele Dondurma reports exactly three categories: Dondurma, Sıcak İçecek, Soğuk İçecek. Owner approved 2026-09-26. (`real/category_branches.csv`)

@@ -69,7 +69,7 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 27 && report.totals.created === 13 && report.totals.updated === 4,
+  check(report.totals.unchanged === 27 && report.totals.created === 18 && report.totals.updated === 4,
     "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
   check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
@@ -100,6 +100,19 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
     "Dondurma reports exactly the three owner-approved categories");
   check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key like 'iskele_dondurma/%' and classification='confirmed' and approval_status='approved'") === "3",
     "all three Dondurma category mappings are confirmed + approved");
+  const balik = sql("select id from public.branches where key='balik_ekmek'");
+  check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + balik + "'") === "balik_ekmek,soguk_icecek",
+    "Balik Ekmek reports exactly balik_ekmek and soguk_icecek");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key like 'balik_ekmek/%' and classification='confirmed' and approval_status='approved'") === "2",
+    "both Balik Ekmek category mappings are confirmed + approved");
+  check(sql("select string_agg(key||':'||name||':'||is_active, ',') from public.registers where branch_id='" + balik + "'") === "s900:S900:true",
+    "S900 is the only Balik Ekmek register");
+  check(sql("select key||':'||name||':'||start_hour||':'||start_minute||'-'||end_hour||':'||end_minute||' cutoff '||cutoff_hour||':'||cutoff_minute||'+'||cutoff_day_offset||':'||is_active from public.shift_definitions where branch_id='" + balik + "'") === "daily:Tek vardiya:14:0-0:0 cutoff 0:0+1:true",
+    "Balik Ekmek has one active daily shift 14:00-00:00 with a next-day 00:00 cutoff");
+  check(sql("select count(*) from public.shift_definitions where branch_id='" + balik + "'") === "1", "Balik Ekmek has no other shift");
+  check(sql("select string_agg(key||':'||is_active, ',' order by key) from public.shift_definitions where branch_id='" + rumeli + "'") === "evening:true,morning:true" && shiftDump() === "evening16:0-1:0,morning9:0-17:30",
+    "Rumeli shifts are unchanged");
+  check(sql("select count(*) from public.sales_category_branches where branch_id='" + rumeli + "'") === "10", "Rumeli still reports its 10 categories");
   check(sql("select count(*) from public.registers where lower(key) like '%pavo%' or lower(name) like '%pavo%'") === "0", "Pavo is absent (future transition, not activated)");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");

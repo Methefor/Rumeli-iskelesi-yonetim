@@ -462,3 +462,12 @@ loader suite 82/82 on a fresh 001-017 reset. Remaining Gate 3 input: Pavo
 activation details/date; Balık Ekmek register, shifts and categories; mapping of
 the legacy Balık Ekmek/Dondurma revenue fields; real catalogue, product/category
 mapping, opening stock, dated unit costs. No push; hosted/production untouched.
+
+### 2026-09-26 - Balık Ekmek operations configured
+
+Added the `balik_ekmek` category, its two mappings, S900 register and daily shift
+to the real dataset. Real dry run: created 18, updated 4, unchanged 27, skipped 0,
+rejected 0. Validator 22/22, loader suite 89/89 on a fresh 001-017 reset. Legacy
+revenue mapping (balik_ekmek -> balik_ekmek, dondurma -> iskele_dondurma)
+recorded as a decision only. Remaining Gate 3 input: Pavo, catalogue,
+product/category mapping, opening stock, dated costs. No push.

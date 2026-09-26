@@ -82,3 +82,9 @@ Dondurma has one seasonal shift: summer 16:00-00:00 and cold season
 definition is currently active and the summer definition is prepared inactive;
 the generic Dondurma morning/evening seeds are disabled. Seasonal activation is
 manual in Management Center until explicit date rules are approved.
+
+## Note (Stage 3, Balık Ekmek)
+
+Balık Ekmek has one owner-approved `daily` shift, 14:00-00:00, report cutoff 00:00
+the next day (`cutoff_day_offset` 1), active. Loaded from `operating-data/real/`,
+not from a migration seed.
