@@ -75,6 +75,10 @@ own membership doesn't establish. Reason is mandatory; every call writes an
 
 ## Note (Stage 3, 2026-09-26)
 
-The morning/evening times seeded by migration 009 are generic starting values
-(classified demo_only). The legacy app shows Sabah 09:00-17:30 and Akşam
-16:00-01:00; they are waiting for owner approval in `operating-data/real/`.
+The morning/evening times seeded by migration 009 are generic starting values.
+The owner approved Rumeli Sabah 09:00-17:30 and Akşam 16:00-01:00. İskele
+Dondurma has one seasonal shift: summer 16:00-00:00 and cold season
+14:00-22:00. Because no calendar boundaries were supplied, the cold-season
+definition is currently active and the summer definition is prepared inactive;
+the generic Dondurma morning/evening seeds are disabled. Seasonal activation is
+manual in Management Center until explicit date rules are approved.

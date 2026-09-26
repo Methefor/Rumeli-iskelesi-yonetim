@@ -69,7 +69,7 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 24 && report.totals.created === 10 && report.totals.updated === 2,
+  check(report.totals.unchanged === 24 && report.totals.created === 13 && report.totals.updated === 4,
     "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
   check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
@@ -92,6 +92,10 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
     "owner-approved 2/5 reconciliation thresholds exist for all three branches");
   check(sql("select count(*) from public.operating_data_provenance where entity_type='waste_reason' and classification='confirmed' and approval_status='approved'") === "6",
     "all six owner-approved waste reasons are recorded as trusted configuration");
+  check(sql("select string_agg(key||':'||is_active, ',' order by key) from public.shift_definitions where branch_id='" + dondurma + "'") === "evening:false,morning:false,summer:false,winter:true",
+    "Dondurma has only the current winter seasonal shift active");
+  check(sql("select key||':'||name from public.registers where branch_id='" + dondurma + "'") === "s900:S900",
+    "Dondurma has the owner-confirmed current S900 register");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
 }
@@ -200,7 +204,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const item = (code) => sql(`select id from public.inventory_items where code='${code}'`);
   const A = item("TEST-A01"), B = item("TEST-B01");
   const catA = sql("select id from public.sales_categories where key='test_grup_a'");
-  const defId = sql(`select id from public.shift_definitions where branch_id='${dondurma}' and key='evening'`);
+  const defId = sql(`select id from public.shift_definitions where branch_id='${dondurma}' and key='winter' and is_active`);
   const stockOf = (id) => sql(`select coalesce(sum(stock_delta),0) from public.inventory_movements where inventory_item_id='${id}'`);
   const today = sql("select (now() at time zone 'Europe/Istanbul')::date");
   const mgr = users.P02.token, cashier = users.P04.token, bm = users.P03.token, owner = users.P01.token;
@@ -214,7 +218,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
 
   // shift selection
   const shiftRes = await rpc(bm, "schedule_shift", { p_branch_id: dondurma, p_shift_definition_id: defId, p_business_date: today, p_reason: "daily rehearsal" });
-  check(shiftRes.ok, "3. branch manager schedules the evening shift");
+  check(shiftRes.ok, "3. branch manager schedules the active winter shift");
   const shiftId = shiftRes.data;
   check((await rpc(bm, "assign_shift", { p_shift_id: shiftId, p_user_id: users.P04.id })).ok, "the cashier is assigned to the shift");
   const mine = await req(`/rest/v1/shifts?select=id,status,business_date&id=eq.${shiftId}`, { token: cashier });

@@ -16,7 +16,10 @@ Anything you do not know stays out: nothing is invented for you.
 ## B. Decisions only the owner can make
 
 - [ ] Balık Ekmek is already one of the three confirmed branches. Define its registers, shifts and categories, and confirm whether the legacy Rumeli evening Z-report `balik_ekmek` revenue field belongs to this branch or remains part of Rumeli reporting.
-- [ ] İskele Dondurma: which categories does it report? Its registers? Its shift times and report deadlines?
+- [x] İskele Dondurma currently has one S900 computer/register. Pavo is planned but not active yet. Owner statement 2026-09-26.
+- [x] İskele Dondurma has one seasonal shift: summer 16:00–00:00; cold season 14:00–22:00. Cold-season shift is currently active; cutoffs equal shift end. Owner statement 2026-09-26.
+- [ ] İskele Dondurma: which sales categories does it report?
+- [ ] Pavo transition: confirm the activation date/name; then deactivate S900 and activate Pavo without rewriting history.
 - [x] Reconciliation tolerance: 2% warning / 5% error for all three branches. Owner approved 2026-09-26.
 - [x] Waste reasons: son kullanma tarihi geçmiş, hasarlı, dökülme, kalite sorunu, ikram/numune, diğer. Owner approved 2026-09-26.
 

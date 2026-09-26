@@ -1,6 +1,11 @@
 # Legacy sabah/aksam shifts (entry.html labels + js/supabase-client.js on-time rule).
 # Keys use the V4 morning/evening (legacy sabah -> morning, aksam -> evening).
 # Owner approved 2026-09-26. Migration 009 seeded DIFFERENT generic times (08:00-16:00, 16:00-23:59).
+# İskele Dondurma uses one seasonal shift. Winter is active because the summer season has ended; season changes are manual until dates are defined.
 branch_key,shift_key,name,start_time,end_time,cutoff_time,cutoff_day_offset,is_active,provenance,approval_status,source
 rumeli_iskelesi,morning,Sabah,09:00,17:30,17:30,0,true,legacy_observed,approved,Owner approved 2026-09-26; entry.html shift-time 09:00-17:30; isOnTime until 17:30
 rumeli_iskelesi,evening,Akşam,16:00,01:00,01:00,1,true,legacy_observed,approved,Owner approved 2026-09-26; entry.html shift-time 16:00-01:00; isOnTime until 01:00
+iskele_dondurma,morning,Eski genel sabah,08:00,16:00,16:30,0,false,confirmed,approved,Owner statement 2026-09-26; generic seed is not used by this branch
+iskele_dondurma,evening,Eski genel akşam,16:00,23:59,01:00,1,false,confirmed,approved,Owner statement 2026-09-26; generic seed is not used by this branch
+iskele_dondurma,summer,Yaz vardiyası,16:00,00:00,00:00,1,false,confirmed,approved,Owner statement 2026-09-26; activate manually for summer season
+iskele_dondurma,winter,Kış vardiyası,14:00,22:00,22:00,0,true,confirmed,approved,Owner statement 2026-09-26; current cold-season schedule

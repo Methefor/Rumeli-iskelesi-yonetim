@@ -444,3 +444,12 @@ approved waste reasons to the real dataset. Fresh local reset plus the expanded
 77-assertion loader suite proves all three threshold rows, trusted provenance,
 reconciliation behavior, idempotency and access controls. The 20 validator
 tests pass. Hosted and production were not contacted.
+
+### 2026-09-26 - İskele Dondurma register and seasonal shifts
+
+Recorded S900 as the current single register, disabled the branch's two generic
+seed shifts, added summer 16:00-00:00 inactive and cold-season 14:00-22:00
+active, and left Pavo pending until cutover details are supplied. Fresh local
+reset plus the expanded 79-assertion loader suite proves the active/inactive
+state, register, scheduling, idempotency and daily operation. Categories remain
+unapproved. Hosted and production were not contacted.

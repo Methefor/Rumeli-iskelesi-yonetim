@@ -461,3 +461,14 @@ geçmiş (`expired`), hasarlı (`damaged`), dökülme (`spilled`), kalite sorunu
 (`quality`), ikram/numune (`sample`) and diğer (`other`). These are confirmed
 operating data. The fixed reason codes remain stable for audit/reporting; the
 Turkish labels are recorded in provenance.
+
+### 2026-09-26 - İskele Dondurma register and seasonal shifts
+
+İskele Dondurma currently operates one S900 computer/register. Pavo is a
+planned replacement and is not activated before its transition date/name is
+confirmed. The branch works one seasonal shift: summer 16:00-00:00 and cold
+season 14:00-22:00, with report cutoff at shift end. Since the owner stated the
+summer season has ended and supplied no automatic season dates, the cold-season
+shift is active, summer is prepared inactive, and the generic migration 009
+morning/evening definitions are disabled. Management Center controls later
+season activation without changing historical shift records.

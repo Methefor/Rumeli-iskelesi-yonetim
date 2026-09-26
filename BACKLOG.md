@@ -243,8 +243,11 @@ mutation is authorized by this backlog update.
       shift times on 2026-09-26; locally validated through the real loader.
 - [x] Owner approved 2% warning / 5% error thresholds for all branches and the
       six supported waste reasons on 2026-09-26; locally validated.
-- [ ] **Remaining owner input** (Gate 3): Balık Ekmek and İskele Dondurma
-      structure; catalogue, opening stock and costs.
+- [x] Owner confirmed İskele Dondurma's current S900 register and seasonal
+      16:00-00:00 / 14:00-22:00 single-shift model; locally validated.
+- [ ] **Remaining owner input** (Gate 3): İskele Dondurma categories; Pavo
+      transition details; Balık Ekmek structure; catalogue, opening stock and
+      costs.
       See `operating-data/OWNER_INPUT_CHECKLIST.md`.
 - [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).
