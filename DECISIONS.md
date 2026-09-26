@@ -442,3 +442,13 @@ through migration 017's service_role-only function, which binds the audit actor
 to a verified active owner and reuses the audited inventory RPCs. Wrong seeds in
 001-016 are classified, never edited. Synthetic test data lives in a separate
 folder and is loadable only with an explicit flag.
+
+### 2026-09-26 - Rumeli legacy operating configuration approved
+
+Metehan approved the ten legacy sales categories, their use by Rumeli, the
+`Ana Kasa` / `2. Kasa` register layout, and the shift mapping `sabah` ->
+`morning`, `aksam` -> `evening`. Approved times are Sabah 09:00-17:30 with a
+17:30 report cutoff and Akşam 16:00-01:00 with a 01:00 next-day cutoff. These
+owner-approved rows may replace the generic migration 009 seed through the
+audited operating-data loader. This does not approve İskele Dondurma or Balık
+Ekmek structure, thresholds, waste reasons, catalogue, costs or opening stock.

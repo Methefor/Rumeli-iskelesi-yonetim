@@ -239,10 +239,13 @@ mutation is authorized by this backlog update.
 
 ## Stage 3 follow-ups (operating data)
 
-- [ ] **Owner input** (Gate 3): see `operating-data/OWNER_INPUT_CHECKLIST.md`
-      (approve legacy categories/registers/shift times; Balık Ekmek and Iskele
-      Dondurma structure; thresholds; catalogue, opening stock, costs).
+- [x] Owner approved Rumeli legacy categories, category mapping, registers and
+      shift times on 2026-09-26; locally validated through the real loader.
+- [ ] **Remaining owner input** (Gate 3): Balık Ekmek and İskele Dondurma
+      structure; thresholds; waste reasons; catalogue, opening stock and costs.
+      See `operating-data/OWNER_INPUT_CHECKLIST.md`.
 - [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).
-- [ ] Decide how legacy sabah/aksam and the Balık Ekmek / Dondurma revenue
-      fields map to V4 (needed by the Stage 4 adapter).
+- [x] Legacy sabah/aksam map to V4 morning/evening.
+- [ ] Decide how the Balık Ekmek / Dondurma revenue fields map to V4 (needed by
+      the Stage 4 adapter).

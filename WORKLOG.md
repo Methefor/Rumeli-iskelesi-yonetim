@@ -426,3 +426,13 @@ thresholds are classified demo_only. No catalogue, stock, cost or waste data
 exists anywhere, so a synthetic test-only catalogue proves the full daily flow.
 Gate 3: INPUT REQUIRED. No commit/push; hosted and production untouched.
 Report: `docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md`.
+
+### 2026-09-26 - Rumeli operating-data owner approval
+
+Recorded the owner's approval of Rumeli's ten categories, two registers and
+Sabah/Akşam definitions in the real dataset. Updated the validator and loader
+regression expectations. Fresh local 001-017 reset and the 75-assertion loader
+suite prove that dry-run is non-mutating, apply creates both registers and the
+missing Dondurma category mapping, replaces the two generic Rumeli shift seeds
+with 09:00-17:30 / 16:00-01:00, records provenance/audit, and is idempotent.
+The 20 validator tests also pass. Hosted and production were not contacted.

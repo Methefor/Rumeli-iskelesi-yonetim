@@ -37,14 +37,14 @@ test('the committed real dataset and test-only fixture validate without a reject
   }
 })
 
-test('real dataset: only branches are approved; every other legacy observation is skipped, never applied', () => {
+test('real dataset: owner-approved Rumeli legacy configuration is ready to apply', () => {
   const files = {}
   const dir = join(HERE, '..', 'real')
   for (const g of GROUPS) { try { files[g] = readFileSync(join(dir, `${g}.csv`), 'utf8') } catch { files[g] = null } }
   const res = validateDataset({ dataset: 'real', files, today: TODAY })
   const okGroups = new Set(res.entries.filter((e) => e.status === 'ok').map((e) => e.group))
-  assert.deepEqual([...okGroups], ['branches'])
-  assert.ok(res.counts.skipped > 0)
+  assert.deepEqual([...okGroups], ['branches', 'sales_categories', 'registers', 'shift_definitions', 'category_branches'])
+  assert.equal(res.counts.skipped, 0)
 })
 
 test('owner-input templates are never inside the loaded directories and hold no data rows', () => {

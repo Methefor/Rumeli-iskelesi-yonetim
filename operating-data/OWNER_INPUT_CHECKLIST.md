@@ -7,11 +7,11 @@ Anything you do not know stays out: nothing is invented for you.
 
 ## A. Approve what the legacy app already shows (edit approval_status, no new data)
 
-- [ ] Categories: the 10 categories (Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek) are correct for V4. (`real/sales_categories.csv`)
-- [ ] Rumeli reports all 10 categories. (`real/category_branches.csv`)
-- [ ] Rumeli has two registers: Ana Kasa and 2. Kasa. (`real/registers.csv`)
-- [ ] Rumeli shifts: Sabah 09:00–17:30 (report deadline 17:30) and Akşam 16:00–01:00 (deadline 01:00 the next day). The database currently holds a different generic 08:00–16:00 / 16:00–23:59 seed. (`real/shift_definitions.csv`)
-- [ ] Legacy `sabah`/`aksam` map to V4 `morning`/`evening`.
+- [x] Categories: the 10 categories (Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek) are correct for V4. Owner approved 2026-09-26. (`real/sales_categories.csv`)
+- [x] Rumeli reports all 10 categories. Owner approved 2026-09-26. (`real/category_branches.csv`)
+- [x] Rumeli has two registers: Ana Kasa and 2. Kasa. Owner approved 2026-09-26. (`real/registers.csv`)
+- [x] Rumeli shifts: Sabah 09:00–17:30 (report deadline 17:30) and Akşam 16:00–01:00 (deadline 01:00 the next day). Owner approved 2026-09-26. (`real/shift_definitions.csv`)
+- [x] Legacy `sabah`/`aksam` map to V4 `morning`/`evening`. Owner approved 2026-09-26.
 
 ## B. Decisions only the owner can make
 

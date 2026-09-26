@@ -1,7 +1,9 @@
 # Local operating-data validation (Stage 3) - 2026-09-26
 
 Scope: Stage 3 only, real LOCAL Supabase (Docker). Hosted, staging and
-production were not contacted. No commit or push. **Gate 3: INPUT REQUIRED.**
+production were not contacted. Stage 3 was committed locally as `8a023bb` and
+was not pushed. **Gate 3 remains INPUT REQUIRED for the catalogue and the
+other branches' configuration.**
 
 ## What was built
 - `supabase/migrations/017_operating_data_loader.sql` (prepared; validated only
@@ -18,24 +20,27 @@ production were not contacted. No commit or push. **Gate 3: INPUT REQUIRED.**
 
 ## Findings about the existing seeds (classification, values unchanged)
 - Branches (3): confirmed.
-- 10 categories: legacy_observed / pending.
-- Category->branch (12 rows, 009 guess): unknown / pending.
-- Shift definitions (4, 009): demo_only / pending. They **differ** from the legacy
-  app (Sabah 09:00-17:30, Akşam 16:00-01:00); the legacy times were not applied
-  because the owner has not approved them.
+- 10 categories: legacy_observed / owner-approved 2026-09-26.
+- Category->branch seeds start unknown / pending. The owner approved all 10
+  Rumeli mappings; the three seeded İskele Dondurma mappings remain unknown.
+- Shift definitions (4, 009): generic seeds start as demo_only / pending. The
+  owner approved Rumeli's legacy Sabah 09:00-17:30 and Akşam 16:00-01:00
+  definitions on 2026-09-26; the loader replaces the two Rumeli seeds.
 - Thresholds 2/5 (2 rows): demo_only / pending.
-- No legacy product, price, cost, stock, waste or register-layout data exists.
+- No legacy product, price, cost, stock or waste data exists. No confirmed
+  register/shift/category layout exists for İskele Dondurma or Balık Ekmek.
 
-## Real dataset dry run (fresh reset, default mode)
-created 0 | updated 0 | unchanged 3 | skipped 24 | rejected 0 - applied: no.
-Skipped: 10 categories, 10 Rumeli category mappings, 2 registers, 2 shifts (all
-legacy_observed, approval pending).
+## Real dataset after owner approval (fresh reset, default dry run)
+created 3 | updated 2 | unchanged 22 | skipped 0 | rejected 0 - applied: no.
+The plan creates two Rumeli registers plus the missing Rumeli/Dondurma category
+mapping, updates the two Rumeli shift seeds, and leaves 22 already-present rows
+unchanged. Apply then succeeds; a second apply creates or updates nothing.
 
 ## Data-quality snapshot (local DB after loading the synthetic catalogue)
-Screen totals: confirmed 4, pending 10, test 12, unknown 12. Warnings: Balık Ekmek
-has no shift / register / category / threshold; İskele Dondurma has no register;
-22 records await owner approval; 12 are test-only. Synthetic items appear as
-"Yalnızca test verisi".
+The earlier browser snapshot preceded the owner's approval and is superseded by
+the locally validated real-data apply. Balık Ekmek still has no shift, register,
+category or threshold; İskele Dondurma still has no confirmed register/shift/
+category configuration. Synthetic items remain labelled "Yalnızca test verisi".
 
 ## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 75 assertions)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
@@ -82,8 +87,9 @@ overflow, showing the loaded synthetic catalogue.
 - One AuthProvider test flaked once under parallel load (passed on re-run).
 
 ## Not done / risks
-Hosted validation, real catalogue, owner approval (see
-`operating-data/OWNER_INPUT_CHECKLIST.md`). The loader is validated only
+Hosted validation, real catalogue, and the remaining owner decisions (see
+`operating-data/OWNER_INPUT_CHECKLIST.md`). Rumeli legacy categories, registers
+and shifts are approved. The loader is validated only
 against local Supabase, and its CLI refuses non-local hosts. Migration 017 is
 part of the prepared migration chain and therefore requires a separate hosted
 deployment approval later. The audit actor of a load is the named owner, so run

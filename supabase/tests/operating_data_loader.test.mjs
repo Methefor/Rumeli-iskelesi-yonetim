@@ -69,22 +69,25 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 3 && report.totals.created === 0, "dry run: the three confirmed branches are 'unchanged' (already seeded)");
-  check(report.totals.skipped >= 22, "dry run: unapproved legacy observations are reported as skipped");
+  check(report.totals.unchanged === 22 && report.totals.created === 3 && report.totals.updated === 2,
+    "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
+  check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
 }
 
-// ---- 2. real apply: only confirmed data, seeds untouched ----------------------
+// ---- 2. real apply: owner-approved legacy configuration -----------------------
 {
   const shiftsBefore = shiftDump();
   const { report, exitCode } = await load(["--apply"]);
   check(exitCode === 0 && report.applied === true, "apply of the real dataset succeeds");
-  check(shiftDump() === shiftsBefore, "unapproved legacy shift times were NOT written over the seed");
-  check(sql("select count(*) from public.registers") === "0", "unapproved legacy registers were NOT created");
+  check(shiftDump() !== shiftsBefore && shiftDump() === "evening16:0-1:0,morning9:0-17:30",
+    "owner-approved Istanbul shift times replace the generic seed");
+  check(sql("select string_agg(key||':'||name, ',' order by key) from public.registers where branch_id='" + rumeli + "'") === "ana_kasa:Ana Kasa,iki_kasa:2. Kasa",
+    "owner-approved Rumeli registers are created");
   const branchProv = sql("select string_agg(classification||'/'||approval_status, ',') from public.operating_data_provenance where entity_type='branch'");
   check(branchProv === "confirmed/approved,confirmed/approved,confirmed/approved", "branches are recorded as confirmed + approved");
-  const seedShift = sql("select classification||'/'||approval_status from public.operating_data_provenance where entity_key='rumeli_iskelesi/morning'");
-  check(seedShift === "demo_only/pending", "the seeded morning shift stays classified demo_only/pending (not presented as business truth)");
+  const approvedShift = sql("select classification||'/'||approval_status from public.operating_data_provenance where entity_key='rumeli_iskelesi/morning'");
+  check(approvedShift === "legacy_observed/approved", "the Rumeli morning shift is recorded as legacy-observed and owner-approved");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
 }
@@ -96,7 +99,7 @@ const tmp = (name, files) => {
   return dir;
 };
 const M = "provenance,approval_status,source";
-const regs = (name) => `branch_key,register_key,name,is_active,${M}\nrumeli_iskelesi,ana_kasa,${name},true,legacy_observed,approved,owner said yes\n`;
+const regs = (name) => `branch_key,register_key,name,is_active,${M}\nrumeli_iskelesi,gecici_kasa,${name},true,legacy_observed,approved,owner said yes\n`;
 const branchesCsv = `branch_key,name,is_active,${M}\nrumeli_iskelesi,Rumeli İskelesi,true,confirmed,approved,BACKLOG\n`;
 {
   const dir = tmp("reg", { branches: branchesCsv, registers: regs("Ana Kasa") });
@@ -104,12 +107,12 @@ const branchesCsv = `branch_key,name,is_active,${M}\nrumeli_iskelesi,Rumeli İsk
   check(r.report.totals.created === 1 && r.report.applied, "an owner-approved legacy register is created");
   r = await load(["--apply", "--dir", dir]);
   check(r.report.totals.unchanged === 2 && r.report.totals.created === 0, "re-applying creates no duplicate (unchanged)");
-  check(sql("select count(*) from public.registers where key='ana_kasa'") === "1", "exactly one register row exists");
+  check(sql("select count(*) from public.registers where key='gecici_kasa'") === "1", "exactly one temporary register row exists");
   r = await load(["--apply", "--dir", tmp("reg2", { branches: branchesCsv, registers: regs("Ana Kasa 1") })]);
   check(r.report.totals.updated === 1, "a changed name is a controlled update");
-  const audit = sql("select count(*) from public.audit_logs a join public.profiles p on p.id=a.actor_user_id where a.action='operating_data_load' and a.entity_type='registers' and p.employee_code='P01'");
+  const audit = sql("select count(*) from public.audit_logs a join public.profiles p on p.id=a.actor_user_id where a.action='operating_data_load' and a.entity_type='registers' and a.entity_id='rumeli_iskelesi/gecici_kasa' and p.employee_code='P01'");
   check(Number(audit) === 2, "create + update are audited with the verified owner as actor");
-  const prov = sql("select classification||'/'||approval_status from public.operating_data_provenance where entity_type='register'");
+  const prov = sql("select classification||'/'||approval_status from public.operating_data_provenance where entity_type='register' and entity_key='rumeli_iskelesi/gecici_kasa'");
   check(prov === "legacy_observed/approved", "provenance records legacy_observed + owner-approved");
 }
 

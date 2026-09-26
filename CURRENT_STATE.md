@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-26 (Stage 3: operating data loader, local only; Gate 3 INPUT REQUIRED; see docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md).
+Last updated: 2026-09-26 (Stage 3: Rumeli legacy categories, registers and Istanbul shift times owner-approved and locally validated; remaining catalogue/branch configuration still INPUT REQUIRED; see docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md).
 
 ## Two applications live in this repo right now
 
