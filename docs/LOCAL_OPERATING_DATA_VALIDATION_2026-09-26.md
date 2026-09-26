@@ -22,7 +22,8 @@ other branches' configuration.**
 - Branches (3): confirmed.
 - 10 categories: legacy_observed / owner-approved 2026-09-26.
 - Category->branch seeds start unknown / pending. The owner approved all 10
-  Rumeli mappings; the three seeded İskele Dondurma mappings remain unknown.
+  Rumeli mappings; the three İskele Dondurma mappings (Dondurma, Sıcak İçecek, Soğuk İçecek) were
+  owner-approved 2026-09-26 and are recorded confirmed / approved.
 - Shift definitions (4, 009): generic seeds start as demo_only / pending. The
   owner approved Rumeli's legacy Sabah 09:00-17:30 and Akşam 16:00-01:00
   definitions on 2026-09-26; the loader replaces the two Rumeli seeds.
@@ -38,21 +39,23 @@ other branches' configuration.**
   categories and all Balık Ekmek operating structure remain unconfirmed.
 
 ## Real dataset after owner approval (fresh reset, default dry run)
-created 13 | updated 4 | unchanged 24 | skipped 0 | rejected 0 - applied: no.
+created 13 | updated 4 | unchanged 27 | skipped 0 | rejected 0 - applied: no
+(confirmed by a real dry run; migration 009 already holds the three Dondurma
+mappings, so they are unchanged rows whose provenance becomes confirmed/approved).
 The plan creates two Rumeli registers, the missing Rumeli/Dondurma category
 mapping, Balık Ekmek's threshold, six waste-reason provenance rows, S900 and
 two seasonal Dondurma shifts; updates the two Rumeli shift seeds and disables
-the two generic Dondurma shifts; and leaves 24 already-present rows unchanged.
+the two generic Dondurma shifts; and leaves 27 already-present rows unchanged.
 Apply then succeeds; a second apply creates or updates nothing.
 
 ## Data-quality snapshot (local DB after loading the synthetic catalogue)
 The earlier browser snapshot preceded the owner's approval and is superseded by
 the locally validated real-data apply. Balık Ekmek still has no shift, register
 or category. İskele Dondurma now has a confirmed register and seasonal shifts,
-but its categories remain unknown. Thresholds are approved for all three
+and its three owner-approved category mappings. Thresholds are approved for all three
 branches. Synthetic items remain labelled "Yalnızca test verisi".
 
-## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 79 assertions)
+## Loader tests (`supabase/tests/operating_data_loader.test.mjs`, 82 assertions)
 Dry run changes nothing (rows, provenance, audit, ledger); apply creates the
 right rows; second apply creates/updates nothing; controlled update (rename,
 category survives); back-dated cost, different cost for an existing date,
@@ -82,7 +85,7 @@ count. Cashier cannot receive, read costs or call the loader.
 SQL: timezone_regression, timezone_rpc (32), inventory_security, backdated_entry,
 backdated_entry_timezone (24), management_center - pass.
 HTTP: local_inventory_api 137, storage_policy 48, pin_login 45,
-management_center 76, operating_data_loader 79 - pass (each on its own reset).
+management_center 76, operating_data_loader 82 - pass (each on its own reset).
 App: typecheck, lint clean; 246 tests pass (3 consecutive runs); `build:local`
 ok; dist has 0 production-ref / service_role / loader-function matches;
 `git diff --check` clean. Browser (local stack, manager L002): data-quality,
@@ -104,3 +107,12 @@ against local Supabase, and its CLI refuses non-local hosts. Migration 017 is
 part of the prepared migration chain and therefore requires a separate hosted
 deployment approval later. The audit actor of a load is the named owner, so run
 it under the owner's code only.
+
+## Update: Dondurma category mapping approval (2026-09-26)
+Owner approved the three İskele Dondurma categories. Validator: 21 tests pass.
+Fresh reset applies migrations 001-017; loader suite 82/82 pass, including
+explicit assertions that the three mappings are confirmed + approved, Dondurma
+reports exactly those categories, the winter shift is the only active one, S900
+is the only register, Pavo is absent, and a second apply changes nothing. No
+application code changed, so the UI suite was not re-run. Hosted and production
+untouched.

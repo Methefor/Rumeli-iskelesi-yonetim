@@ -55,6 +55,18 @@ test('real dataset: all owner-approved operating configuration is ready to apply
   assert.equal(res.counts.skipped, 0)
 })
 
+test('real dataset: the three owner-approved Dondurma category mappings are applied as confirmed', () => {
+  const files = {}
+  const dir = join(HERE, '..', 'real')
+  for (const g of GROUPS) { try { files[g] = readFileSync(join(dir, `${g}.csv`), 'utf8') } catch { files[g] = null } }
+  const res = validateDataset({ dataset: 'real', files, today: TODAY })
+  const rows = res.entries.filter((e) => e.group === 'category_branches' && e.data.branch_key === 'iskele_dondurma')
+  assert.deepEqual(rows.map((e) => e.data.category_key).sort(), ['dondurma', 'sicak_icecek', 'soguk_icecek'])
+  assert.ok(rows.every((e) => e.status === 'ok' && e.data.provenance === 'confirmed' && e.data.approval_status === 'approved'))
+  assert.equal(res.counts.rejected, 0)
+  assert.equal(res.counts.skipped, 0)
+})
+
 test('owner-input templates are never inside the loaded directories and hold no data rows', () => {
   for (const f of readdirSync(join(HERE, '..', 'owner-input'))) {
     const rows = parseCsv(readFileSync(join(HERE, '..', 'owner-input', f), 'utf8'))

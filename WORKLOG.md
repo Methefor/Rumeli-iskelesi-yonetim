@@ -453,3 +453,12 @@ active, and left Pavo pending until cutover details are supplied. Fresh local
 reset plus the expanded 79-assertion loader suite proves the active/inactive
 state, register, scheduling, idempotency and daily operation. Categories remain
 unapproved. Hosted and production were not contacted.
+
+### 2026-09-26 - İskele Dondurma category mapping approved
+
+Added the three owner-approved mappings to the real dataset. Real dry run:
+created 13, updated 4, unchanged 27, skipped 0, rejected 0. Validator 21/21,
+loader suite 82/82 on a fresh 001-017 reset. Remaining Gate 3 input: Pavo
+activation details/date; Balık Ekmek register, shifts and categories; mapping of
+the legacy Balık Ekmek/Dondurma revenue fields; real catalogue, product/category
+mapping, opening stock, dated unit costs. No push; hosted/production untouched.

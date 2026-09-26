@@ -245,9 +245,11 @@ mutation is authorized by this backlog update.
       six supported waste reasons on 2026-09-26; locally validated.
 - [x] Owner confirmed İskele Dondurma's current S900 register and seasonal
       16:00-00:00 / 14:00-22:00 single-shift model; locally validated.
-- [ ] **Remaining owner input** (Gate 3): İskele Dondurma categories; Pavo
-      transition details; Balık Ekmek structure; catalogue, opening stock and
-      costs.
+- [x] Owner approved İskele Dondurma categories: Dondurma, Sıcak İçecek, Soğuk İçecek.
+- [ ] **Remaining owner input** (Gate 3): Pavo activation details/date; Balık Ekmek
+      register, shifts and categories; mapping of the legacy Balık Ekmek/Dondurma
+      revenue fields; real catalogue, product/category mapping, opening stock and
+      dated unit costs.
       See `operating-data/OWNER_INPUT_CHECKLIST.md`.
 - [ ] Re-run the daily-operation rehearsal on the real catalogue once supplied.
 - [ ] Hosted/staging validation of 017 and the loader flow (NOT DONE).

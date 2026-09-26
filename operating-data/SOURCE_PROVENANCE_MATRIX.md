@@ -16,7 +16,8 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 | Shifts, Balık Ekmek | — | unknown | not in legacy | none | no |
 | Sales categories | Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek | legacy_observed / approved | 10 fields in `entry.html`; owner approval 2026-09-26 | seeded (009) | yes |
 | Category → branch (Rumeli: all 10) | | legacy_observed / approved | Rumeli cashier form shows all 10; owner approval 2026-09-26 | 9 seeded (Dondurma not) | yes |
-| Category → branch (İskele Dondurma: 3; Balık Ekmek: none) | | **unknown** | 009 design guess; legacy has no mapping | seeded guess | no; seeds classified `unknown` |
+| Category → branch (İskele Dondurma: Dondurma, Sıcak İçecek, Soğuk İçecek) | 3 mappings | confirmed / approved | owner approval 2026-09-26 (`real/category_branches.csv`) | seeded by 009 (same three) | yes; provenance changes from unknown/pending to confirmed/approved |
+| Category → branch (Balık Ekmek) | — | unknown | not in legacy | none | no |
 | Balık Ekmek / Dondurma revenue | "Balık Ekmek" and "Dondurma" amounts in the Rumeli evening Z report (`balik_ekmek`, `dondurma` columns) | legacy_observed | `js/supabase-client.js` | — | not modelled: both names also exist as confirmed branches, but the owner must decide how these legacy revenue fields map to those branches or remain in Rumeli reporting |
 | Inventory items (codes, names, units, decimals) | — | unknown | no product data exists anywhere in the repo or legacy app | none | no |
 | Product → category mapping | — | unknown | | none | no |

@@ -472,3 +472,10 @@ summer season has ended and supplied no automatic season dates, the cold-season
 shift is active, summer is prepared inactive, and the generic migration 009
 morning/evening definitions are disabled. Management Center controls later
 season activation without changing historical shift records.
+
+### 2026-09-26 - İskele Dondurma sales categories
+
+The owner approved Dondurma, Sıcak İçecek and Soğuk İçecek as İskele Dondurma's
+categories. Recorded in `operating-data/real/category_branches.csv` as
+confirmed / approved. Pavo remains a future transition and is not activated;
+hosted and production are untouched.

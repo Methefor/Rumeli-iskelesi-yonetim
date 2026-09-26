@@ -69,7 +69,7 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
   const { report, exitCode } = await load([]);
   check(exitCode === 0 && report.mode === "dry-run" && report.applied === false, "default run is a dry run and reports applied:false");
   check(counts() === before, "dry run changed no data at all (rows, provenance, audit, ledger)");
-  check(report.totals.unchanged === 24 && report.totals.created === 13 && report.totals.updated === 4,
+  check(report.totals.unchanged === 27 && report.totals.created === 13 && report.totals.updated === 4,
     "dry run reports the exact owner-approved Rumeli create/update/unchanged plan");
   check(report.totals.skipped === 0, "dry run has no remaining rows awaiting approval in the committed real dataset");
   check(!JSON.stringify(report).includes(service) && !formatReport(report).includes(service), "the report never contains the service-role key");
@@ -96,6 +96,11 @@ const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minut
     "Dondurma has only the current winter seasonal shift active");
   check(sql("select key||':'||name from public.registers where branch_id='" + dondurma + "'") === "s900:S900",
     "Dondurma has the owner-confirmed current S900 register");
+  check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + dondurma + "'") === "dondurma,sicak_icecek,soguk_icecek",
+    "Dondurma reports exactly the three owner-approved categories");
+  check(sql("select count(*) from public.operating_data_provenance where entity_type='category_branch' and entity_key like 'iskele_dondurma/%' and classification='confirmed' and approval_status='approved'") === "3",
+    "all three Dondurma category mappings are confirmed + approved");
+  check(sql("select count(*) from public.registers where lower(key) like '%pavo%' or lower(name) like '%pavo%'") === "0", "Pavo is absent (future transition, not activated)");
   const again = await load(["--apply"]);
   check(again.report.totals.created === 0 && again.report.totals.updated === 0, "second apply of the real dataset creates and updates nothing");
 }
