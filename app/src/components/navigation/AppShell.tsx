@@ -4,6 +4,7 @@ import { useSelectedBranch } from '../../hooks/useSelectedBranch'
 import { primaryRoleLabel } from '../../utils/roles'
 import { Icon, type IconName } from './icons'
 import { DemoNotice } from './DemoNotice'
+import { BRANCH_THEME_COPY, getBranchTheme } from './branchTheme'
 import styles from './AppShell.module.css'
 
 export interface NavItem {
@@ -42,10 +43,21 @@ export function AppShell({ navItems, allowBranchSwitch = false }: AppShellProps)
 
   const role = primaryRoleLabel(roles)
   const identity = [profile?.employeeCode, role].filter(Boolean).join(' · ')
+  const branchTheme = getBranchTheme(selectedBranch)
 
   return (
-    <div className={styles.shell}>
+    <div
+      className={[styles.shell, styles[`theme-${branchTheme}`]].join(' ')}
+      data-branch-theme={branchTheme}
+    >
       <header className={styles.header}>
+        <div className={styles.branchMark} aria-hidden="true">
+          <span className={styles.markSun} />
+          <span className={styles.markScoopOne} />
+          <span className={styles.markScoopTwo} />
+          <span className={styles.markScoopThree} />
+          <span className={styles.markBase} />
+        </div>
         <div className={styles.identity}>
           {allowBranchSwitch && canSwitch ? (
             <select
@@ -65,6 +77,7 @@ export function AppShell({ navItems, allowBranchSwitch = false }: AppShellProps)
               {selectedBranch?.name ?? 'Rumeli Operasyon'}
             </span>
           )}
+          <span className={styles.branchMood}>{BRANCH_THEME_COPY[branchTheme]}</span>
           <span className={styles.person}>
             {profile?.fullName ? `${profile.fullName} — ` : ''}
             {identity}
@@ -101,6 +114,11 @@ export function AppShell({ navItems, allowBranchSwitch = false }: AppShellProps)
       </nav>
 
       <main className={styles.main}>
+        <div className={styles.ambient} aria-hidden="true">
+          <span className={styles.ambientOne} />
+          <span className={styles.ambientTwo} />
+          <span className={styles.ambientThree} />
+        </div>
         <div className={styles.content}>
           <DemoNotice />
           <Outlet />
