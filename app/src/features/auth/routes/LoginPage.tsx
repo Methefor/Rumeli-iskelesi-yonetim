@@ -2,8 +2,6 @@ import { useRef, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { Button } from '../../../components/ui/Button'
 import { Input } from '../../../components/ui/Input'
-import { Card } from '../../../components/ui/Card'
-import { StatusChip } from '../../../components/ui/StatusChip'
 import { useToast } from '../../../hooks/useToast'
 import { useAuth } from '../../../hooks/useAuth'
 import { isDemoModeEnabled } from '../../../services/supabase'
@@ -84,48 +82,103 @@ export function LoginPage() {
 
   return (
     <div className={styles.page}>
-      <Card className={styles.card}>
-        {isDemoModeEnabled && <StatusChip tone="info">Demo / Preview</StatusChip>}
-        <h1 className={styles.title}>Rumeli Operasyon</h1>
-        <p className={styles.subtitle}>Çalışan kodu ve PIN ile giriş yapın.</p>
-        {isDemoModeEnabled && (
-          <p className={styles.subtitle}>
-            Demo: M001/2027 (yönetici), K001/2027 (kasiyer), D001/2027 (çalışan)
-          </p>
-        )}
+      <div className={styles.aurora} aria-hidden="true" />
+      <main className={styles.shell}>
+        <section className={styles.brandPanel} aria-labelledby="brand-title">
+          <div className={styles.brandMark}>
+            <span className={styles.brandRule} aria-hidden="true" />
+            <span>RUMELİ İSKELESİ</span>
+          </div>
 
-        <form className={styles.form} onSubmit={(e) => void handleSubmit(e)} noValidate>
-          <Input
-            label="Çalışan Kodu"
-            name="employeeCode"
-            autoComplete="username"
-            value={employeeCode}
-            disabled={submitting}
-            onChange={(e) => setEmployeeCode(e.target.value)}
-            required
-          />
-          <Input
-            label="PIN"
-            name="pin"
-            type="password"
-            inputMode="numeric"
-            autoComplete="current-password"
-            maxLength={6}
-            value={pin}
-            disabled={submitting}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-            required
-          />
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
+          <div className={styles.artworkFrame} aria-hidden="true">
+            <img src="/favicon.svg" alt="" className={styles.artwork} />
+            <span className={styles.artworkHalo} />
+          </div>
+
+          <div className={styles.brandCopy}>
+            <p className={styles.eyebrow}>OPERASYON YÖNETİMİ</p>
+            <h1 id="brand-title" className={styles.brandTitle}>
+              İskeledeki her vardiya, tek merkezde.
+            </h1>
+            <p className={styles.brandSubtitle}>
+              Vardiya, satış ve stok kayıtlarına güvenli erişim.
             </p>
+          </div>
+        </section>
+
+        <section className={styles.loginPanel} aria-labelledby="login-title">
+          <div className={styles.loginHeading}>
+            <div className={styles.loginMeta}>
+              <span className={styles.accessLabel}>YETKİLİ ÇALIŞAN GİRİŞİ</span>
+              {isDemoModeEnabled && (
+                <span className={styles.demoBadge}>DEMO / PREVIEW</span>
+              )}
+            </div>
+            <h2 id="login-title" className={styles.loginTitle}>
+              Hoş geldiniz
+            </h2>
+            <p className={styles.loginSubtitle}>
+              Çalışan kodunuz ve PIN’inizle devam edin.
+            </p>
+          </div>
+
+          <form className={styles.form} onSubmit={(e) => void handleSubmit(e)} noValidate>
+            <Input
+              className={styles.input}
+              label="Çalışan Kodu"
+              name="employeeCode"
+              autoComplete="username"
+              autoCapitalize="characters"
+              value={employeeCode}
+              disabled={submitting}
+              onChange={(e) => setEmployeeCode(e.target.value)}
+              required
+            />
+            <Input
+              className={styles.input}
+              label="PIN"
+              name="pin"
+              type="password"
+              inputMode="numeric"
+              autoComplete="current-password"
+              maxLength={6}
+              value={pin}
+              disabled={submitting}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+              required
+            />
+            {error && (
+              <p className={styles.error} role="alert">
+                {error}
+              </p>
+            )}
+            <Button
+              className={styles.submit}
+              type="submit"
+              size="lg"
+              fullWidth
+              loading={submitting}
+            >
+              Giriş Yap
+            </Button>
+          </form>
+
+          {isDemoModeEnabled && (
+            <div className={styles.demoCredentials}>
+              <span>Önizleme hesapları</span>
+              <code>M001</code>
+              <code>K001</code>
+              <code>D001</code>
+              <span>PIN 2027</span>
+            </div>
           )}
-          <Button type="submit" size="lg" fullWidth loading={submitting}>
-            Giriş Yap
-          </Button>
-        </form>
-      </Card>
+
+          <p className={styles.securityNote}>
+            <span className={styles.securityDot} aria-hidden="true" />
+            Oturumunuz rolünüze ve şubenize göre açılır.
+          </p>
+        </section>
+      </main>
     </div>
   )
 }

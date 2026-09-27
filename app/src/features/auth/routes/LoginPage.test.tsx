@@ -86,7 +86,9 @@ describe('LoginPage (real mode)', () => {
     await fill('P001', '0000')
     await userEvent.click(screen.getByRole('button', { name: /Giriş Yap/ }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Çalışan kodu veya PIN hatalı.')
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Çalışan kodu veya PIN hatalı.',
+    )
     expect(screen.getByLabelText('PIN')).toHaveValue('')
   })
 
@@ -141,6 +143,12 @@ describe('LoginPage (demo mode)', () => {
     const signInDemo = vi.fn()
     const signInWithPin = vi.fn()
     renderLogin(auth({ signInDemo, signInWithPin }))
+
+    expect(screen.getByText('DEMO / PREVIEW')).toBeInTheDocument()
+    expect(screen.getByText('M001')).toBeInTheDocument()
+    expect(screen.getByText('K001')).toBeInTheDocument()
+    expect(screen.getByText('D001')).toBeInTheDocument()
+
     await fill('M001', '2027')
     await userEvent.click(screen.getByRole('button', { name: /Giriş Yap/ }))
 

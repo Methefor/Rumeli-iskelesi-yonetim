@@ -516,3 +516,15 @@ connection, but business data stays server-authoritative and offline writes are
 not queued. A new version waits for the user to press `Şimdi güncelle`, avoiding
 an automatic reload while a cashier is filling a form. Real-device installation
 and update behavior is a cutover gate.
+
+### 2026-09-27 - Preview is always visibly synthetic
+
+The Vercel `Preview` environment has `VITE_DEMO_MODE=true`. Preview must show a
+prominent `DEMO / PREVIEW` label and the three synthetic account codes before
+any login. This setting is scoped only to Preview; Production keeps real login
+behavior. A Preview without the label must not be used with employee credentials.
+
+The login visual direction deliberately carries forward the legacy product's
+navy night canvas, orange action color, lighthouse identity and restrained
+ambient motion. V4 keeps one role-aware login form instead of restoring the old
+manager/cashier split or client-side PIN keypad.

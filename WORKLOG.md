@@ -498,3 +498,18 @@ demo cashier login and employee home rendered with a fixed bottom nav, no
 horizontal overflow and no browser console errors. Typecheck, lint, build and
 248/248 app tests pass. No commit or push; no deployment; production and hosted
 Supabase untouched. Real iOS/Android device QA remains open.
+
+### 2026-09-27 - Branded login and Preview demo correction
+
+Rebuilt the V4 login as a responsive Rumeli-specific scene using the existing
+lighthouse artwork, navy water/night atmosphere, orange primary action, glass
+surface and reduced-motion-aware beacon effect. The security model and single
+role-aware login flow are unchanged. At 360x800 the entire form, demo accounts
+and submit button fit without horizontal or vertical overflow; the desktop split
+layout was also visually checked.
+
+The deployed Preview had `VITE_DEMO_MODE` configured incorrectly, so it showed
+real login and could not be explored with synthetic accounts. The existing
+Vercel variable was overridden to `true` for Preview only. Production variables
+were not changed. A regression assertion now requires the Preview label and all
+three demo account codes in demo mode.

@@ -294,5 +294,11 @@ Auth, Storage and Edge Function responses have no runtime cache rule. Offline
 sales or inventory writes are not queued. A real 360x800 demo-mode browser run
 passed the cashier login/home flow with no horizontal overflow or console
 errors. Typecheck, lint, build and all 248 application tests pass. Real-device
-iOS Safari and Android Chrome installation/update checks remain open. Nothing
-was deployed; hosted Supabase, production, `main` and Vercel were untouched.
+iOS Safari and Android Chrome installation/update checks remain open. The PWA
+foundation is deployed to the protected `v4-2027` Vercel Preview; production,
+hosted Supabase and `main` remain untouched.
+
+The login screen now restores the legacy product's distinctive navy/orange
+lighthouse identity in a responsive V4 implementation. Preview is explicitly
+configured with `VITE_DEMO_MODE=true` and must show its demo label/account codes;
+Production keeps real login mode. The role-aware authentication model is unchanged.
