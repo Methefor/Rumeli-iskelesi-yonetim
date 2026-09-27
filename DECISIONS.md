@@ -502,3 +502,17 @@ idempotent, all-or-nothing removal of branch/category mappings to the loader
 Migration 018 also makes provenance writes state-idempotent: re-applying an
 identical approved dataset preserves `updated_at` and `updated_by`. Those fields
 change only when provenance, approval, dataset, source or note actually changes.
+
+### 2026-09-27 - PWA hosting, caching and updates
+
+Mobile is the primary operating surface. Continue with an installable web app
+hosted on Vercel, but staff must install a stable production alias/custom domain,
+not a commit-specific Preview URL. Preview URLs remain for review and pilot QA.
+
+The service worker may precache only versioned frontend assets, the navigation
+shell and application icons. It must not runtime-cache Supabase database, Auth,
+Storage or Edge Function responses. The installed shell can open without a
+connection, but business data stays server-authoritative and offline writes are
+not queued. A new version waits for the user to press `Şimdi güncelle`, avoiding
+an automatic reload while a cashier is filling a form. Real-device installation
+and update behavior is a cutover gate.

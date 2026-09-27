@@ -147,13 +147,17 @@ in the original brief. Move items up when a phase actually starts.
 
 ## Phase K/L — PWA/mobile QA, production cutover
 
-- [ ] Replace the placeholder `manifest.webmanifest` icon (currently just
-      the Vite default favicon.svg) with real production icons.
-- [ ] Build-generated service-worker/caching strategy (e.g. a Vite PWA
-      plugin) — deliberately not added in Phase B to avoid caching
-      Supabase responses before there's real data-fetching code to reason
-      about; must guarantee Supabase requests never serve stale cached
-      business data.
+- [x] Replace the placeholder `manifest.webmanifest` icon with the existing
+      Rumeli lighthouse artwork in 192px, 512px, maskable and Apple touch
+      variants (local build/browser validated 2026-09-27).
+- [x] Build-generated service worker via `vite-plugin-pwa`: precache only the
+      static application shell and icons; do not runtime-cache Supabase/Auth/
+      Storage/Function responses. Updates wait for an explicit user action.
+      Offline business-data entry remains deliberately unsupported.
+- [ ] Before the mobile pilot, split manager/employee feature routes into lazy
+      chunks and measure first load on a throttled cellular connection. Current
+      production bundle is about 690 KB minified / 198 KB gzip and triggers the
+      Vite 500 KB chunk warning.
 - [ ] Real device QA pass (~95% of usage is mobile per the brief).
 - [ ] Migrate/retire the legacy public `avatars` bucket once V4 fully uses
       `avatars-v4` (`supabase/migrations/007`, not applied) — not before

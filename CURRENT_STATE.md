@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-26 (Stage 3: Rumeli configuration, İskele Dondurma S900/seasonal shifts, all-branch 2%/5% thresholds and six waste reasons owner-approved and locally validated; İskele Dondurma categories corrected to Dondurma + Su (supersedes the earlier three-category decision; obsolete mappings removed via migration 018) and Balık Ekmek (S900, daily 14:00-00:00 shift, two categories) owner-approved; remaining input: Pavo, catalogue, product mapping, opening stock, dated costs; see docs/LOCAL_OPERATING_DATA_VALIDATION_2026-09-26.md).
+Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA shell is now locally prepared and validated with production icons, a generated service worker, connection/update notices and 360px mobile browser QA. Supabase business responses are never cached. Real iOS/Android device QA and deployment remain open; see docs/LOCAL_PWA_VALIDATION_2026-09-27.md).
 
 ## Two applications live in this repo right now
 
@@ -284,3 +284,15 @@ cashier, employee; wrong PIN, unknown code, inactive, lockout, reload, refresh,
 logout, unauthorized routes) plus the full local backend suites and 207 app
 tests. Hosted/staging: NOT DONE. Production: untouched. Demo mode unchanged
 and zero-network. See `docs/LOCAL_LOGIN_VALIDATION_2026-09-26.md`.
+
+### 2026-09-27 - PWA/mobile foundation (local only)
+
+The V4 app now produces an installable PWA shell with Rumeli icons, a static
+asset service worker, an offline warning and a user-controlled update prompt.
+Only the built application shell and icons are precached; Supabase database,
+Auth, Storage and Edge Function responses have no runtime cache rule. Offline
+sales or inventory writes are not queued. A real 360x800 demo-mode browser run
+passed the cashier login/home flow with no horizontal overflow or console
+errors. Typecheck, lint, build and all 248 application tests pass. Real-device
+iOS Safari and Android Chrome installation/update checks remain open. Nothing
+was deployed; hosted Supabase, production, `main` and Vercel were untouched.

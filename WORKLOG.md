@@ -486,3 +486,15 @@ all provenance timestamps and actors before/after re-apply. The full loader
 suite passes 120/120 on a fresh 001-018 reset. The daily-operation rehearsal is
 also wall-clock safe: before cutoff the cashier submits; after cutoff the
 authorized manager submits, preserving the server-authoritative cutoff rule.
+
+### 2026-09-27 - PWA/mobile foundation prepared locally
+
+Added `vite-plugin-pwa`, production Rumeli icons, manifest scope/install icons,
+Apple touch icon support, generated service-worker registration, online/offline
+status UI and an explicit update action. The generated worker precaches eight
+static shell/icon files and contains no Supabase/API runtime cache route. Local
+HTTP checks returned 200 for the manifest, worker and all icons. At 360x800 the
+demo cashier login and employee home rendered with a fixed bottom nav, no
+horizontal overflow and no browser console errors. Typecheck, lint, build and
+248/248 app tests pass. No commit or push; no deployment; production and hosted
+Supabase untouched. Real iOS/Android device QA remains open.
