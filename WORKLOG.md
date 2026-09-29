@@ -513,3 +513,29 @@ real login and could not be explored with synthetic accounts. The existing
 Vercel variable was overridden to `true` for Preview only. Production variables
 were not changed. A regression assertion now requires the Preview label and all
 three demo account codes in demo mode.
+
+### 2026-09-27 - Manager Dashboard rebuild (local, not committed)
+
+Replaced the single-branch `ManagerHomePage` with a period-aware, multi-branch
+Manager Dashboard (`features/dashboard/`) backed by a new pure aggregation
+layer (`domain/dashboard/`: period resolver, integer-kuruş money, MetricState
+available/partial/unavailable/not_applicable, branch comparison and
+organization/operational summary builders) and two thin fetch orchestrators
+(`services/supabase/dashboard.ts`, `services/demo/dashboard.ts`) added to the
+existing `services/data` facade. Sections: organization overview, branch
+comparison (same period/status rules for every branch), operational
+efficiency (documented shift-completion formula only), and a branch detail
+drill-down reusing the already-fetched data (no extra request). Demo mode
+needed no reseeding: the existing fixture already had an untracked branch
+(Rumeli), a partially-costed tracked branch (İskele Dondurma), and both
+WARNING/ERROR reconciliation cases. Gross profit reuses the existing
+`domain/inventory/summarizeGrossProfit` unchanged. See DASHBOARD_MODEL.md.
+Local review caught and fixed one real bug: a StatCard rendering the full
+"Maliyet eşlemesi yetersiz..." sentence as its value overflowed the card;
+compact value slots now always show the short "Veri yok"/"Takip edilmiyor"
+fallback. Typecheck, lint, 291 tests (3 consecutive runs) and `build` all
+pass; demo-mode browser review at desktop and 360px (period switching, branch
+switching, org overview, branch comparison, reconciliation exceptions,
+Dondurma inventory/gross-profit signals, Rumeli's honest non-tracked state,
+branch detail, no horizontal overflow) all confirmed manually. Not committed
+or pushed; hosted/production and Vercel were not touched.

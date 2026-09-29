@@ -528,3 +528,17 @@ The login visual direction deliberately carries forward the legacy product's
 navy night canvas, orange action color, lighthouse identity and restrained
 ambient motion. V4 keeps one role-aware login form instead of restoring the old
 manager/cashier split or client-side PIN keypad.
+
+### 2026-09-27 - Manager Dashboard: kuruş money, MetricState, one shared period
+
+Dashboard money aggregation sums integer kuruş, never TL floats, converting
+back to TL only at the presentation boundary. Every metric that can fail to
+exist is a `MetricState` (available/partial/unavailable/not_applicable) so a
+missing gross-profit mapping, an untracked branch, and a genuine zero can
+never look identical on screen — "Net Kâr" is never used, and a partial
+figure is always labelled "Kısmi". One `DashboardPeriod`, resolved once per
+render in Istanbul calendar days, is threaded through every fetch and every
+aggregation call; no widget computes its own date boundary. Branch inclusion
+in the comparison table uses the SAME period and the SAME cancelled-report
+exclusion rule for every branch, and a branch's revenue counts a report under
+its shift's business date, not its submission time.

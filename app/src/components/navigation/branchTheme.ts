@@ -24,3 +24,18 @@ export const BRANCH_THEME_COPY: Record<BranchTheme, string> = {
   balik: 'Denizden sofraya',
   default: 'Günlük operasyon',
 }
+
+/**
+ * Same accent hex values as `AppShell.module.css`'s `.theme-*` rules — kept
+ * here too because a branch COMPARISON view (Manager Dashboard) needs each
+ * branch's own identity color at once, not just the single ambient
+ * `--branch-accent` the shell sets for the currently selected branch. This
+ * is identity only (a small dot/left border), never a financial status
+ * color — OK/WARNING/ERROR always use the fixed status palette.
+ */
+export const BRANCH_THEME_ACCENT: Record<BranchTheme, string> = {
+  rumeli: '#f2a531',
+  dondurma: '#4bbca8',
+  balik: '#ef6b4a',
+  default: 'var(--color-primary-600)',
+}

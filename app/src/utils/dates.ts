@@ -49,3 +49,19 @@ export function formatShortDate(iso: string): string {
     timeZone: 'Europe/Istanbul',
   })
 }
+
+/**
+ * Istanbul has been UTC+3 year-round since 2016 (no DST) — the same fact
+ * `services/demo/store.ts`'s `istanbulInstant` relies on. A fixed offset
+ * lets a calendar date convert to a UTC instant boundary without a timezone
+ * library, and (unlike `Date.parse` of a bare date) never depends on the
+ * caller's own device/session timezone.
+ */
+export function istanbulInstant(dateIso: string, hour = 0, minute = 0): Date {
+  return new Date(`${dateIso}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00+03:00`)
+}
+
+/** [start, endExclusive) as UTC instants for the Istanbul calendar day `dateIso`. */
+export function istanbulDayBounds(dateIso: string): { start: Date; endExclusive: Date } {
+  return { start: istanbulInstant(dateIso, 0, 0), endExclusive: istanbulInstant(addDaysIso(dateIso, 1), 0, 0) }
+}

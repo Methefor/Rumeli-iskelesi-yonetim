@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA shell is now locally prepared and validated with production icons, a generated service worker, connection/update notices and 360px mobile browser QA. Supabase business responses are never cached. Real iOS/Android device QA and deployment remain open; see docs/LOCAL_PWA_VALIDATION_2026-09-27.md).
+Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA shell is now locally prepared and validated with production icons, a generated service worker, connection/update notices and 360px mobile browser QA. Supabase business responses are never cached. Real iOS/Android device QA and deployment remain open; see docs/LOCAL_PWA_VALIDATION_2026-09-27.md. The Manager Dashboard (`/app/manager`) was rebuilt as a period-aware, multi-branch operational/financial control center — see DASHBOARD_MODEL.md; local typecheck/lint/test/build and demo-mode browser review pass; not committed/pushed).
 
 ## Two applications live in this repo right now
 

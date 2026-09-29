@@ -267,3 +267,18 @@ mutation is authorized by this backlog update.
       earlier three-category approval); mapping removals built (migration 018).
 - [ ] Remaining Gate 3 input: Pavo activation name/date; real product catalogue;
       product-to-category mapping; opening stock; dated unit costs.
+
+## Manager Dashboard follow-ups (2026-09-27)
+
+- [ ] Commit and push the Manager Dashboard rebuild once approved (see
+      DASHBOARD_MODEL.md; currently local-only, validated by tests + demo
+      browser review).
+- [ ] Previous-period comparison (same length/rules, clearly labelled) — not
+      implemented in this phase.
+- [ ] A custom date-range picker in the UI (the domain/service support
+      already exists: `resolveCustomPeriod`/`validateCustomRange`).
+- [ ] Waste VALUE on the dashboard (currently a count only — cost is not
+      readable by every role).
+- [ ] A trusted, explicitly-wired historical (pre-V4) data source before any
+      "2026 history" mode is added — LEGACY_RECONCILIATION.md's gap is still
+      open.

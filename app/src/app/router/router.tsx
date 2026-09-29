@@ -4,7 +4,7 @@ import { EmployeeLayout } from '../layouts/EmployeeLayout'
 import { ManagerLayout } from '../layouts/ManagerLayout'
 import { LoginPage } from '../../features/auth/routes/LoginPage'
 import { EmployeeHomePage } from '../../features/home/EmployeeHomePage'
-import { ManagerHomePage } from '../../features/home/ManagerHomePage'
+import { ManagerDashboardPage } from '../../features/dashboard/ManagerDashboardPage'
 import { ManagementPage } from '../../features/home/ManagementPage'
 import { ProfilePage } from '../../features/home/ProfilePage'
 import { MyShiftPage } from '../../features/shifts/routes/MyShiftPage'
@@ -68,7 +68,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <ManagerHomePage /> },
+      { index: true, element: <ManagerDashboardPage /> },
       { path: 'shifts', element: <ShiftOverviewPage /> },
       { path: 'shifts/assign', element: <AssignShiftPage /> },
       { path: 'reports', element: <SalesOverviewPage /> },

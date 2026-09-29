@@ -45,11 +45,11 @@ describe('demo mode — manager (M001)', () => {
     const user = await login('M001')
 
     expect(
-      await screen.findByRole('heading', { name: 'Genel Bakış' }),
+      await screen.findByRole('heading', { name: 'Yönetim Paneli' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Demo')).toBeInTheDocument()
     expect(screen.getByText(/sentetik örnek veri/i)).toBeInTheDocument()
-    expect(await screen.findByText('Bugünkü ciro (X/Z)')).toBeInTheDocument()
+    expect(await screen.findByText('Toplam Ciro')).toBeInTheDocument()
 
     // Rumeli (M001's default branch) has no inventory tracking — an honest empty state.
     const nav = screen.getByRole('navigation', { name: 'Ana gezinme' })
@@ -76,12 +76,12 @@ describe('demo mode — manager (M001)', () => {
   it('a page refresh keeps the demo session', async () => {
     await bootApp('/')
     await login('M001')
-    await screen.findByRole('heading', { name: 'Genel Bakış' })
+    await screen.findByRole('heading', { name: 'Yönetim Paneli' })
     cleanup()
 
     await bootApp('/app/manager')
     expect(
-      await screen.findByRole('heading', { name: 'Genel Bakış' }),
+      await screen.findByRole('heading', { name: 'Yönetim Paneli' }),
     ).toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })

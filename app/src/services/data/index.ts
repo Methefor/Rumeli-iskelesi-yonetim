@@ -29,6 +29,7 @@ export const {
   setReconciliationThresholds,
   listManagementAudit,
   getDataQuality,
+  fetchBranchDashboardRaw,
 
   listMyShiftAssignments,
   listBranchShifts,
