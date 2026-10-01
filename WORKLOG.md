@@ -585,3 +585,14 @@ global pending shift-request badge to manager navigation and a direct Stok
 Girişi action to employee home. A fresh local Supabase reset applied all
 migrations; the real-data validator passed 26 tests and the loader passed 120
 assertions with Dondurma/Balık shift checks.
+
+### 2026-10-01 - Cashier identity and manager control center refinement
+
+Unified the user-facing field role as Kasiyer and made branch assignment the
+visible operational distinction. Demo identities now name their branch, new
+staff creation omits the legacy employee role, and the employee list folds old
+employee records into the Kasiyer filter. Rebuilt the manager landing view as a
+dark operational control center while preserving the existing period, money and
+metric-state rules. Typecheck, lint, all 301 app tests and the production PWA
+build pass. Local demo browser review passed at 1440x900 and 360x800 with no
+horizontal overflow or console errors; the Dondurma identity is visibly Kasiyer.

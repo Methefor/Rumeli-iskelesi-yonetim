@@ -49,13 +49,17 @@ describe('demo mode: Manager Dashboard', () => {
     await bootApp('/')
     const user = await login('M001')
 
-    expect(await screen.findByRole('heading', { name: 'Yönetim Paneli' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' }),
+    ).toBeInTheDocument()
     expect(await screen.findByText('Toplam Ciro')).toBeInTheDocument()
     expect(screen.getAllByText('Gönderilen Rapor').length).toBeGreaterThan(0)
     expect(screen.getByText('Açık Mutabakat Sorunu')).toBeInTheDocument()
 
     // Branch comparison: both seeded branches appear, each with its own honest state.
-    const comparison = (await screen.findByRole('heading', { name: 'Şube Karşılaştırması' })).closest('section')!
+    const comparison = (
+      await screen.findByRole('heading', { name: 'Şube Karşılaştırması' })
+    ).closest('section')!
     expect(within(comparison).getByText('Rumeli İskelesi')).toBeInTheDocument()
     expect(within(comparison).getByText('İskele Dondurma')).toBeInTheDocument()
     // Rumeli has no inventory tracking at all in the demo fixture.
@@ -78,13 +82,19 @@ describe('demo mode: Manager Dashboard', () => {
   it('selecting a branch in the comparison updates the branch detail drill-down', async () => {
     await bootApp('/')
     await login('M001')
-    await screen.findByRole('heading', { name: 'Yönetim Paneli' })
+    await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' })
 
-    const comparison = (await screen.findByRole('heading', { name: 'Şube Karşılaştırması' })).closest('section')!
-    const dondurmaCard = within(comparison).getByText('İskele Dondurma').closest('button')!
+    const comparison = (
+      await screen.findByRole('heading', { name: 'Şube Karşılaştırması' })
+    ).closest('section')!
+    const dondurmaCard = within(comparison)
+      .getByText('İskele Dondurma')
+      .closest('button')!
     await userEvent.click(dondurmaCard)
 
-    expect(await screen.findByRole('heading', { name: /Şube Detayı · İskele Dondurma/ })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: /Şube Detayı · İskele Dondurma/ }),
+    ).toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
@@ -96,18 +106,22 @@ describe('demo mode: Manager Dashboard', () => {
 
     await bootApp('/app/manager')
     expect(await screen.findByText('Erişim reddedildi')).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Yönetim Paneli' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Rumeli Kontrol Merkezi' }),
+    ).not.toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
   it('never renders a bare currency zero for an unavailable/not-applicable metric', async () => {
     await bootApp('/')
     const user = await login('M001')
-    await screen.findByRole('heading', { name: 'Yönetim Paneli' })
+    await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' })
     // The seeded sales/inventory data is in the last two days, not "today".
     await user.click(screen.getByRole('radio', { name: 'Son 30 gün' }))
     // The org-wide gross-profit card must disclose partiality via text, not silently show a complete-looking ₺ figure with no caveat.
-    const overview = (await screen.findByRole('heading', { name: /^Genel Bakış/ })).closest('section')!
+    const overview = (await screen.findByText('CANLI OPERASYON ÖZETİ')).closest(
+      'section',
+    )!
     const grossProfitLabel = await within(overview).findAllByText(/^Brüt Kâr/)
     expect(grossProfitLabel[0]!.textContent).toMatch(/Kısmi/)
   })

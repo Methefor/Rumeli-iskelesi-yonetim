@@ -582,3 +582,18 @@ silinmez, pasif tutulur; yalnızca `daily` tanımı aktiftir.
 Bekleyen vardiya taleplerinin sayısı yönetici navigasyonunda global rozet olarak
 gösterilir. `inventory.receive` yetkili çalışanların ana sayfasında doğrudan
 Stok Girişi kısayolu bulunur.
+
+### 2026-10-01 - Saha rolü Kasiyer, operasyon ayrımı şube
+
+Yönetici dışındaki veri giriş personeli kullanıcıya Kasiyer olarak gösterilir;
+hangi veriyi girebildiğini rol adı değil şube ataması belirler. Yeni saha hesabı
+`cashier` rolüyle açılır. Mevcut RLS ve geçmiş kayıtlarla uyumluluk için dahili
+`employee` rolü silinmez, arayüzde Kasiyer olarak gösterilir ve aynı filtreye
+dahil edilir. Çalışan kodları operasyonel kimliktir; PIN her kullanıcı için ayrı
+atanır ve yönetim merkezinden güvenli şekilde sıfırlanabilir.
+
+Yönetici gösterge paneli görsel bir rapor listesi yerine operasyon kontrol
+merkezi olarak tasarlanır. Öncelik sırası açık sorunlar, günlük finansal sonuç,
+vardiya/sayım ilerlemesi ve şube karşılaştırmasıdır. Yalnızca mevcut kaynaklardan
+hesaplanabilen metrikler gösterilir; birleşik veya tahmini bir verimlilik puanı
+tanımlanmadan eklenmez.

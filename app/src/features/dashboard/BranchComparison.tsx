@@ -1,15 +1,19 @@
 import type { CSSProperties } from 'react'
-import { getBranchTheme, BRANCH_THEME_ACCENT } from '../../components/navigation/branchTheme'
+import {
+  getBranchTheme,
+  BRANCH_THEME_ACCENT,
+} from '../../components/navigation/branchTheme'
 import type { BranchComparisonRow } from '../../domain/dashboard'
 import { fromKurus } from '../../domain/dashboard'
-import { Card, RowCard, Stack, StatusChip } from '../../components/ui'
+import { Card, RowCard, StatusChip } from '../../components/ui'
 import { formatMoney, formatRatioPercent } from '../../utils/format'
 import { metricIntText, metricMoneyText, partialSuffix } from './metricDisplay'
 import styles from './Dashboard.module.css'
 
 function ShareText({ row }: { row: BranchComparisonRow }) {
   const share = row.revenueShare
-  if (share.status === 'available' || share.status === 'partial') return <>{formatRatioPercent(share.value)}</>
+  if (share.status === 'available' || share.status === 'partial')
+    return <>{formatRatioPercent(share.value)}</>
   return <>{share.reason ?? 'Veri yok'}</>
 }
 
@@ -48,15 +52,22 @@ export function BranchComparison({
       <h2 id="branch-comparison" className={styles.sectionTitle}>
         Şube Karşılaştırması
       </h2>
-      <Stack gap="sm">
+      <div className={styles.branchGrid}>
         {rows.map((row) => {
-          const theme = getBranchTheme({ id: row.branchId, key: row.branchKey, name: row.branchName })
+          const theme = getBranchTheme({
+            id: row.branchId,
+            key: row.branchKey,
+            name: row.branchName,
+          })
           const selected = row.branchId === selectedBranchId
           return (
             <Card
               key={row.branchId}
               interactive
-              className={[styles.branchCard, selected ? styles.branchCardSelected : ''].join(' ')}
+              className={[
+                styles.branchCard,
+                selected ? styles.branchCardSelected : '',
+              ].join(' ')}
               style={{ '--dot': BRANCH_THEME_ACCENT[theme] } as CSSProperties}
             >
               <button
@@ -67,7 +78,9 @@ export function BranchComparison({
               >
                 <span className={styles.branchDot} aria-hidden="true" />
                 <span className={styles.branchName}>{row.branchName}</span>
-                <span className={styles.branchRevenue}>{metricMoneyText(row.revenue)}</span>
+                <span className={styles.branchRevenue}>
+                  {metricMoneyText(row.revenue)}
+                </span>
               </button>
               <div className={styles.branchMetaGrid}>
                 <div>
@@ -84,7 +97,10 @@ export function BranchComparison({
                   <span className={styles.metaLabel}>Vardiya</span>
                   <span className={styles.metaValue}>
                     {row.shifts.completed}/
-                    {row.shifts.scheduled + row.shifts.inProgress + row.shifts.submitted + row.shifts.closed}
+                    {row.shifts.scheduled +
+                      row.shifts.inProgress +
+                      row.shifts.submitted +
+                      row.shifts.closed}
                   </span>
                 </div>
                 <div>
@@ -99,16 +115,27 @@ export function BranchComparison({
                   <StatusChip tone="danger">{row.reconciliation.ERROR} Hata</StatusChip>
                 )}
                 {row.reconciliation.WARNING > 0 && (
-                  <StatusChip tone="warning">{row.reconciliation.WARNING} Uyarı</StatusChip>
+                  <StatusChip tone="warning">
+                    {row.reconciliation.WARNING} Uyarı
+                  </StatusChip>
                 )}
                 {row.reconciliation.OK > 0 && (
                   <StatusChip tone="success">{row.reconciliation.OK} Uygun</StatusChip>
                 )}
                 {row.openReconciliationCount > 0 && (
-                  <StatusChip tone="danger">{row.openReconciliationCount} bekleyen mutabakat</StatusChip>
+                  <StatusChip tone="danger">
+                    {row.openReconciliationCount} bekleyen mutabakat
+                  </StatusChip>
                 )}
                 {row.inventoryTracked ? (
-                  <StatusChip tone={row.inventoryAlertCount.status === 'available' && row.inventoryAlertCount.value > 0 ? 'warning' : 'neutral'}>
+                  <StatusChip
+                    tone={
+                      row.inventoryAlertCount.status === 'available' &&
+                      row.inventoryAlertCount.value > 0
+                        ? 'warning'
+                        : 'neutral'
+                    }
+                  >
                     Stok uyarısı: {metricIntText(row.inventoryAlertCount)}
                   </StatusChip>
                 ) : (
@@ -119,9 +146,12 @@ export function BranchComparison({
           )
         })}
         {rows.length === 0 && (
-          <RowCard title="Görüntülenecek şube yok" subtitle="Erişiminiz olan bir şube bulunamadı." />
+          <RowCard
+            title="Görüntülenecek şube yok"
+            subtitle="Erişiminiz olan bir şube bulunamadı."
+          />
         )}
-      </Stack>
+      </div>
     </section>
   )
 }

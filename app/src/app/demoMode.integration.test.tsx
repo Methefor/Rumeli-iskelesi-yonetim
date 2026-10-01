@@ -45,7 +45,7 @@ describe('demo mode — manager (M001)', () => {
     const user = await login('M001')
 
     expect(
-      await screen.findByRole('heading', { name: 'Yönetim Paneli' }),
+      await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Demo')).toBeInTheDocument()
     expect(screen.getByText(/sentetik örnek veri/i)).toBeInTheDocument()
@@ -81,12 +81,12 @@ describe('demo mode — manager (M001)', () => {
   it('a page refresh keeps the demo session', async () => {
     await bootApp('/')
     await login('M001')
-    await screen.findByRole('heading', { name: 'Yönetim Paneli' })
+    await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' })
     cleanup()
 
     await bootApp('/app/manager')
     expect(
-      await screen.findByRole('heading', { name: 'Yönetim Paneli' }),
+      await screen.findByRole('heading', { name: 'Rumeli Kontrol Merkezi' }),
     ).toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
@@ -119,7 +119,7 @@ describe('demo mode — Dondurma employee (D001)', () => {
     await bootApp('/')
     const user = await login('D001')
 
-    expect(await screen.findByText(/Merhaba, Demo Çalışan/)).toBeInTheDocument()
+    expect(await screen.findByText(/Merhaba, Demo Dondurma Kasiyeri/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Stok Girişi' })).toHaveAttribute(
       'href',
       '/app/employee/inventory/receive',
@@ -150,7 +150,7 @@ describe('demo mode — Dondurma employee (D001)', () => {
   it('cannot reach manager-only routes (cost management)', async () => {
     await bootApp('/')
     await login('D001')
-    await screen.findByText(/Merhaba, Demo Çalışan/)
+    await screen.findByText(/Merhaba, Demo Dondurma Kasiyeri/)
     cleanup()
 
     await bootApp('/app/manager/inventory/costs')

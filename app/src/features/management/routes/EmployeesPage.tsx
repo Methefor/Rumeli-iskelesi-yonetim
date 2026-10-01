@@ -17,15 +17,28 @@ import { listBranches, listEmployees } from '../../../services/data'
 import { primaryRoleLabel, roleLabel } from '../../../utils/roles'
 import { Unauthorized } from '../../../components/navigation/Unauthorized'
 
-const ROLE_FILTERS = ['owner', 'manager', 'branch_manager', 'cashier', 'employee', 'viewer']
+const ROLE_FILTERS = ['owner', 'manager', 'branch_manager', 'cashier', 'viewer']
+
+function matchesRoleFilter(employeeRoles: string[], role: string) {
+  if (role === '') return true
+  if (role === 'cashier') {
+    return employeeRoles.some((employeeRole) =>
+      ['cashier', 'employee'].includes(employeeRole),
+    )
+  }
+  return employeeRoles.includes(role)
+}
 
 export function EmployeesPage() {
   const { user, roles } = useAuth()
   const allowed = canUseManagementCenter(roles)
-  const data = useAsync(allowed && user ? `mgmt-employees:${user.id}` : null, async () => {
-    const [employees, branches] = await Promise.all([listEmployees(), listBranches()])
-    return { employees, branches }
-  })
+  const data = useAsync(
+    allowed && user ? `mgmt-employees:${user.id}` : null,
+    async () => {
+      const [employees, branches] = await Promise.all([listEmployees(), listBranches()])
+      return { employees, branches }
+    },
+  )
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
   const [status, setStatus] = useState('active')
@@ -48,7 +61,9 @@ export function EmployeesPage() {
         back={{ to: '/app/manager/management', label: 'Yönetim' }}
         actions={
           assignableRoles(roles).length > 0 ? (
-            <LinkButton to="/app/manager/management/employees/new">Yeni Çalışan</LinkButton>
+            <LinkButton to="/app/manager/management/employees/new">
+              Yeni Çalışan
+            </LinkButton>
           ) : undefined
         }
       />
@@ -89,7 +104,7 @@ export function EmployeesPage() {
           const visible = employees.filter(
             (e) =>
               (status === 'all' || (status === 'active') === e.isActive) &&
-              (role === '' || e.roles.includes(role)) &&
+              matchesRoleFilter(e.roles, role) &&
               (branch === '' || e.branchIds.includes(branch)) &&
               (q === '' ||
                 e.fullName.toLowerCase().includes(q) ||
@@ -112,7 +127,8 @@ export function EmployeesPage() {
                   title={e.fullName}
                   subtitle={`${e.employeeCode ?? 'Kodsuz'} · ${primaryRoleLabel(e.roles) || 'Rolsüz'}`}
                   meta={
-                    e.branchIds.map((b) => branchName.get(b) ?? 'Şube').join(', ') || 'Şube yok'
+                    e.branchIds.map((b) => branchName.get(b) ?? 'Şube').join(', ') ||
+                    'Şube yok'
                   }
                   trailing={
                     <StatusChip tone={e.isActive ? 'success' : 'danger'}>

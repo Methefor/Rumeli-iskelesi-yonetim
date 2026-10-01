@@ -3,7 +3,8 @@ const ROLE_LABELS: Record<string, string> = {
   manager: 'Yönetici',
   branch_manager: 'Şube Müdürü',
   cashier: 'Kasiyer',
-  employee: 'Çalışan',
+  // Kept as a legacy database key; field staff are presented consistently as cashiers.
+  employee: 'Kasiyer',
   viewer: 'Görüntüleyici',
 }
 

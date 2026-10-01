@@ -40,8 +40,8 @@ export const DEMO_USERS: readonly DemoUser[] = [
     id: 'demo-d001',
     employeeCode: 'D001',
     pin: '2027',
-    fullName: 'D001 — Demo Çalışan',
-    roles: ['employee'],
+    fullName: 'D001 — Demo Dondurma Kasiyeri',
+    roles: ['cashier'],
     branchIds: ['demo-branch-dondurma'],
     branchName: 'İskele Dondurma',
   },
@@ -57,7 +57,9 @@ export function findDemoUser(employeeCode: string, pin: string): DemoUser | unde
 
 /** Home route for a set of role keys — mirrors the router's manager/employee split. */
 export function homePathForRoles(roles: readonly string[]): string {
-  return roles.some((role) => MANAGER_ROLES.includes(role)) ? '/app/manager' : '/app/employee'
+  return roles.some((role) => MANAGER_ROLES.includes(role))
+    ? '/app/manager'
+    : '/app/employee'
 }
 
 /** Where a demo user should land after "logging in" — mirrors the real router's role split. */

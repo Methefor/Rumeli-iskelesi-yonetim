@@ -13,9 +13,9 @@ describe('findDemoUser', () => {
     expect(user?.roles).toEqual(['cashier'])
   })
 
-  test('matches D001/2027 as employee in İskele Dondurma', () => {
+  test('matches D001/2027 as cashier in İskele Dondurma', () => {
     const user = findDemoUser('D001', '2027')
-    expect(user?.roles).toEqual(['employee'])
+    expect(user?.roles).toEqual(['cashier'])
     expect(user?.branchName).toBe('İskele Dondurma')
   })
 

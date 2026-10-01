@@ -32,8 +32,12 @@ export function EmployeeCreatePage() {
   const { user, roles, branchIds } = useAuth()
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const allowedRoles = assignableRoles(roles)
-  const branches = useAsync(user ? `mgmt-branches:${user.id}` : null, () => listBranches())
+  // `employee` remains readable for legacy records, but new field staff are
+  // created under the single, branch-scoped `cashier` role.
+  const allowedRoles = assignableRoles(roles).filter((role) => role !== 'employee')
+  const branches = useAsync(user ? `mgmt-branches:${user.id}` : null, () =>
+    listBranches(),
+  )
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [pin, setPin] = useState('')
@@ -173,7 +177,8 @@ export function EmployeeCreatePage() {
         onCancel={() => setConfirming(false)}
       >
         <p>
-          {name.trim()} ({code.trim().toUpperCase()}) — {roleKey ? roleLabel(roleKey) : ''}
+          {name.trim()} ({code.trim().toUpperCase()}) —{' '}
+          {roleKey ? roleLabel(roleKey) : ''}
         </p>
       </ReasonSheet>
     </Stack>

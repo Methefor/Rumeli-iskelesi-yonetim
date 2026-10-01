@@ -338,3 +338,18 @@ The former Dondurma seasonal definitions remain inactive for history. Preview
 demo data now includes Balık Ekmek, manager navigation shows a global pending-
 request badge, and employee home exposes Stok Girişi when the role may receive
 stock. Fresh local reset and the 120-assertion operating-data loader suite pass.
+
+### 2026-10-01 - Kasiyer kimliği ve yönetici kontrol merkezi
+
+Saha kullanıcıları arayüzde tek bir Kasiyer kimliği altında, işlem yapacakları
+şubeyle ayırt edilir. `employee` veritabanı rolü eski kayıtlarla uyumluluk için
+korunur ve Kasiyer filtresine dahil edilir; yeni saha kullanıcıları `cashier`
+rolüyle oluşturulur. Çalışan kodu sabit kalabilir, her gerçek kullanıcının PIN'i
+kişiye özeldir. Önizleme hesapları yönetici, Rumeli kasiyeri ve Dondurma kasiyeri
+olarak açıkça etiketlenir.
+
+Yönetici ana sayfası mevcut doğrulanabilir verilerle çalışan koyu temalı bir
+kontrol merkezine dönüştürüldü. Ciro, mutabakat sorunları, vardiya ilerlemesi,
+stok uyarıları, brüt kâr, rapor/sayım/fire aktivitesi ve şube karşılaştırmaları
+aynı ekranda operasyon önceliğine göre sunulur. Yeni ve kaynaksız bir verimlilik
+puanı üretilmez.

@@ -270,9 +270,8 @@ mutation is authorized by this backlog update.
 
 ## Manager Dashboard follow-ups (2026-09-27)
 
-- [ ] Commit and push the Manager Dashboard rebuild once approved (see
-      DASHBOARD_MODEL.md; currently local-only, validated by tests + demo
-      browser review).
+- [x] Rebuild the Manager Dashboard as an operational control center and prepare
+      the approved package for Preview review (see DASHBOARD_MODEL.md).
 - [ ] Previous-period comparison (same length/rules, clearly labelled) — not
       implemented in this phase.
 - [ ] A custom date-range picker in the UI (the domain/service support

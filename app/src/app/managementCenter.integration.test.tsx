@@ -21,7 +21,10 @@ async function login(code: string) {
   return user
 }
 
-async function openManagement(user: ReturnType<typeof userEvent.setup>, linkName: string | RegExp) {
+async function openManagement(
+  user: ReturnType<typeof userEvent.setup>,
+  linkName: string | RegExp,
+) {
   const nav = await screen.findByRole('navigation', { name: 'Ana gezinme' })
   await user.click(within(nav).getByRole('link', { name: /Yönetim/ }))
   await user.click(await screen.findByRole('link', { name: linkName }))
@@ -53,22 +56,24 @@ describe('demo mode: Management Center', () => {
     await openManagement(user, 'Çalışanları Yönet')
 
     expect(await screen.findByRole('heading', { name: 'Çalışanlar' })).toBeInTheDocument()
-    expect(await screen.findByText('D001 — Demo Çalışan')).toBeInTheDocument()
+    expect(await screen.findByText('D001 — Demo Dondurma Kasiyeri')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Yeni Çalışan' })).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Ara'), 'K002')
     expect(await screen.findByText('K002 — Demo Kasiyer 2')).toBeInTheDocument()
-    expect(screen.queryByText('D001 — Demo Çalışan')).not.toBeInTheDocument()
+    expect(screen.queryByText('D001 — Demo Dondurma Kasiyeri')).not.toBeInTheDocument()
     await user.clear(screen.getByLabelText('Ara'))
 
-    await user.selectOptions(screen.getByLabelText('Rol'), 'employee')
-    expect(await screen.findByText('D001 — Demo Çalışan')).toBeInTheDocument()
-    expect(screen.queryByText('K002 — Demo Kasiyer 2')).not.toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('Rol'), 'cashier')
+    expect(await screen.findByText('D001 — Demo Dondurma Kasiyeri')).toBeInTheDocument()
+    expect(screen.getByText('K002 — Demo Kasiyer 2')).toBeInTheDocument()
 
     await user.clear(screen.getByLabelText('Ara'))
     await user.type(screen.getByLabelText('Ara'), 'D001')
     await user.click(await screen.findByRole('link', { name: 'Detay' }))
-    expect(await screen.findByRole('heading', { name: 'D001 — Demo Çalışan' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'D001 — Demo Dondurma Kasiyeri' }),
+    ).toBeInTheDocument()
 
     await user.click(await screen.findByRole('button', { name: 'Pasifleştir' }))
     const confirm = await screen.findByRole('button', { name: 'Onayla' })
@@ -96,7 +101,9 @@ describe('demo mode: Management Center', () => {
     await user.type(screen.getByLabelText('Yeni PIN'), '8642')
     await user.type(screen.getByLabelText('Gerekçe (zorunlu)'), 'unuttu')
     await user.click(confirm)
-    await waitFor(() => expect(screen.queryByLabelText('Yeni PIN')).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(screen.queryByLabelText('Yeni PIN')).not.toBeInTheDocument(),
+    )
     expect(document.body.textContent).not.toContain('8642')
     expect(fetchSpy).not.toHaveBeenCalled()
   })
@@ -166,11 +173,15 @@ describe('demo mode: data quality view', () => {
     await bootApp('/')
     const user = await login('M001')
     await openManagement(user, 'Özeti Aç')
-    expect(await screen.findByRole('heading', { name: 'Veri kalitesi' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Veri kalitesi' }),
+    ).toBeInTheDocument()
     expect(await screen.findByText(/Doğrulanmış 0/)).toBeInTheDocument()
     expect(screen.getByText(/Bilinmeyen 0/)).toBeInTheDocument()
     expect(screen.getByText(/yalnızca test\/örnek veridir/)).toBeInTheDocument()
-    expect(screen.queryByText('Doğrulanmış', { selector: 'span' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Doğrulanmış', { selector: 'span' }),
+    ).not.toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
@@ -180,7 +191,11 @@ describe('demo mode: data quality view', () => {
     await screen.findByRole('heading', { name: /Merhaba/ })
     window.history.pushState({}, '', '/app/manager/management/data-quality')
     window.dispatchEvent(new PopStateEvent('popstate'))
-    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Veri kalitesi' })).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', { name: 'Veri kalitesi' }),
+      ).not.toBeInTheDocument(),
+    )
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 })

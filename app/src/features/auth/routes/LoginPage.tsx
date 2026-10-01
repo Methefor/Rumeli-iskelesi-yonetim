@@ -165,11 +165,34 @@ export function LoginPage() {
 
           {isDemoModeEnabled && (
             <div className={styles.demoCredentials}>
-              <span>Önizleme hesapları</span>
-              <code>M001</code>
-              <code>K001</code>
-              <code>D001</code>
-              <span>PIN 2027</span>
+              <div className={styles.demoCredentialsHeader}>
+                <span>Önizleme hesapları</span>
+                <span>Demo PIN · 2027</span>
+              </div>
+              <div className={styles.demoAccountGrid}>
+                <button type="button" onClick={() => setEmployeeCode('M001')}>
+                  <code>M001</code>
+                  <span>
+                    <strong>Yönetici</strong>
+                    <small>Tüm şubeler</small>
+                  </span>
+                </button>
+                <button type="button" onClick={() => setEmployeeCode('K001')}>
+                  <code>K001</code>
+                  <span>
+                    <strong>Kasiyer</strong>
+                    <small>Rumeli İskelesi</small>
+                  </span>
+                </button>
+                <button type="button" onClick={() => setEmployeeCode('D001')}>
+                  <code>D001</code>
+                  <span>
+                    <strong>Kasiyer</strong>
+                    <small>İskele Dondurma</small>
+                  </span>
+                </button>
+              </div>
+              <p>Gerçek kullanımda her personelin PIN’i kendine özeldir.</p>
             </div>
           )}
 
