@@ -1,7 +1,7 @@
 {
-  "name": "Rumeli Operasyon Yönetimi",
-  "short_name": "Rumeli Ops",
-  "description": "Rumeli İskelesi ve İskele Dondurma operasyon yönetimi",
+  "name": "Rumeli İskelesi Kasa",
+  "short_name": "Rumeli Kasa",
+  "description": "Rumeli İskelesi şubeleri için kasa ve operasyon uygulaması",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
