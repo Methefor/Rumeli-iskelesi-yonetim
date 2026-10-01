@@ -1,9 +1,12 @@
 # Legacy Reconciliation
 
-Status: **unresolved discrepancy, documented, not fixed.** Do not treat the
-live `daily_reports` table's current totals as automatically authoritative
-for historical regression testing, and do not migrate or rewrite historical
-calculation logic until this is resolved.
+Status: **migration rule resolved; frozen-snapshot variance preserved.** A
+read-only audit on 2026-10-02 confirmed that management revenue must use the
+evening Z rows; adding morning X and evening Z double counts cumulative sales.
+August reproduces the frozen total exactly. June/July current rows differ from
+the older frozen presentation by a net +₺97,868.50 and the editable legacy
+table has no version history to reconstruct the previous row values. See
+`LEGACY_DATA_AUDIT_2026-10-02.md`.
 
 ## The problem
 
@@ -40,7 +43,16 @@ historical reports are trusted in the V4 app. Migrating historical data or
 writing regression tests before this is understood would produce fixtures
 that look rigorous but validate against the wrong scope.
 
-## What must happen before migration (not yet done)
+## Reconciliation decision used by the prepared migration
+
+- `sabah` becomes X and `aksam` becomes Z; historical revenue uses Z.
+- `total_revenue` is not trusted where it conflicts with branch components.
+- Rumeli is reconstructed from `rumeli_z1 + rumeli_z2`.
+- `balik_ekmek` and `dondurma` become their own branch reports.
+- Current row-level facts and frozen presentation totals are retained as two
+  separate evidence sets; no balancing entry forces them to match.
+
+## What remains before production migration
 
 1. **Define the frozen reference scope precisely** — not just "June total"
    but: which table rows count (all `daily_reports` rows for the date

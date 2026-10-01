@@ -151,3 +151,19 @@ local; the staging sign-off item above remains unmet.
 
 | 017 | `017_operating_data_loader.sql` | `operating_data_provenance` (source/approval registry, seeds classified), `internal_run_operating_data` (service_role only, one transaction, dry-run rolls back) | 003, 009, 012, 014, 016 |
 | 018 | `018_operating_data_mapping_removals.sql` | Loader wrapper `internal_od_apply` + `internal_od_remove_mappings` (audited, transactional branch/category mapping removal; refuses while items use the category); revokes raw writes on `sales_category_branches` | 017 |
+| 021 | `20261001204651_legacy_sales_import.sql` | Service-role-only transactional legacy importer, cashier/profile map, immutable source lineage, frozen management references and source-drift guard | 001-018 plus cashier receipt and shift-request migrations |
+
+### Legacy sales import production gate
+
+The importer is locally validated with the current 538-row hosted source but
+has not been applied to a hosted V4 schema. Before production:
+
+- provision the real owner and five cashier profiles with individual PINs;
+- approve the private legacy-cashier-id to employee-code map;
+- take verified database and Storage backups;
+- re-run `legacy-migration/audit.mjs` and confirm the exact SHA-256 fingerprint;
+- run the importer in dry-run mode and review the 836-report plan;
+- obtain a separate explicit owner approval for schema apply and data apply.
+
+The script does not import legacy PINs, never rewrites legacy tables and refuses
+hosted apply. Production execution must follow a reviewed one-time runbook.

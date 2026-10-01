@@ -79,7 +79,7 @@ export function BranchComparison({
                 <span className={styles.branchDot} aria-hidden="true" />
                 <span className={styles.branchName}>{row.branchName}</span>
                 <span className={styles.branchRevenue}>
-                  {metricMoneyText(row.revenue)}
+                  {row.reportCount === 0 ? 'Rapor yok' : metricMoneyText(row.revenue)}
                 </span>
               </button>
               <div className={styles.branchMetaGrid}>

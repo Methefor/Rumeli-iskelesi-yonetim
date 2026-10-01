@@ -44,7 +44,11 @@ export function OrganizationOverview({ summary }: { summary: OrganizationSummary
       <div className={styles.commandGrid}>
         <div className={styles.revenueHero}>
           <span className={styles.heroLabel}>Toplam Ciro</span>
-          <strong>{metricMoneyText(summary.totalRevenue)}</strong>
+          <strong>
+            {summary.reportCount === 0
+              ? 'Rapor yok'
+              : metricMoneyText(summary.totalRevenue)}
+          </strong>
           <span>{summary.reportCount} Gönderilen Rapor</span>
         </div>
 

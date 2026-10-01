@@ -597,3 +597,15 @@ merkezi olarak tasarlanır. Öncelik sırası açık sorunlar, günlük finansal
 vardiya/sayım ilerlemesi ve şube karşılaştırmasıdır. Yalnızca mevcut kaynaklardan
 hesaplanabilen metrikler gösterilir; birleşik veya tahmini bir verimlilik puanı
 tanımlanmadan eklenmez.
+
+### 2026-10-02 - Legacy history uses Z and preserves both evidence sets
+
+Legacy `sabah` is X and `aksam` is Z. Historical revenue uses Z; X and Z are
+never added together. `total_revenue` is not authoritative when it disagrees
+with branch components, so Rumeli is reconstructed from `rumeli_z1 +
+rumeli_z2`, while Balık Ekmek and Dondurma become separate branch reports.
+Current row-level data is imported unchanged in meaning. The older frozen
+management totals remain separate references because June/July cannot be
+reconstructed after unversioned legacy edits. No artificial balancing row is
+allowed. Public Preview keeps demo access but ships no invented financial or
+inventory figures by default.

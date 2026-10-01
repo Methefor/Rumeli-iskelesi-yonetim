@@ -596,3 +596,13 @@ dark operational control center while preserving the existing period, money and
 metric-state rules. Typecheck, lint, all 301 app tests and the production PWA
 build pass. Local demo browser review passed at 1440x900 and 360x800 with no
 horizontal overflow or console errors; the Dondurma identity is visibly Kasiyer.
+
+### 2026-10-02 - Real legacy audit and local migration rehearsal
+
+Read the hosted legacy source without mutation or cashier names/PINs. Profiled
+538 reports, fixed the historical X/Z interpretation, preserved the remaining
+frozen-reference variance and built a transactional, fingerprint-gated import.
+A fresh local reset applied all migrations. The real-source/local-target test
+created 836 reports and passed 14 rollback, lineage, kuruş, disclosure,
+idempotency and drift assertions. Disabled invented Preview financial/inventory
+fixtures by default. Hosted V4 schema/data and production remain unchanged.

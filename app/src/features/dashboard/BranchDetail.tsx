@@ -1,7 +1,14 @@
 import type { BranchDashboardDetail } from '../../domain/dashboard'
 import { fromKurus } from '../../domain/dashboard'
 import { computeBranchRevenueKurus } from '../../domain/dashboard'
-import { Card, EmptyState, LinkButton, RowCard, Stack, StatusChip } from '../../components/ui'
+import {
+  Card,
+  EmptyState,
+  LinkButton,
+  RowCard,
+  Stack,
+  StatusChip,
+} from '../../components/ui'
 import { formatDate } from '../../utils/dates'
 import { formatMoney } from '../../utils/format'
 import { metricMoneyText } from './metricDisplay'
@@ -21,7 +28,11 @@ const SHIFT_TONE: Record<string, 'neutral' | 'info' | 'success' | 'danger'> = {
   closed: 'success',
   cancelled: 'danger',
 }
-const RECONCILIATION_TONE = { OK: 'success', WARNING: 'warning', ERROR: 'danger' } as const
+const RECONCILIATION_TONE = {
+  OK: 'success',
+  WARNING: 'warning',
+  ERROR: 'danger',
+} as const
 
 /**
  * Drill-down for one branch: its own comparison row plus a per-shift
@@ -45,8 +56,11 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
       <Card>
         <Stack gap="sm">
           <p className={styles.footnote}>
-            Ciro: <strong>{metricMoneyText(row.revenue)}</strong> · Rapor: {row.reportCount} · Bekleyen mutabakat:{' '}
-            {row.openReconciliationCount}
+            Ciro:{' '}
+            <strong>
+              {row.reportCount === 0 ? 'Rapor yok' : metricMoneyText(row.revenue)}
+            </strong>{' '}
+            · Rapor: {row.reportCount} · Bekleyen mutabakat: {row.openReconciliationCount}
           </p>
           <div className={styles.chipRow}>
             <LinkButton to="reports/reconciliation" variant="secondary">
@@ -62,7 +76,11 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
       </Card>
 
       {recentShifts.length === 0 ? (
-        <EmptyState icon="🕒" title="Bu dönemde vardiya yok" description="Seçili dönem için kayıt bulunamadı." />
+        <EmptyState
+          icon="🕒"
+          title="Bu dönemde vardiya yok"
+          description="Seçili dönem için kayıt bulunamadı."
+        />
       ) : (
         <Stack gap="sm">
           {recentShifts.map((s) => {
@@ -74,13 +92,22 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
                 title={formatDate(s.businessDate)}
                 subtitle={reports.length > 0 ? metricMoneyText(revenue) : 'Rapor yok'}
                 trailing={
-                  <StatusChip tone={SHIFT_TONE[s.status] ?? 'neutral'}>{SHIFT_LABEL[s.status] ?? s.status}</StatusChip>
+                  <StatusChip tone={SHIFT_TONE[s.status] ?? 'neutral'}>
+                    {SHIFT_LABEL[s.status] ?? s.status}
+                  </StatusChip>
                 }
               >
                 {reports.length > 0 && (
                   <div className={styles.chipRow}>
                     {reports.map((r, i) => (
-                      <StatusChip key={i} tone={r.status === 'cancelled' ? 'neutral' : RECONCILIATION_TONE[r.reconciliationStatus]}>
+                      <StatusChip
+                        key={i}
+                        tone={
+                          r.status === 'cancelled'
+                            ? 'neutral'
+                            : RECONCILIATION_TONE[r.reconciliationStatus]
+                        }
+                      >
                         {r.reportType} · {formatMoney(r.grossRevenue)}
                         {r.status === 'cancelled' ? ' (iptal)' : ''}
                       </StatusChip>
@@ -97,7 +124,8 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
           <p className={styles.footnote}>
             Brüt Kâr
             {row.grossProfit.status === 'partial' ? ' (Kısmi)' : ''}:{' '}
-            {row.grossProfit.status === 'available' || row.grossProfit.status === 'partial'
+            {row.grossProfit.status === 'available' ||
+            row.grossProfit.status === 'partial'
               ? formatMoney(fromKurus(row.grossProfit.value.amountKurus))
               : (row.grossProfit.reason ?? 'Veri yok')}
           </p>

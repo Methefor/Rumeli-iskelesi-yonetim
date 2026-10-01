@@ -87,11 +87,13 @@ in the original brief. Move items up when a phase actually starts.
 - [ ] Balık Ekmek shift_definitions / sales_category_branches — not seeded
       in this pass (lower priority per the brief); needs an explicit
       follow-up once someone confirms its actual shift pattern.
-- [ ] Legacy adapter layer so `daily_reports` etc. remain readable/reproducible
+- [x] Legacy sales transformation/import layer with X/Z rule, branch mapping,
+      frozen-reference evidence, lineage, fingerprint and local real-source rehearsal.
       without mixing legacy compatibility logic into new business logic —
       mapping documented (not built) in `docs/LEGACY_RECONCILIATION.md`
       "Legacy adapter strategy".
-- [ ] Data migration script: legacy `cashiers`/`admins` rows → `profiles` +
+- [ ] Production identity step: provision real V4 profiles and privately map
+      the five legacy cashier identifiers to employee codes (never migrate PINs).
       `pin_credentials` (hash re-derived or PINs reset — plaintext PINs are
       never carried forward as plaintext). Separate, explicitly-approved
       step per `MIGRATION_PLAN.md`.

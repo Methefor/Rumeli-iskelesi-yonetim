@@ -612,7 +612,10 @@ const CATEGORY_DEFS: Array<[string, string]> = [
   ['borek_corek', 'Börek & Çörek'],
 ]
 
-export function createDemoState(now: Date = new Date()): DemoState {
+export function createDemoState(
+  now: Date = new Date(),
+  options: { includeSyntheticOperations?: boolean } = {},
+): DemoState {
   const state: DemoState = {
     branches: [
       { id: DEMO_BRANCH_RUMELI, key: 'rumeli_iskelesi', name: 'Rumeli İskelesi' },
@@ -835,6 +838,11 @@ export function createDemoState(now: Date = new Date()): DemoState {
     createdAt: now.toISOString(),
     decidedAt: null,
   })
+
+  const includeSyntheticOperations =
+    options.includeSyntheticOperations ??
+    (import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_FIXTURES === 'true')
+  if (!includeSyntheticOperations) return state
 
   // Inventory catalogue for İskele Dondurma — clearly synthetic placeholders.
   const item = (

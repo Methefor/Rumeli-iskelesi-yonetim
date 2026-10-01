@@ -39,3 +39,11 @@ export const env: AppEnv = readEnv()
  * an operator sets this flag explicitly per environment.
  */
 export const isDemoModeEnabled: boolean = import.meta.env.VITE_DEMO_MODE === 'true'
+
+/**
+ * Synthetic operational amounts/products are opt-in outside tests. Preview
+ * keeps demo identities and navigation without publishing invented financial
+ * figures. Tests opt in automatically so the full write flows stay covered.
+ */
+export const isDemoFixtureDataEnabled: boolean =
+  import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_FIXTURES === 'true'
