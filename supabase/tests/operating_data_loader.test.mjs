@@ -307,10 +307,10 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const wholeUnits = await rpc(mgr, "create_sales_report", { p_shift_id: shiftId, p_register_id: null, p_report_type: "X", p_gross_revenue: 15, p_transaction_count: 1, p_average_basket: null, p_notes: null, p_items: [{ inventory_item_id: A, inventory_quantity: 1.5, amount: 15 }] });
   check(!wholeUnits.ok, "a fractional quantity for a whole-unit item is refused server-side");
 
-  // stock receipt (branch_manager may receive; cost line is manager only)
-  check((await rpc(bm, "record_inventory_receipt", { p_branch_id: dondurma, p_lines: [{ inventory_item_id: A, quantity: 10 }], p_reference: "TEST-DELIVERY" })).ok, "5. stock receipt recorded (+10)");
+  // stock receipt (cashier may receive for own branch; cost line is manager only)
+  check((await rpc(cashier, "record_inventory_receipt", { p_branch_id: dondurma, p_lines: [{ inventory_item_id: A, quantity: 10 }], p_reference: "TEST-DELIVERY" })).ok, "5. cashier records own-branch stock receipt (+10)");
   check(Number(stockOf(A)) === 25, "receipt increased stock");
-  check(!(await rpc(cashier, "record_inventory_receipt", { p_branch_id: dondurma, p_lines: [{ inventory_item_id: A, quantity: 1 }] })).ok, "a cashier cannot receive stock");
+  check(!(await rpc(cashier, "record_inventory_receipt", { p_branch_id: rumeli, p_lines: [{ inventory_item_id: A, quantity: 1 }] })).ok, "a cashier cannot receive stock for another branch");
 
   // waste
   check((await rpc(cashier, "record_inventory_waste", { p_branch_id: dondurma, p_lines: [{ inventory_item_id: A, quantity: 1 }], p_reason_code: "expired", p_shift_id: shiftId })).ok, "6. waste with a reason code is recorded");
@@ -350,7 +350,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const has = (a, u) => audits.data.some((x) => x.action === a && (!u || x.actor_user_id === u));
   check(has("operating_data_load", users.P01.id), "11. audit: operating-data load by the owner");
   check(has("report_edit", reportActorId), "audit: report records the actual authorized submitter");
-  check(has("inventory_receipt", users.P03.id), "audit: receipt by the branch manager");
+  check(has("inventory_receipt", users.P04.id), "audit: receipt by the cashier");
   check(audits.data.some((x) => x.action.startsWith("inventory_") && x.actor_user_id === users.P04.id), "audit: cashier waste/count recorded");
   check(!JSON.stringify(audits.data).includes(service), "audit rows hold no secret");
 }

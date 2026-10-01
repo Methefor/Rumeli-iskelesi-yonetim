@@ -15,6 +15,7 @@ import { Unauthorized } from '../../../components/navigation/Unauthorized'
 import { useToast } from '../../../hooks/useToast'
 import { recordInventoryReceipt } from '../../../services/data'
 import { ItemLinesEditor } from '../components/ItemLinesEditor'
+import { ReceiptOcrPanel } from '../components/ReceiptOcrPanel'
 import { isCompleteLine, newLine, type ItemLine } from '../components/itemLines'
 import { useBranchInventory, useInventoryBase, useInventoryContext } from '../hooks'
 
@@ -86,6 +87,12 @@ export function ReceiveStockPage() {
               }}
             >
               <Stack>
+                <ReceiptOcrPanel
+                  onReferenceSuggested={(value) => {
+                    if (!reference.trim()) setReference(value)
+                  }}
+                />
+
                 <ItemLinesEditor
                   items={items}
                   lines={lines}

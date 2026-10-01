@@ -62,6 +62,18 @@ export interface DemoAssignment {
   lateOverride: boolean | null
 }
 
+export interface DemoShiftChangeRequest {
+  id: string
+  requesterUserId: string
+  currentAssignmentId: string
+  requestedShiftId: string
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  decisionNote: string | null
+  createdAt: string
+  decidedAt: string | null
+}
+
 export interface DemoReportItem {
   categoryId: string
   amount: number
@@ -96,6 +108,7 @@ export interface DemoState {
   managementAudit: ManagementAuditEntry[]
   shifts: ShiftSummary[]
   assignments: DemoAssignment[]
+  shiftChangeRequests: DemoShiftChangeRequest[]
   categories: CategoryOption[]
   branchCategoryKeys: Record<string, string[]>
   reports: DemoReport[]
@@ -668,6 +681,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
     managementAudit: [],
     shifts: [],
     assignments: [],
+    shiftChangeRequests: [],
     categories: CATEGORY_DEFS.map(([key, name]) => ({
       id: `demo-cat-${key}`,
       key,
@@ -735,7 +749,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
     `demo-shift-${branchId}-${key}-${offset}`
 
   for (const branch of state.branches) {
-    for (const offset of [-2, -1, 0]) {
+    for (const offset of [-2, -1, 0, 1, 2]) {
       for (const key of ['morning', 'evening']) {
         const def = defFor(branch.id, key)
         const { branchId: _branchId, ...definition } = def
@@ -781,6 +795,27 @@ export function createDemoState(now: Date = new Date()): DemoState {
   assign('demo-d001', DEMO_BRANCH_DONDURMA, 'morning', 0, 'confirmed')
   assign('demo-d001', DEMO_BRANCH_DONDURMA, 'evening', 0, 'assigned')
   assign('demo-d002', DEMO_BRANCH_DONDURMA, 'morning', -1, 'confirmed')
+  assign('demo-k001', DEMO_BRANCH_RUMELI, 'morning', 1, 'confirmed')
+  assign('demo-k002', DEMO_BRANCH_RUMELI, 'morning', 1, 'confirmed')
+  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'morning', 1, 'confirmed')
+
+  const pendingAssignment = state.assignments.find(
+    (assignment) =>
+      assignment.userId === 'demo-k002' &&
+      assignment.shiftId === shiftId(DEMO_BRANCH_RUMELI, 'morning', 1),
+  )
+  if (!pendingAssignment) throw new Error('demo seed: missing pending assignment')
+  state.shiftChangeRequests.push({
+    id: nextId(state, 'demo-shift-request'),
+    requesterUserId: 'demo-k002',
+    currentAssignmentId: pendingAssignment.id,
+    requestedShiftId: shiftId(DEMO_BRANCH_RUMELI, 'evening', 1),
+    reason: 'Ertesi gün gündüz randevum var.',
+    status: 'pending',
+    decisionNote: null,
+    createdAt: now.toISOString(),
+    decidedAt: null,
+  })
 
   // Inventory catalogue for İskele Dondurma — clearly synthetic placeholders.
   const item = (

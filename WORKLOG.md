@@ -539,3 +539,39 @@ switching, org overview, branch comparison, reconciliation exceptions,
 Dondurma inventory/gross-profit signals, Rumeli's honest non-tracked state,
 branch detail, no horizontal overflow) all confirmed manually. Not committed
 or pushed; hosted/production and Vercel were not touched.
+
+### 2026-10-01 - Free on-device receipt OCR and cashier receipt grant prepared
+
+Added lazy-loaded Tesseract.js OCR to the stock receipt screen. Photos remain on
+the device; OCR returns a visible draft and can suggest an empty document number,
+while product quantities and costs still require manual verification. Turkish
+money parsing uses integer kuruş. Added parser tests and a mobile layout.
+
+Migration 019 grants the existing branch-scoped `inventory.receive` permission
+to cashier and employee roles. Cost injection remains protected by the separate
+`inventory.cost.manage` check. SQL and loader expectations were updated for own-
+branch success and cross-branch/cost denial. App typecheck, lint, production
+build and all 298 tests pass. The manager demo integration was given an explicit
+15-second budget because its full dashboard journey could exceed Vitest's
+5-second default under full-suite load; behavior and assertions are unchanged.
+
+Fresh local database validation is pending: Docker Desktop 4.91.0 currently
+crashes while initializing Windows Unix sockets. Old zero-byte sockets were
+moved to timestamped backup directories rather than deleted; the engine still
+recreates a socket and fails. No factory reset was performed. Hosted Supabase,
+production, Vercel and git remotes were untouched.
+
+### 2026-10-01 - Shift request workflow and recovered local validation
+
+Added the shift-change request table and RPC-only write model, employee request
+UI, manager branch inbox/count, approve/reject UI, demo behavior and regression
+coverage. Direct writes are denied; own-assignment, same-branch and non-past
+rules are server-enforced; approval replaces the assignment atomically and both
+request/decision actions are audited.
+
+Docker Desktop restarted successfully. A fresh reset applied all migrations.
+The dedicated SQL request suite passed, as did inventory security, timezone,
+backdated-entry and operating-data loader regressions. Real local Auth +
+PostgREST now passes 152 assertions, including the frontend's nested request
+query and cashier-to-branch-manager approval flow. No hosted or production
+system was accessed; no commit or push was made.

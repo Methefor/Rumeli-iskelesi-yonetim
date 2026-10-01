@@ -302,3 +302,30 @@ The login screen now restores the legacy product's distinctive navy/orange
 lighthouse identity in a responsive V4 implementation. Preview is explicitly
 configured with `VITE_DEMO_MODE=true` and must show its demo label/account codes;
 Production keeps real login mode. The role-aware authentication model is unchanged.
+
+### 2026-10-01 - Receipt OCR and cashier receiving (prepared, uncommitted)
+
+The stock receipt screen now has free, on-device Turkish/English OCR with photo
+preview, progress, confidence and conservative document-field suggestions.
+Nothing is uploaded and OCR never posts product quantities or costs. Migration
+019 prepares own-branch `inventory.receive` for cashier/employee while cost and
+adjustment permissions remain denied. All 298 app tests, typecheck, lint and the
+PWA production build pass. Fresh local Supabase/Auth/PostgREST validation is
+open because Docker Desktop 4.91.0 currently crashes while recreating Windows
+Unix sockets. Hosted Supabase, production, Vercel and git remotes are untouched.
+
+### 2026-10-01 - Receipt validation recovered; shift requests completed locally
+
+Docker Desktop recovered. Fresh local reset applies every migration through the
+cashier-receipt and shift-change-request migrations. Receipt permissions and
+the new request flow pass real local Auth/PostgREST checks: 152 assertions,
+including the exact nested query shape used by the frontend. SQL suites pass
+inventory security, 32 timezone RPC cases, 24 cross-session-timezone backdated
+cases, and the new role/branch/approval/audit shift-request suite.
+
+Employees now request a current/future same-branch shift change with a mandatory
+reason from Vardiyalarım. Managers see a pending count and request inbox on the
+branch Vardiyalar page, then approve or reject with an audited decision. Approval
+atomically replaces the assignment; rejection requires a note. Demo mode contains
+a synthetic pending request for review. Hosted Supabase, production, Vercel and
+git remotes remain untouched; the working tree is still uncommitted.

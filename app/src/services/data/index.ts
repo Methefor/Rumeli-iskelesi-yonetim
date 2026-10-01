@@ -32,6 +32,8 @@ export const {
   fetchBranchDashboardRaw,
 
   listMyShiftAssignments,
+  listMyShiftChangeRequests,
+  listBranchShiftChangeRequests,
   listBranchShifts,
   listBranches,
   listShiftDefinitions,
@@ -39,6 +41,8 @@ export const {
   scheduleShift,
   assignShift,
   confirmShiftAssignment,
+  createShiftChangeRequest,
+  decideShiftChangeRequest,
   listBranchCategories,
   createSalesReport,
   listMyRecentReports,
@@ -67,6 +71,7 @@ export type {
   ShiftSummary,
   ShiftAssignmentSummary,
   ShiftDefinitionSummary,
+  ShiftChangeRequestSummary,
   BranchOption,
   BranchEmployee,
 } from '../supabase/shifts'

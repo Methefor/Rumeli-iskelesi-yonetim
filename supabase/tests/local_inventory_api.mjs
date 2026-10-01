@@ -141,6 +141,10 @@ const otherItem = await good(
   create(other, `API${suffix}`),
   "manager creates cross-branch item",
 );
+const receiptItem = await good(
+  create(branch, `APIR${suffix}`),
+  "manager creates receipt permission fixture",
+);
 await good(
   rpc(token("owner"), "set_inventory_item_cost", {
     p_item_id: item,
@@ -200,6 +204,47 @@ for (const role of Object.keys(users)) {
     `${role} raw count mutation denied`,
   );
 }
+
+const receipt = (role, targetBranch, targetItem, quantity, unitCost) =>
+  rpc(token(role), "record_inventory_receipt", {
+    p_branch_id: targetBranch,
+    p_lines: [
+      {
+        inventory_item_id: targetItem,
+        quantity,
+        ...(unitCost === undefined ? {} : { unit_cost: unitCost }),
+      },
+    ],
+    p_reference: `API-RECEIPT-${role}`,
+  });
+await good(
+  receipt("cashier", branch, receiptItem, 2),
+  "cashier receives stock for own branch",
+);
+await good(
+  receipt("employee", branch, receiptItem, 1),
+  "employee receives stock for own branch",
+);
+await deny(
+  receipt("employee", branch, receiptItem, 1, 99),
+  "employee cannot smuggle unit cost through receipt",
+);
+await deny(
+  receipt("cashier", other, otherItem, 1),
+  "cashier cannot receive stock for another branch",
+);
+await deny(
+  receipt("viewer", branch, receiptItem, 1),
+  "viewer cannot receive stock",
+);
+check(
+  Number(
+    sql(
+      `select coalesce(sum(stock_delta),0) from public.inventory_movements where inventory_item_id='${receiptItem}'`,
+    ),
+  ) === 3,
+  "cashier and employee receipts append exactly three stock units",
+);
 
 const adjust = (role, id = item, reason = "API correction") =>
   rpc(token(role), "record_inventory_adjustment", {
@@ -378,6 +423,75 @@ await good(
   }),
   "cashier assigned shift count succeeds",
 );
+
+// Shift change request: real Auth JWT + PostgREST/RPC + nested relationship read.
+const shiftAssignment = sql(
+    `select id from public.shift_assignments where shift_id='${shift}' and user_id='${users.cashier.id}'`,
+  ),
+  requestedShift = randomUUID();
+sql(
+  `insert into public.shifts(id,branch_id,shift_definition_id,business_date) select '${requestedShift}','${branch}',id,(now() at time zone 'Europe/Istanbul')::date+11 from public.shift_definitions where branch_id='${branch}' and key='morning';`,
+);
+await deny(
+  rpc(token("cashier"), "create_shift_change_request", {
+    p_current_assignment_id: shiftAssignment,
+    p_requested_shift_id: requestedShift,
+    p_reason: "x",
+  }),
+  "shift change request requires a meaningful reason",
+  "22023",
+);
+const shiftRequest = await good(
+  rpc(token("cashier"), "create_shift_change_request", {
+    p_current_assignment_id: shiftAssignment,
+    p_requested_shift_id: requestedShift,
+    p_reason: "Yerel API vardiya değişikliği testi.",
+  }),
+  "cashier creates own same-branch shift change request",
+);
+const nestedSelect =
+  "id,requester_user_id,current_assignment_id,reason,status,decision_note,created_at,decided_at,requester:profiles!requester_user_id(full_name,employee_code),current_assignment:shift_assignments!current_assignment_id(shifts(id,branch_id,business_date,status,branches(name),shift_definitions(id,key,name,start_hour,start_minute,end_hour,end_minute))),requested_shift:shifts!requested_shift_id(id,branch_id,business_date,status,branches(name),shift_definitions(id,key,name,start_hour,start_minute,end_hour,end_minute))";
+const ownRequests = await good(
+  req(
+    `/rest/v1/shift_change_requests?select=${encodeURIComponent(nestedSelect)}&id=eq.${shiftRequest}`,
+    token("cashier"),
+  ),
+  "cashier reads own request with the frontend nested PostgREST shape",
+);
+check(
+  ownRequests.length === 1 &&
+    ownRequests[0].current_assignment?.shifts?.id === shift &&
+    ownRequests[0].requested_shift?.id === requestedShift,
+  "nested shift request response contains current and requested shifts",
+);
+await deny(
+  rpc(token("employee"), "decide_shift_change_request", {
+    p_request_id: shiftRequest,
+    p_decision: "approved",
+    p_decision_note: null,
+  }),
+  "employee cannot decide another employee's shift request",
+);
+await good(
+  rpc(token("branch_manager"), "decide_shift_change_request", {
+    p_request_id: shiftRequest,
+    p_decision: "approved",
+    p_decision_note: "Yerel API onayı.",
+  }),
+  "own-branch manager approves the shift request",
+);
+check(
+  sql(`select status from public.shift_assignments where id='${shiftAssignment}'`) ===
+    "cancelled",
+  "shift approval cancels the old assignment",
+);
+check(
+  sql(
+    `select count(*) from public.shift_assignments where shift_id='${requestedShift}' and user_id='${users.cashier.id}' and status='assigned'`,
+  ) === "1",
+  "shift approval creates the requested assignment",
+);
+
 for (const role of ["cashier", "branch_manager"])
   await deny(
     rpc(token(role), "set_inventory_item_cost", {

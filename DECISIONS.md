@@ -542,3 +542,31 @@ aggregation call; no widget computes its own date boundary. Branch inclusion
 in the comparison table uses the SAME period and the SAME cancelled-report
 exclusion rule for every branch, and a branch's revenue counts a report under
 its shift's business date, not its submission time.
+
+### 2026-10-01 - On-device receipt OCR and cashier receipt access
+
+Warehouse receipt OCR uses pinned `tesseract.js` in the browser so there is no
+paid OCR service or third-party receipt upload. The worker is loaded only when
+the user starts an analysis. OCR output is an untrusted draft: reference, date
+and total may be suggested, but item, quantity and cost lines are never posted
+automatically. The cashier must compare the form with the physical document
+before submitting.
+
+Cashier and employee roles may record incoming receipts only for their assigned
+branch through the existing `record_inventory_receipt` RPC. This does not grant
+`inventory.adjust`, `inventory.cost.read` or `inventory.cost.manage`; attempts
+to include unit cost remain denied server-side. Owner, manager and branch
+manager behavior is unchanged.
+
+### 2026-10-01 - Vardiya değişiklik talebi ve ücretsiz yönetici bildirimi
+
+Kasiyer/çalışan, yalnızca kendisine atanmış bugün veya gelecekteki bir vardiya
+için aynı şubedeki başka bir vardiyayı ve 5–500 karakterlik sebebi seçerek talep
+açar. Talep vardiyayı kendiliğinden değiştirmez. Aynı atama için yalnızca bir
+bekleyen talep olabilir.
+
+Owner/manager bütün şubelerde, branch_manager yalnızca kendi şubesinde karar
+verebilir. Onay, eski atamayı iptal edip istenen atamayı tek veritabanı işlemi
+içinde oluşturur; ret açıklaması zorunludur. Talep ve karar ayrı denetim
+kayıtlarıdır. İlk bildirim modeli Vardiyalar ekranındaki uygulama içi bekleyen
+talep sayısı ve karar kutusudur; ücretli bildirim servisi kullanılmaz.

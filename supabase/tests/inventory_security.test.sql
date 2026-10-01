@@ -224,9 +224,9 @@ select t.expect_denied($q$delete from public.inventory_item_costs$q$, 'cost rows
 -- C. Receipts and waste (server-time ledger)
 -- =============================================================================
 select t.as_user('E');
-select t.expect_denied($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 10)))$q$, 'employee cannot receive stock');
+select t.expect_ok($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 100)), 'DLV-1', 'first delivery')$q$, 'employee receives stock for their own branch');
+select t.expect_denied($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 5, 'unit_cost', 99)))$q$, 'employee receipt cannot smuggle a cost without cost.manage');
 select t.as_user('BMD');
-select t.expect_ok($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 100)), 'DLV-1', 'first delivery')$q$, 'branch_manager receives stock');
 select t.expect_denied($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 5, 'unit_cost', 99)))$q$, 'receipt cannot smuggle a cost without cost.manage');
 select t.as_user('BMR');
 select t.expect_denied($q$select public.record_inventory_receipt(t.id('BD'), jsonb_build_array(jsonb_build_object('inventory_item_id', t.id('ITEM1'), 'quantity', 5)))$q$, 'unrelated branch_manager cannot receive into another branch');

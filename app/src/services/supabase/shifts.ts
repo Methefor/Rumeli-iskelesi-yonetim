@@ -28,6 +28,21 @@ export interface ShiftAssignmentSummary {
   shift: ShiftSummary
 }
 
+export interface ShiftChangeRequestSummary {
+  id: string
+  requesterUserId: string
+  requesterName: string
+  requesterEmployeeCode: string | null
+  currentAssignmentId: string
+  currentShift: ShiftSummary
+  requestedShift: ShiftSummary
+  reason: string
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  decisionNote: string | null
+  createdAt: string
+  decidedAt: string | null
+}
+
 interface ShiftAssignmentRow {
   id: string
   status: string
@@ -131,6 +146,109 @@ function mapShiftRow(row: ShiftRow): ShiftSummary | null {
       endHour: row.shift_definitions.end_hour,
       endMinute: row.shift_definitions.end_minute,
     },
+  }
+}
+
+interface ShiftChangeRequestRow {
+  id: string
+  requester_user_id: string
+  current_assignment_id: string
+  reason: string
+  status: ShiftChangeRequestSummary['status']
+  decision_note: string | null
+  created_at: string
+  decided_at: string | null
+  requester: { full_name: string; employee_code: string | null } | null
+  current_assignment: { shifts: ShiftRow | null } | null
+  requested_shift: ShiftRow | null
+}
+
+const SHIFT_REQUEST_SELECT =
+  'id, requester_user_id, current_assignment_id, reason, status, decision_note, created_at, decided_at, requester:profiles!requester_user_id(full_name, employee_code), current_assignment:shift_assignments!current_assignment_id(shifts(id, branch_id, business_date, status, branches(name), shift_definitions(id, key, name, start_hour, start_minute, end_hour, end_minute))), requested_shift:shifts!requested_shift_id(id, branch_id, business_date, status, branches(name), shift_definitions(id, key, name, start_hour, start_minute, end_hour, end_minute))'
+
+function mapShiftChangeRequest(
+  row: ShiftChangeRequestRow,
+): ShiftChangeRequestSummary | null {
+  const currentShift = row.current_assignment?.shifts
+    ? mapShiftRow(row.current_assignment.shifts)
+    : null
+  const requestedShift = row.requested_shift ? mapShiftRow(row.requested_shift) : null
+  if (!currentShift || !requestedShift) return null
+  return {
+    id: row.id,
+    requesterUserId: row.requester_user_id,
+    requesterName: row.requester?.full_name ?? '',
+    requesterEmployeeCode: row.requester?.employee_code ?? null,
+    currentAssignmentId: row.current_assignment_id,
+    currentShift,
+    requestedShift,
+    reason: row.reason,
+    status: row.status,
+    decisionNote: row.decision_note,
+    createdAt: row.created_at,
+    decidedAt: row.decided_at,
+  }
+}
+
+async function listShiftChangeRequests(
+  requesterUserId?: string,
+): Promise<ShiftChangeRequestSummary[]> {
+  let query = supabase
+    .from('shift_change_requests')
+    .select(SHIFT_REQUEST_SELECT)
+    .order('created_at', { ascending: false })
+    .limit(100)
+  if (requesterUserId) query = query.eq('requester_user_id', requesterUserId)
+  const { data, error } = await query.returns<ShiftChangeRequestRow[]>()
+  if (error || !data) return []
+  return data
+    .map(mapShiftChangeRequest)
+    .filter((row): row is ShiftChangeRequestSummary => row !== null)
+}
+
+export function listMyShiftChangeRequests(
+  userId: string,
+): Promise<ShiftChangeRequestSummary[]> {
+  return listShiftChangeRequests(userId)
+}
+
+export async function listBranchShiftChangeRequests(
+  branchId: string,
+): Promise<ShiftChangeRequestSummary[]> {
+  return (await listShiftChangeRequests()).filter(
+    (request) => request.currentShift.branchId === branchId,
+  )
+}
+
+export async function createShiftChangeRequest(input: {
+  currentAssignmentId: string
+  requestedShiftId: string
+  reason: string
+}): Promise<{ requestId: string | null; error: string | null }> {
+  const { data, error } = await supabase.rpc('create_shift_change_request', {
+    p_current_assignment_id: input.currentAssignmentId,
+    p_requested_shift_id: input.requestedShiftId,
+    p_reason: input.reason,
+  })
+  return {
+    requestId: error ? null : (data as string),
+    error: friendlyFromSupabaseError(error),
+  }
+}
+
+export async function decideShiftChangeRequest(input: {
+  requestId: string
+  decision: 'approved' | 'rejected'
+  decisionNote?: string
+}): Promise<{ assignmentId: string | null; error: string | null }> {
+  const { data, error } = await supabase.rpc('decide_shift_change_request', {
+    p_request_id: input.requestId,
+    p_decision: input.decision,
+    p_decision_note: input.decisionNote ?? null,
+  })
+  return {
+    assignmentId: error ? null : (data as string | null),
+    error: friendlyFromSupabaseError(error),
   }
 }
 

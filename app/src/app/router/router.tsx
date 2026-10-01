@@ -52,6 +52,7 @@ export const router = createBrowserRouter([
       },
       { path: 'reports', element: <MyRecentReportsPage /> },
       { path: 'inventory', element: <InventoryOverviewPage /> },
+      { path: 'inventory/receive', element: <ReceiveStockPage /> },
       { path: 'inventory/waste', element: <WasteEntryPage /> },
       { path: 'inventory/count', element: <ClosingCountPage /> },
       { path: 'inventory/movements', element: <MovementHistoryPage /> },

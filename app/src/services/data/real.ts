@@ -15,6 +15,8 @@ export const realApi = {
   listInventoryAudit,
   // shifts
   listMyShiftAssignments: shifts.listMyShiftAssignments,
+  listMyShiftChangeRequests: shifts.listMyShiftChangeRequests,
+  listBranchShiftChangeRequests: shifts.listBranchShiftChangeRequests,
   listBranchShifts: shifts.listBranchShifts,
   listBranches: shifts.listBranches,
   listShiftDefinitions: shifts.listShiftDefinitions,
@@ -22,6 +24,8 @@ export const realApi = {
   scheduleShift: shifts.scheduleShift,
   assignShift: shifts.assignShift,
   confirmShiftAssignment: shifts.confirmShiftAssignment,
+  createShiftChangeRequest: shifts.createShiftChangeRequest,
+  decideShiftChangeRequest: shifts.decideShiftChangeRequest,
   // sales
   listBranchCategories: sales.listBranchCategories,
   createSalesReport: sales.createSalesReport,

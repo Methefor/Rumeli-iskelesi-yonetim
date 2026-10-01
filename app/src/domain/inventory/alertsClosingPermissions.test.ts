@@ -111,14 +111,14 @@ describe('inventory permissions (UI visibility map)', () => {
     expect(canInventory(['branch_manager'], 'inventory.adjust')).toBe(true)
   })
 
-  it('cashier and employee: waste + count + read only — no cost, no receive, no adjust', () => {
+  it('cashier and employee: receive + waste + count for own branch, without cost or adjustment', () => {
     for (const role of ['cashier', 'employee']) {
       expect(canInventory([role], 'inventory.record')).toBe(true)
       expect(canInventory([role], 'inventory.count')).toBe(true)
       expect(canInventory([role], 'inventory.read')).toBe(true)
       expect(canInventory([role], 'inventory.cost.read')).toBe(false)
       expect(canInventory([role], 'inventory.cost.manage')).toBe(false)
-      expect(canInventory([role], 'inventory.receive')).toBe(false)
+      expect(canInventory([role], 'inventory.receive')).toBe(true)
       expect(canInventory([role], 'inventory.adjust')).toBe(false)
     }
   })

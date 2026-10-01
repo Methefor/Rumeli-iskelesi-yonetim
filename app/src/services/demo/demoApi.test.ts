@@ -79,6 +79,86 @@ describe('role-scoped demo data (M001 / K001 / D001)', () => {
   })
 })
 
+describe('shift change request workflow', () => {
+  it('cashier requests a same-branch future shift and manager approves it', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('K001')
+    const current = state.assignments.find(
+      (entry) =>
+        entry.userId === 'demo-k001' &&
+        state.shifts.find((shift) => shift.id === entry.shiftId)?.businessDate ===
+          addDaysIso(istanbulDate(NOW), 1),
+    )!
+    const requested = state.shifts.find(
+      (shift) =>
+        shift.branchId === R &&
+        shift.businessDate === addDaysIso(istanbulDate(NOW), 1) &&
+        shift.definition.key === 'evening',
+    )!
+
+    const created = await demoApi.createShiftChangeRequest({
+      currentAssignmentId: current.id,
+      requestedShiftId: requested.id,
+      reason: 'Sabah sağlık randevum bulunuyor.',
+    })
+    expect(created.error).toBeNull()
+    expect(await demoApi.listMyShiftChangeRequests('demo-k001')).toHaveLength(1)
+
+    signInAs('M001')
+    const pending = await demoApi.listBranchShiftChangeRequests(R)
+    expect(pending.some((request) => request.id === created.requestId)).toBe(true)
+    const decided = await demoApi.decideShiftChangeRequest({
+      requestId: created.requestId!,
+      decision: 'approved',
+      decisionNote: 'Vardiya dengesi uygun.',
+    })
+    expect(decided.error).toBeNull()
+    expect(current.status).toBe('cancelled')
+    expect(
+      state.assignments.some(
+        (entry) =>
+          entry.id === decided.assignmentId &&
+          entry.shiftId === requested.id &&
+          entry.status === 'assigned',
+      ),
+    ).toBe(true)
+  })
+
+  it('requires a reason and prevents cashiers from deciding requests', async () => {
+    const state = resetDemoState(NOW)
+    signInAs('K001')
+    const current = state.assignments.find(
+      (entry) =>
+        entry.userId === 'demo-k001' &&
+        state.shifts.find((shift) => shift.id === entry.shiftId)?.businessDate ===
+          addDaysIso(istanbulDate(NOW), 1),
+    )!
+    const requested = state.shifts.find(
+      (shift) =>
+        shift.branchId === R &&
+        shift.businessDate === addDaysIso(istanbulDate(NOW), 1) &&
+        shift.definition.key === 'evening',
+    )!
+    expect(
+      (
+        await demoApi.createShiftChangeRequest({
+          currentAssignmentId: current.id,
+          requestedShiftId: requested.id,
+          reason: 'x',
+        })
+      ).error,
+    ).toMatch(/5–500/)
+    expect(
+      (
+        await demoApi.decideShiftChangeRequest({
+          requestId: state.shiftChangeRequests[0]!.id,
+          decision: 'approved',
+        })
+      ).error,
+    ).toMatch(/yetkiniz/)
+  })
+})
+
 describe('cost is confidential and privileged', () => {
   it('employee/cashier cannot read or set cost', async () => {
     for (const code of ['D001', 'K001']) {
@@ -115,7 +195,7 @@ describe('cost is confidential and privileged', () => {
 })
 
 describe('operations follow the permission map', () => {
-  it('employee may record waste and submit a count, but not receive or adjust', async () => {
+  it('employee may receive, record waste and submit a count, but not adjust', async () => {
     signInAs('D001')
     expect(
       (
@@ -141,7 +221,7 @@ describe('operations follow the permission map', () => {
           lines: [{ inventoryItemId: 'demo-item-a', quantity: 1 }],
         })
       ).error,
-    ).toMatch(/yetkiniz/)
+    ).toBeNull()
     expect(
       (
         await demoApi.recordInventoryAdjustment({
@@ -154,8 +234,16 @@ describe('operations follow the permission map', () => {
     ).toMatch(/yetkiniz/)
   })
 
-  it('an employee cannot count or waste in a branch they do not belong to', async () => {
+  it('an employee cannot receive, count or waste in a branch they do not belong to', async () => {
     signInAs('K001')
+    expect(
+      (
+        await demoApi.recordInventoryReceipt({
+          branchId: D,
+          lines: [{ inventoryItemId: 'demo-item-a', quantity: 1 }],
+        })
+      ).error,
+    ).toMatch(/yetkiniz/)
     expect(
       (
         await demoApi.submitInventoryCount({
@@ -431,7 +519,9 @@ describe('manager (org-wide) keeps full adjust/reverse/void, with mandatory reas
 
 describe('backdated sales report policy (Europe/Istanbul calendar date, mirrors 015)', () => {
   function backdatedShift(state: ReturnType<typeof resetDemoState>, offsetDays: number) {
-    const def = state.shiftDefinitions.find((d) => d.branchId === D && d.key === 'evening')!
+    const def = state.shiftDefinitions.find(
+      (d) => d.branchId === D && d.key === 'evening',
+    )!
     const { branchId: _branchId, ...definition } = def
     void _branchId
     const shift = {
@@ -446,7 +536,11 @@ describe('backdated sales report policy (Europe/Istanbul calendar date, mirrors 
     return shift
   }
 
-  function assign(state: ReturnType<typeof resetDemoState>, shiftId: string, userId: string) {
+  function assign(
+    state: ReturnType<typeof resetDemoState>,
+    shiftId: string,
+    userId: string,
+  ) {
     state.assignments.push({
       id: `demo-assign-${shiftId}`,
       shiftId,

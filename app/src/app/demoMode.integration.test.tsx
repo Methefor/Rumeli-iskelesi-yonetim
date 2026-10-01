@@ -71,7 +71,7 @@ describe('demo mode — manager (M001)', () => {
     expect(sessionStorage.getItem('v4-demo-employee-code')).toBeNull()
 
     expect(fetchSpy).not.toHaveBeenCalled()
-  })
+  }, 15_000)
 
   it('a page refresh keeps the demo session', async () => {
     await bootApp('/')
@@ -83,6 +83,22 @@ describe('demo mode — manager (M001)', () => {
     expect(
       await screen.findByRole('heading', { name: 'Yönetim Paneli' }),
     ).toBeInTheDocument()
+    expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('shows the in-app shift request notification and applies an approval', async () => {
+    await bootApp('/')
+    const user = await login('M001')
+    const nav = screen.getByRole('navigation', { name: 'Ana gezinme' })
+    await user.click(within(nav).getByRole('link', { name: /Vardiyalar/ }))
+
+    expect(await screen.findByText('1 bekleyen')).toBeInTheDocument()
+    expect(screen.getByText(/Ertesi gün gündüz randevum var\./)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Onayla' }))
+    await user.click(
+      screen.getByRole('button', { name: 'Onayla ve Vardiyayı Değiştir' }),
+    )
+    expect(await screen.findByText('0 bekleyen')).toBeInTheDocument()
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
@@ -99,10 +115,19 @@ describe('demo mode — Dondurma employee (D001)', () => {
     expect(await screen.findByText('Örnek Ürün A')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Fire Kaydı' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Kapanış Sayımı' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Stok Girişi' })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Stok Girişi' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Maliyet' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Brüt Kâr' })).not.toBeInTheDocument()
     expect(screen.queryByText(/₺/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('link', { name: 'Stok Girişi' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Stok Girişi' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Fişi fotoğraftan oku' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/yalnızca taslaktır/i)).toBeInTheDocument()
 
     expect(fetchSpy).not.toHaveBeenCalled()
   })

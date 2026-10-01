@@ -29,6 +29,7 @@ import {
   setCost,
   submitCount,
   theoreticalQuantity,
+  type DemoShiftChangeRequest,
   type DemoState,
 } from './store'
 
@@ -70,6 +71,32 @@ function assignedTo(state: DemoState, actor: DemoUser, shiftId: string): boolean
   return state.assignments.some(
     (a) => a.shiftId === shiftId && a.userId === actor.id && a.status !== 'cancelled',
   )
+}
+
+function shiftRequestSummary(state: DemoState, request: DemoShiftChangeRequest) {
+  const employee = state.employees.find((entry) => entry.id === request.requesterUserId)
+  const assignment = state.assignments.find(
+    (entry) => entry.id === request.currentAssignmentId,
+  )
+  const currentShift = state.shifts.find((entry) => entry.id === assignment?.shiftId)
+  const requestedShift = state.shifts.find(
+    (entry) => entry.id === request.requestedShiftId,
+  )
+  if (!assignment || !currentShift || !requestedShift) return null
+  return {
+    id: request.id,
+    requesterUserId: request.requesterUserId,
+    requesterName: employee?.fullName ?? request.requesterUserId,
+    requesterEmployeeCode: employee?.employeeCode ?? null,
+    currentAssignmentId: request.currentAssignmentId,
+    currentShift,
+    requestedShift,
+    reason: request.reason,
+    status: request.status,
+    decisionNote: request.decisionNote,
+    createdAt: request.createdAt,
+    decidedAt: request.decidedAt,
+  }
 }
 
 /** Optional-shift rule shared by waste and count: assigned to it, or privileged in that branch. */
@@ -158,6 +185,29 @@ export const demoApi: DataApi = {
           : y.shift.businessDate.localeCompare(x.shift.businessDate),
       )
       .slice(0, 20)
+  },
+
+  async listMyShiftChangeRequests(userId) {
+    const actor = currentDemoUser()
+    if (!actor || actor.id !== userId) return []
+    return demoState()
+      .shiftChangeRequests.filter((request) => request.requesterUserId === userId)
+      .map((request) => shiftRequestSummary(demoState(), request))
+      .filter((request): request is NonNullable<typeof request> => request !== null)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  },
+
+  async listBranchShiftChangeRequests(branchId) {
+    const actor = currentDemoUser()
+    if (!canManageShifts(actor, branchId)) return []
+    const state = demoState()
+    return state.shiftChangeRequests
+      .map((request) => shiftRequestSummary(state, request))
+      .filter(
+        (request): request is NonNullable<typeof request> =>
+          request !== null && request.currentShift.branchId === branchId,
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   },
 
   async listBranchShifts(branchId) {
@@ -268,6 +318,130 @@ export const demoApi: DataApi = {
       return { error: NOT_AUTHORIZED }
     assignment.status = 'confirmed'
     return { error: null }
+  },
+
+  async createShiftChangeRequest(input) {
+    const actor = currentDemoUser()
+    const state = demoState()
+    const assignment = state.assignments.find(
+      (entry) => entry.id === input.currentAssignmentId,
+    )
+    const currentShift = state.shifts.find((entry) => entry.id === assignment?.shiftId)
+    const requestedShift = state.shifts.find(
+      (entry) => entry.id === input.requestedShiftId,
+    )
+    const reason = input.reason.trim()
+    if (!actor || !assignment || assignment.userId !== actor.id || !currentShift)
+      return { requestId: null, error: NOT_AUTHORIZED }
+    if (reason.length < 5 || reason.length > 500)
+      return { requestId: null, error: 'Sebep 5–500 karakter olmalıdır.' }
+    if (
+      assignment.status === 'cancelled' ||
+      currentShift.status === 'cancelled' ||
+      !requestedShift ||
+      requestedShift.status === 'cancelled'
+    )
+      return { requestId: null, error: 'Seçilen vardiya artık kullanılamıyor.' }
+    const today = istanbulDate(state.now())
+    if (
+      currentShift.businessDate < today ||
+      requestedShift.businessDate < today ||
+      requestedShift.branchId !== currentShift.branchId ||
+      requestedShift.id === currentShift.id
+    )
+      return { requestId: null, error: 'Aynı şubeden güncel bir vardiya seçin.' }
+    if (
+      state.assignments.some(
+        (entry) =>
+          entry.userId === actor.id &&
+          entry.shiftId === requestedShift.id &&
+          entry.status !== 'cancelled',
+      )
+    )
+      return { requestId: null, error: 'Bu vardiyaya zaten atanmışsınız.' }
+    if (
+      state.shiftChangeRequests.some(
+        (entry) =>
+          entry.currentAssignmentId === assignment.id && entry.status === 'pending',
+      )
+    )
+      return { requestId: null, error: 'Bu vardiya için bekleyen talebiniz var.' }
+    state.seq += 1
+    const id = `demo-shift-request-new-${state.seq}`
+    state.shiftChangeRequests.push({
+      id,
+      requesterUserId: actor.id,
+      currentAssignmentId: assignment.id,
+      requestedShiftId: requestedShift.id,
+      reason,
+      status: 'pending',
+      decisionNote: null,
+      createdAt: state.now().toISOString(),
+      decidedAt: null,
+    })
+    return { requestId: id, error: null }
+  },
+
+  async decideShiftChangeRequest(input) {
+    const actor = currentDemoUser()
+    const state = demoState()
+    const request = state.shiftChangeRequests.find(
+      (entry) => entry.id === input.requestId,
+    )
+    const assignment = state.assignments.find(
+      (entry) => entry.id === request?.currentAssignmentId,
+    )
+    const currentShift = state.shifts.find((entry) => entry.id === assignment?.shiftId)
+    const requestedShift = state.shifts.find(
+      (entry) => entry.id === request?.requestedShiftId,
+    )
+    if (!request || !assignment || !currentShift || !requestedShift)
+      return { assignmentId: null, error: 'Vardiya değişiklik talebi bulunamadı.' }
+    if (!canManageShifts(actor, currentShift.branchId))
+      return { assignmentId: null, error: NOT_AUTHORIZED }
+    if (request.status !== 'pending')
+      return { assignmentId: null, error: 'Bu talep daha önce sonuçlandırılmış.' }
+    const note = input.decisionNote?.trim() ?? ''
+    if (input.decision === 'rejected' && (note.length < 3 || note.length > 500))
+      return { assignmentId: null, error: 'Ret açıklaması 3–500 karakter olmalıdır.' }
+
+    let assignmentId: string | null = null
+    if (input.decision === 'approved') {
+      if (
+        assignment.status === 'cancelled' ||
+        currentShift.status === 'cancelled' ||
+        requestedShift.status === 'cancelled'
+      )
+        return { assignmentId: null, error: 'Talep artık uygulanabilir değil.' }
+      const previous = state.assignments.find(
+        (entry) =>
+          entry.userId === request.requesterUserId && entry.shiftId === requestedShift.id,
+      )
+      if (previous && previous.status !== 'cancelled')
+        return { assignmentId: null, error: 'Çalışan bu vardiyaya zaten atanmış.' }
+      assignment.status = 'cancelled'
+      if (previous) {
+        previous.status = 'assigned'
+        previous.isOnTime = null
+        previous.lateOverride = null
+        assignmentId = previous.id
+      } else {
+        state.seq += 1
+        assignmentId = `demo-assign-change-${state.seq}`
+        state.assignments.push({
+          id: assignmentId,
+          shiftId: requestedShift.id,
+          userId: request.requesterUserId,
+          status: 'assigned',
+          isOnTime: null,
+          lateOverride: null,
+        })
+      }
+    }
+    request.status = input.decision
+    request.decisionNote = note || null
+    request.decidedAt = state.now().toISOString()
+    return { assignmentId, error: null }
   },
 
   // ------------------------------------------------------------------- sales

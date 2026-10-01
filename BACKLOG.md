@@ -282,3 +282,19 @@ mutation is authorized by this backlog update.
 - [ ] A trusted, explicitly-wired historical (pre-V4) data source before any
       "2026 history" mode is added — LEGACY_RECONCILIATION.md's gap is still
       open.
+
+## Workforce and receipt workflow follow-ups (2026-10-01)
+
+- [x] Build cashier shift-change requests with mandatory reason, requested
+      date/shift, pending state, manager approve/reject decision and audit log.
+- [x] Add an in-app manager notification badge/inbox for pending requests.
+      Web Push remains a later enhancement and must not require a paid service.
+- [x] Add zero-cost, on-device receipt OCR as a review-only draft helper.
+- [x] Allow cashier/employee stock receipts for their own branch while keeping
+      cost and adjustment permissions denied.
+- [ ] Decide whether verified receipt photos need private Supabase Storage
+      retention. The first OCR version does not upload or retain the image.
+- [x] Re-run fresh local Supabase reset and Auth/PostgREST permission tests
+      after Docker Desktop restarted.
+- [ ] Show the pending shift-request count globally in the manager navigation
+      if field use shows the Vardiyalar-page inbox is too easy to miss.
