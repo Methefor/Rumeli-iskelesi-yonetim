@@ -389,6 +389,23 @@
   padding: 0 2px;
 }
 
+.navBadge {
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 8px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid var(--branch-nav);
+  border-radius: var(--radius-full);
+  background: var(--color-danger-600);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+}
+
 .active {
   color: var(--color-primary-600);
 }

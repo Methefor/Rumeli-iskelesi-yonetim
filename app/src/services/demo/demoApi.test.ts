@@ -282,8 +282,7 @@ describe('ledger rules in the demo store', () => {
   it('editing then cancelling a product sale keeps history and nets to zero', () => {
     const state = resetDemoState(NOW)
     const shift = state.shifts.find(
-      (s) =>
-        s.branchId === D && s.definition.key === 'evening' && s.status === 'scheduled',
+      (s) => s.branchId === D && s.definition.key === 'daily' && s.status === 'scheduled',
     )!
     const before = theoreticalQuantity(state, 'demo-item-a')
     const at = new Date('2027-06-15T20:00:00+03:00')
@@ -519,9 +518,7 @@ describe('manager (org-wide) keeps full adjust/reverse/void, with mandatory reas
 
 describe('backdated sales report policy (Europe/Istanbul calendar date, mirrors 015)', () => {
   function backdatedShift(state: ReturnType<typeof resetDemoState>, offsetDays: number) {
-    const def = state.shiftDefinitions.find(
-      (d) => d.branchId === D && d.key === 'evening',
-    )!
+    const def = state.shiftDefinitions.find((d) => d.branchId === D && d.key === 'daily')!
     const { branchId: _branchId, ...definition } = def
     void _branchId
     const shift = {

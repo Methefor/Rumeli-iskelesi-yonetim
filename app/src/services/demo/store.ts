@@ -35,6 +35,7 @@ import type {
 
 export const DEMO_BRANCH_RUMELI = 'demo-branch-rumeli'
 export const DEMO_BRANCH_DONDURMA = 'demo-branch-dondurma'
+export const DEMO_BRANCH_BALIK = 'demo-branch-balik'
 
 const THRESHOLDS = { warningPercentage: 2, errorPercentage: 5 }
 
@@ -606,6 +607,8 @@ const CATEGORY_DEFS: Array<[string, string]> = [
   ['salata', 'Salata'],
   ['tatli', 'Tatlı'],
   ['dondurma', 'Dondurma'],
+  ['su', 'Su'],
+  ['balik_ekmek', 'Balık Ekmek'],
   ['borek_corek', 'Börek & Çörek'],
 ]
 
@@ -614,6 +617,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
     branches: [
       { id: DEMO_BRANCH_RUMELI, key: 'rumeli_iskelesi', name: 'Rumeli İskelesi' },
       { id: DEMO_BRANCH_DONDURMA, key: 'iskele_dondurma', name: 'İskele Dondurma' },
+      { id: DEMO_BRANCH_BALIK, key: 'balik_ekmek', name: 'Balık Ekmek' },
     ],
     employees: [
       {
@@ -672,11 +676,20 @@ export function createDemoState(now: Date = new Date()): DemoState {
         roles: ['employee'],
         isActive: true,
       },
+      {
+        id: 'demo-f001',
+        fullName: 'F001 — Demo Balık Ekmek Çalışanı',
+        employeeCode: 'F001',
+        branchIds: [DEMO_BRANCH_BALIK],
+        roles: ['employee'],
+        isActive: true,
+      },
     ],
     shiftDefinitions: [],
     thresholds: {
       [DEMO_BRANCH_RUMELI]: { ...THRESHOLDS },
       [DEMO_BRANCH_DONDURMA]: { ...THRESHOLDS },
+      [DEMO_BRANCH_BALIK]: { ...THRESHOLDS },
     },
     managementAudit: [],
     shifts: [],
@@ -699,7 +712,8 @@ export function createDemoState(now: Date = new Date()): DemoState {
         'tatli',
         'borek_corek',
       ],
-      [DEMO_BRANCH_DONDURMA]: ['dondurma', 'sicak_icecek', 'soguk_icecek'],
+      [DEMO_BRANCH_DONDURMA]: ['dondurma', 'su'],
+      [DEMO_BRANCH_BALIK]: ['balik_ekmek', 'soguk_icecek'],
     },
     reports: [],
     items: [],
@@ -717,10 +731,14 @@ export function createDemoState(now: Date = new Date()): DemoState {
   const cat = (key: string) => `demo-cat-${key}`
 
   for (const branch of state.branches) {
-    for (const [key, name, sh, eh, em] of [
-      ['morning', 'Sabah', 8, 16, 0],
-      ['evening', 'Akşam', 16, 23, 59],
-    ] as const) {
+    const definitions =
+      branch.id === DEMO_BRANCH_RUMELI
+        ? ([
+            ['morning', 'Sabah', 9, 17, 30, 17, 30, 0],
+            ['evening', 'Akşam', 16, 1, 0, 1, 0, 1],
+          ] as const)
+        : ([['daily', 'Tek vardiya', 16, 0, 0, 0, 0, 1]] as const)
+    for (const [key, name, sh, eh, em, ch, cm, dayOffset] of definitions) {
       state.shiftDefinitions.push({
         id: `demo-def-${branch.key}-${key}`,
         branchId: branch.id,
@@ -730,9 +748,9 @@ export function createDemoState(now: Date = new Date()): DemoState {
         startMinute: 0,
         endHour: eh,
         endMinute: em,
-        cutoffHour: key === 'morning' ? 16 : 1,
-        cutoffMinute: key === 'morning' ? 30 : 0,
-        cutoffDayOffset: key === 'morning' ? 0 : 1,
+        cutoffHour: ch,
+        cutoffMinute: cm,
+        cutoffDayOffset: dayOffset,
         isActive: true,
       })
     }
@@ -750,7 +768,8 @@ export function createDemoState(now: Date = new Date()): DemoState {
 
   for (const branch of state.branches) {
     for (const offset of [-2, -1, 0, 1, 2]) {
-      for (const key of ['morning', 'evening']) {
+      const keys = branch.id === DEMO_BRANCH_RUMELI ? ['morning', 'evening'] : ['daily']
+      for (const key of keys) {
         const def = defFor(branch.id, key)
         const { branchId: _branchId, ...definition } = def
         void _branchId
@@ -789,15 +808,15 @@ export function createDemoState(now: Date = new Date()): DemoState {
   assign('demo-k001', DEMO_BRANCH_RUMELI, 'morning', 0, 'confirmed')
   assign('demo-k001', DEMO_BRANCH_RUMELI, 'evening', 0, 'assigned')
   assign('demo-k002', DEMO_BRANCH_RUMELI, 'evening', -1, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'morning', -2, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'evening', -2, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'evening', -1, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'morning', 0, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'evening', 0, 'assigned')
-  assign('demo-d002', DEMO_BRANCH_DONDURMA, 'morning', -1, 'confirmed')
+  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'daily', -2, 'confirmed')
+  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'daily', -1, 'confirmed')
+  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'daily', 0, 'confirmed')
+  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'daily', 1, 'confirmed')
+  assign('demo-d002', DEMO_BRANCH_DONDURMA, 'daily', 2, 'confirmed')
+  assign('demo-f001', DEMO_BRANCH_BALIK, 'daily', -1, 'confirmed')
+  assign('demo-f001', DEMO_BRANCH_BALIK, 'daily', 0, 'confirmed')
   assign('demo-k001', DEMO_BRANCH_RUMELI, 'morning', 1, 'confirmed')
   assign('demo-k002', DEMO_BRANCH_RUMELI, 'morning', 1, 'confirmed')
-  assign('demo-d001', DEMO_BRANCH_DONDURMA, 'morning', 1, 'confirmed')
 
   const pendingAssignment = state.assignments.find(
     (assignment) =>
@@ -974,7 +993,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
   rep(
     'demo-d001',
     D,
-    'morning',
+    'daily',
     -2,
     'X',
     300,
@@ -984,7 +1003,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
   rep(
     'demo-d001',
     D,
-    'evening',
+    'daily',
     -2,
     'Z',
     700,
@@ -994,7 +1013,7 @@ export function createDemoState(now: Date = new Date()): DemoState {
   rep(
     'demo-d001',
     D,
-    'evening',
+    'daily',
     -1,
     'Z',
     1800,
@@ -1006,8 +1025,24 @@ export function createDemoState(now: Date = new Date()): DemoState {
     23,
   )
 
+  // Balık Ekmek: a small synthetic category-level report so the third branch
+  // is visible in manager comparisons without implying real figures.
+  rep(
+    'demo-f001',
+    DEMO_BRANCH_BALIK,
+    'daily',
+    -1,
+    'Z',
+    2400,
+    [
+      { categoryId: cat('balik_ekmek'), amount: 1900 },
+      { categoryId: cat('soguk_icecek'), amount: 500 },
+    ],
+    23,
+  )
+
   // Waste and a closing count the evening before (count variance on A and D, none on B/C).
-  const eveningPrev = shiftId(D, 'evening', -1)
+  const eveningPrev = shiftId(D, 'daily', -1)
   addMovement(state, {
     itemId: 'demo-item-a',
     type: 'WASTE',

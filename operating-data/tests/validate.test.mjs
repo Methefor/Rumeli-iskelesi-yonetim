@@ -134,7 +134,7 @@ test('real dataset: Balık Ekmek register, daily shift and two categories are ap
   assert.equal(shift.length, 1)
   assert.deepEqual(
     [shift[0].data.start_hour, shift[0].data.end_hour, shift[0].data.cutoff_hour, shift[0].data.cutoff_minute, shift[0].data.cutoff_day_offset, shift[0].data.is_active],
-    [14, 0, 0, 0, 1, true],
+    [16, 0, 0, 0, 1, true],
   )
   for (const e of [...of('category_branches'), ...of('registers'), ...shift]) {
     assert.equal(e.status, 'ok')
@@ -144,6 +144,21 @@ test('real dataset: Balık Ekmek register, daily shift and two categories are ap
   assert.ok(res.entries.some((e) => e.group === 'sales_categories' && e.key === 'balik_ekmek' && e.status === 'ok'))
   assert.equal(res.counts.rejected, 0)
   assert.equal(res.counts.skipped, 0)
+})
+
+test('real dataset: İskele Dondurma has one active fixed 16:00-00:00 shift', () => {
+  const files = {}
+  const dir = join(HERE, '..', 'real')
+  for (const g of GROUPS) { try { files[g] = readFileSync(join(dir, `${g}.csv`), 'utf8') } catch { files[g] = null } }
+  const res = validateDataset({ dataset: 'real', files, today: TODAY })
+  const shifts = res.entries.filter((e) => e.group === 'shift_definitions' && e.data.branch_key === 'iskele_dondurma')
+  const active = shifts.filter((e) => e.data.is_active)
+  assert.equal(active.length, 1)
+  assert.deepEqual(
+    [active[0].data.shift_key, active[0].data.start_hour, active[0].data.end_hour, active[0].data.cutoff_hour, active[0].data.cutoff_day_offset],
+    ['daily', 16, 0, 0, 1],
+  )
+  assert.ok(shifts.filter((e) => e.data.shift_key !== 'daily').every((e) => !e.data.is_active))
 })
 
 test('owner-input templates are never inside the loaded directories and hold no data rows', () => {

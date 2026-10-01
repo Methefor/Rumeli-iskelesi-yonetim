@@ -123,6 +123,7 @@ export function MyShiftPage() {
     }
     setRequestingFor(null)
     showToast('Vardiya değişiklik talebi yöneticiye gönderildi', 'success')
+    window.dispatchEvent(new Event('shift-requests-changed'))
     state.reload()
   }
 

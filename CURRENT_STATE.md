@@ -329,3 +329,12 @@ branch Vardiyalar page, then approve or reject with an audited decision. Approva
 atomically replaces the assignment; rejection requires a note. Demo mode contains
 a synthetic pending request for review. Hosted Supabase, production, Vercel and
 git remotes remain untouched; the working tree is still uncommitted.
+
+### 2026-10-01 - Preview review gaps closed locally
+
+Owner's shift correction is applied: İskele Dondurma and Balık Ekmek each have
+one active year-round 16:00-00:00 `daily` shift with a next-day 00:00 cutoff.
+The former Dondurma seasonal definitions remain inactive for history. Preview
+demo data now includes Balık Ekmek, manager navigation shows a global pending-
+request badge, and employee home exposes Stok Girişi when the role may receive
+stock. Fresh local reset and the 120-assertion operating-data loader suite pass.

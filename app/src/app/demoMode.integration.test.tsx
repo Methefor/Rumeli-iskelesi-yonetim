@@ -51,6 +51,11 @@ describe('demo mode — manager (M001)', () => {
     expect(screen.getByText(/sentetik örnek veri/i)).toBeInTheDocument()
     expect(await screen.findByText('Toplam Ciro')).toBeInTheDocument()
 
+    const branchSelect = screen.getByLabelText('Şube seçimi')
+    expect(
+      within(branchSelect).getByRole('option', { name: 'Balık Ekmek' }),
+    ).toBeInTheDocument()
+
     // Rumeli (M001's default branch) has no inventory tracking — an honest empty state.
     const nav = screen.getByRole('navigation', { name: 'Ana gezinme' })
     await user.click(within(nav).getByRole('link', { name: /Stok/ }))
@@ -90,15 +95,21 @@ describe('demo mode — manager (M001)', () => {
     await bootApp('/')
     const user = await login('M001')
     const nav = screen.getByRole('navigation', { name: 'Ana gezinme' })
+    expect(
+      await within(nav).findByLabelText('Vardiyalar: 1 bekleyen talep'),
+    ).toBeInTheDocument()
     await user.click(within(nav).getByRole('link', { name: /Vardiyalar/ }))
 
     expect(await screen.findByText('1 bekleyen')).toBeInTheDocument()
     expect(screen.getByText(/Ertesi gün gündüz randevum var\./)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Onayla' }))
-    await user.click(
-      screen.getByRole('button', { name: 'Onayla ve Vardiyayı Değiştir' }),
-    )
+    await user.click(screen.getByRole('button', { name: 'Onayla ve Vardiyayı Değiştir' }))
     expect(await screen.findByText('0 bekleyen')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(
+        within(nav).queryByLabelText('Vardiyalar: 1 bekleyen talep'),
+      ).not.toBeInTheDocument(),
+    )
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
@@ -109,6 +120,10 @@ describe('demo mode — Dondurma employee (D001)', () => {
     const user = await login('D001')
 
     expect(await screen.findByText(/Merhaba, Demo Çalışan/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Stok Girişi' })).toHaveAttribute(
+      'href',
+      '/app/employee/inventory/receive',
+    )
     const nav = screen.getByRole('navigation', { name: 'Ana gezinme' })
     await user.click(await within(nav).findByRole('link', { name: /Stok/ }))
 

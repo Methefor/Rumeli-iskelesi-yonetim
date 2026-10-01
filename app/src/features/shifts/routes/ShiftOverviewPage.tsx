@@ -99,6 +99,7 @@ export function ShiftOverviewPage() {
         : 'Vardiya değişikliği reddedildi',
       'success',
     )
+    window.dispatchEvent(new Event('shift-requests-changed'))
     state.reload()
   }
 

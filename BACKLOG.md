@@ -247,10 +247,10 @@ mutation is authorized by this backlog update.
       shift times on 2026-09-26; locally validated through the real loader.
 - [x] Owner approved 2% warning / 5% error thresholds for all branches and the
       six supported waste reasons on 2026-09-26; locally validated.
-- [x] Owner confirmed İskele Dondurma's current S900 register and seasonal
-      16:00-00:00 / 14:00-22:00 single-shift model; locally validated.
+- [x] Owner confirmed İskele Dondurma's S900 register and fixed year-round
+      16:00-00:00 single-shift model; locally validated 2026-10-01.
 - [x] Owner approved İskele Dondurma categories: Dondurma, Sıcak İçecek, Soğuk İçecek.
-- [x] Owner approved Balık Ekmek: S900 register, daily 14:00-00:00 shift (cutoff
+- [x] Owner approved Balık Ekmek: S900 register, daily 16:00-00:00 shift (cutoff
       00:00 next day), categories Balık Ekmek and Soğuk İçecek.
 - [x] Owner approved legacy revenue mapping: balik_ekmek -> branch balik_ekmek,
       dondurma -> branch iskele_dondurma (for the Stage 4 adapter; not built).
@@ -296,5 +296,6 @@ mutation is authorized by this backlog update.
       retention. The first OCR version does not upload or retain the image.
 - [x] Re-run fresh local Supabase reset and Auth/PostgREST permission tests
       after Docker Desktop restarted.
-- [ ] Show the pending shift-request count globally in the manager navigation
-      if field use shows the Vardiyalar-page inbox is too easy to miss.
+- [x] Show the pending shift-request count globally in the manager navigation.
+- [x] Add a direct Stok Girişi shortcut to the employee home for roles with
+      own-branch receiving permission.

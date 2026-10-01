@@ -162,3 +162,16 @@ management) and the inventory API (137), PIN login (45), management HTTP (76) an
 storage (48) suites still pass. No application code changed; UI suite not re-run.
 Hosted and production untouched. Remaining Gate 3 input: Pavo activation name/date,
 real product catalogue, product-to-category mapping, opening stock, dated unit costs.
+
+## 2026-10-01 owner shift update
+
+The owner superseded both earlier schedules. İskele Dondurma and Balık Ekmek
+now each use one active fixed `daily` shift, 16:00-00:00, with a next-day
+00:00 report cutoff. Former Dondurma generic and seasonal definitions remain
+inactive so existing references are not deleted.
+
+Fresh local reset applied all migrations through the current head. The real
+dry run is created 21 / updated 6 / unchanged 25 / skipped 0 / rejected 0;
+the extra created row is the new Dondurma `daily` definition. Validator 26/26
+and loader 120/120 passed, including explicit active-definition and daily
+operation assertions. Hosted and production remain untouched.

@@ -63,7 +63,7 @@ const load = (argv, extraEnv = {}) => runLoader({ argv, env: { ...env, ...extraE
 const counts = () => sql(`select (select count(*) from public.inventory_items)||','||(select count(*) from public.sales_categories)||','||(select count(*) from public.registers)||','||(select count(*) from public.operating_data_provenance)||','||(select count(*) from public.audit_logs)||','||(select count(*) from public.inventory_movements)`);
 const shiftDump = () => sql(`select string_agg(key||start_hour||':'||start_minute||'-'||cutoff_hour||':'||cutoff_minute, ',' order by key) from public.shift_definitions sd where branch_id='${rumeli}'`);
 
-const EXP_CREATED = 20, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a real dry run (see docs)
+const EXP_CREATED = 21, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a real dry run (see docs)
 // ---- 1. real dataset: dry run changes nothing ---------------------------------
 {
   const before = counts();
@@ -93,8 +93,8 @@ const EXP_CREATED = 20, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a r
     "owner-approved 2/5 reconciliation thresholds exist for all three branches");
   check(sql("select count(*) from public.operating_data_provenance where entity_type='waste_reason' and classification='confirmed' and approval_status='approved'") === "6",
     "all six owner-approved waste reasons are recorded as trusted configuration");
-  check(sql("select string_agg(key||':'||is_active, ',' order by key) from public.shift_definitions where branch_id='" + dondurma + "'") === "evening:false,morning:false,summer:false,winter:true",
-    "Dondurma has only the current winter seasonal shift active");
+  check(sql("select string_agg(key||':'||is_active, ',' order by key) from public.shift_definitions where branch_id='" + dondurma + "'") === "daily:true,evening:false,morning:false,summer:false,winter:false",
+    "Dondurma has only the fixed daily shift active");
   check(sql("select key||':'||name from public.registers where branch_id='" + dondurma + "'") === "s900:S900",
     "Dondurma has the owner-confirmed current S900 register");
   check(sql("select string_agg(c.key, ',' order by c.key) from public.sales_category_branches scb join public.sales_categories c on c.id=scb.category_id where scb.branch_id='" + dondurma + "'") === "dondurma,su",
@@ -120,8 +120,8 @@ const EXP_CREATED = 20, EXP_UPDATED = 6, EXP_UNCHANGED = 25; // confirmed by a r
     "both Balik Ekmek category mappings are confirmed + approved");
   check(sql("select string_agg(key||':'||name||':'||is_active, ',') from public.registers where branch_id='" + balik + "'") === "s900:S900:true",
     "S900 is the only Balik Ekmek register");
-  check(sql("select key||':'||name||':'||start_hour||':'||start_minute||'-'||end_hour||':'||end_minute||' cutoff '||cutoff_hour||':'||cutoff_minute||'+'||cutoff_day_offset||':'||is_active from public.shift_definitions where branch_id='" + balik + "'") === "daily:Tek vardiya:14:0-0:0 cutoff 0:0+1:true",
-    "Balik Ekmek has one active daily shift 14:00-00:00 with a next-day 00:00 cutoff");
+  check(sql("select key||':'||name||':'||start_hour||':'||start_minute||'-'||end_hour||':'||end_minute||' cutoff '||cutoff_hour||':'||cutoff_minute||'+'||cutoff_day_offset||':'||is_active from public.shift_definitions where branch_id='" + balik + "'") === "daily:Tek vardiya:16:0-0:0 cutoff 0:0+1:true",
+    "Balik Ekmek has one active daily shift 16:00-00:00 with a next-day 00:00 cutoff");
   check(sql("select count(*) from public.shift_definitions where branch_id='" + balik + "'") === "1", "Balik Ekmek has no other shift");
   check(sql("select string_agg(key||':'||is_active, ',' order by key) from public.shift_definitions where branch_id='" + rumeli + "'") === "evening:true,morning:true" && shiftDump() === "evening16:0-1:0,morning9:0-17:30",
     "Rumeli shifts are unchanged");
@@ -265,7 +265,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
   const item = (code) => sql(`select id from public.inventory_items where code='${code}'`);
   const A = item("TEST-A01"), B = item("TEST-B01");
   const catA = sql("select id from public.sales_categories where key='test_grup_a'");
-  const defId = sql(`select id from public.shift_definitions where branch_id='${dondurma}' and key='winter' and is_active`);
+  const defId = sql(`select id from public.shift_definitions where branch_id='${dondurma}' and key='daily' and is_active`);
   const stockOf = (id) => sql(`select coalesce(sum(stock_delta),0) from public.inventory_movements where inventory_item_id='${id}'`);
   const today = sql("select (now() at time zone 'Europe/Istanbul')::date");
   const mgr = users.P02.token, cashier = users.P04.token, bm = users.P03.token, owner = users.P01.token;
@@ -279,7 +279,7 @@ iskele_dondurma,TEST-B01,TEST Ürün B (kg),kg,true,true,${T}
 
   // shift selection
   const shiftRes = await rpc(bm, "schedule_shift", { p_branch_id: dondurma, p_shift_definition_id: defId, p_business_date: today, p_reason: "daily rehearsal" });
-  check(shiftRes.ok, "3. branch manager schedules the active winter shift");
+  check(shiftRes.ok, "3. branch manager schedules the active fixed daily shift");
   const shiftId = shiftRes.data;
   check((await rpc(bm, "assign_shift", { p_shift_id: shiftId, p_user_id: users.P04.id })).ok, "the cashier is assigned to the shift");
   const mine = await req(`/rest/v1/shifts?select=id,status,business_date&id=eq.${shiftId}`, { token: cashier });

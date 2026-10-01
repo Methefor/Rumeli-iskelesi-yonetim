@@ -120,6 +120,7 @@ export function EmployeeHomePage() {
 
   const canRecord = canInventory(roles, 'inventory.record')
   const canCount = canInventory(roles, 'inventory.count')
+  const canReceive = canInventory(roles, 'inventory.receive')
 
   return (
     <Stack>
@@ -254,12 +255,17 @@ export function EmployeeHomePage() {
                 </Card>
               </section>
 
-              {tracksInventory && (canRecord || canCount) && (
+              {tracksInventory && (canReceive || canRecord || canCount) && (
                 <section aria-labelledby="stock-actions">
                   <h2 id="stock-actions" className={styles.sectionTitle}>
                     Stok işlemleri
                   </h2>
                   <div className={styles.quick}>
+                    {canReceive && (
+                      <LinkButton to="inventory/receive" fullWidth>
+                        Stok Girişi
+                      </LinkButton>
+                    )}
                     {canRecord && (
                       <LinkButton to="inventory/waste" variant="secondary" fullWidth>
                         Fire Kaydı

@@ -15,10 +15,10 @@ Anything you do not know stays out: nothing is invented for you.
 
 ## B. Decisions only the owner can make
 
-- [x] Balık Ekmek (separate branch `balik_ekmek`): one S900 register; one daily shift 14:00–00:00 (report cutoff 00:00 next day); categories Balık Ekmek and Soğuk İçecek (more may be added later, none invented). Owner approved 2026-09-26.
+- [x] Balık Ekmek (separate branch `balik_ekmek`): one S900 register; one fixed daily shift 16:00–00:00 (report cutoff 00:00 next day); categories Balık Ekmek and Soğuk İçecek (more may be added later, none invented). Owner approval updated 2026-10-01.
 - [x] Legacy Rumeli evening-report revenue mapping: `balik_ekmek` revenue → branch `balik_ekmek`; `dondurma` revenue → branch `iskele_dondurma`. Owner approved 2026-09-26 (decision only; the Stage 4 adapter is not built).
 - [x] İskele Dondurma currently has one S900 computer/register. Pavo is planned but not active yet. Owner statement 2026-09-26.
-- [x] İskele Dondurma has one seasonal shift: summer 16:00–00:00; cold season 14:00–22:00. Cold-season shift is currently active; cutoffs equal shift end. Owner statement 2026-09-26.
+- [x] İskele Dondurma has one fixed year-round shift: 16:00–00:00, with report cutoff 00:00 next day. This supersedes the seasonal summer/winter model. Owner approval updated 2026-10-01.
 - [x] İskele Dondurma reports exactly two categories: Dondurma and Su (`su`). Owner correction 2026-09-26; it **supersedes** the earlier approval of Dondurma + Sıcak İçecek + Soğuk İçecek. The two obsolete mappings are removed through `real/category_branch_removals.csv`; the global Sıcak/Soğuk İçecek categories stay (Rumeli and Balık Ekmek use them). Categories may be edited or expanded later.
 - [ ] Pavo transition (future, NOT active, not loaded): confirm the activation details/date; then deactivate S900 and activate Pavo without rewriting history.
 - [x] Reconciliation tolerance: 2% warning / 5% error for all three branches. Owner approved 2026-09-26.

@@ -575,3 +575,13 @@ backdated-entry and operating-data loader regressions. Real local Auth +
 PostgREST now passes 152 assertions, including the frontend's nested request
 query and cashier-to-branch-manager approval flow. No hosted or production
 system was accessed; no commit or push was made.
+
+### 2026-10-01 - Preview review follow-ups
+
+Added Balık Ekmek to the synthetic Preview branch selector and manager
+comparisons. Replaced Dondurma's seasonal demo/real model and Balık Ekmek's
+earlier hours with one active 16:00-00:00 daily shift for each branch. Added a
+global pending shift-request badge to manager navigation and a direct Stok
+Girişi action to employee home. A fresh local Supabase reset applied all
+migrations; the real-data validator passed 26 tests and the loader passed 120
+assertions with Dondurma/Balık shift checks.

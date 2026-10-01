@@ -570,3 +570,15 @@ verebilir. Onay, eski atamayı iptal edip istenen atamayı tek veritabanı işle
 içinde oluşturur; ret açıklaması zorunludur. Talep ve karar ayrı denetim
 kayıtlarıdır. İlk bildirim modeli Vardiyalar ekranındaki uygulama içi bekleyen
 talep sayısı ve karar kutusudur; ücretli bildirim servisi kullanılmaz.
+
+### 2026-10-01 - Dondurma ve Balık Ekmek sabit tek vardiya
+
+İskele Dondurma ve Balık Ekmek yıl boyunca 16:00-00:00 tek vardiya kullanır;
+rapor kesim saati ertesi gün 00:00'dır. Bu karar, Dondurma için önceki sezonluk
+16:00-00:00 / 14:00-22:00 modelini ve Balık Ekmek için önceki 14:00-00:00
+saatini geçersiz kılar. Eski Dondurma tanımları geçmiş referansları korumak için
+silinmez, pasif tutulur; yalnızca `daily` tanımı aktiftir.
+
+Bekleyen vardiya taleplerinin sayısı yönetici navigasyonunda global rozet olarak
+gösterilir. `inventory.receive` yetkili çalışanların ana sayfasında doğrudan
+Stok Girişi kısayolu bulunur.

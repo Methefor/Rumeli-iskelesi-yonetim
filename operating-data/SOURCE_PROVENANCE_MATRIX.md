@@ -1,4 +1,4 @@
-# Source / provenance matrix (as of 2026-09-26)
+# Source / provenance matrix (updated 2026-10-01)
 
 Classes: `confirmed` (verified by the running app or an explicit business
 decision) · `legacy_observed` (seen in legacy code/data; approval is tracked
@@ -12,8 +12,8 @@ separately) · `demo_only` (synthetic) · `unknown` (owner input needed).
 | Register, İskele Dondurma | `s900` "S900" (current single computer); Pavo planned | confirmed / approved | owner statement 2026-09-26 | none | S900 yes; Pavo not loaded until transition |
 | Register, Balık Ekmek | `s900` "S900" (single S900 POS computer) | confirmed / approved | owner statement 2026-09-26 | none | yes |
 | Shifts, Rumeli | sabah 09:00–17:30 (report deadline 17:30); akşam 16:00–01:00 (deadline 01:00, next day) | legacy_observed / approved | `entry.html` shift labels; `isOnTime` rule in `js/supabase-client.js`; owner approval 2026-09-26 | **009 seeded 08:00–16:00 / 16:00–23:59, cutoff 16:30 / 01:00 (different)** | yes; approved values replace seed when loaded |
-| Shifts, İskele Dondurma | summer 16:00–00:00; cold season 14:00–22:00; one shift per day | confirmed / approved | owner statement 2026-09-26 | generic morning/evening seed | yes; generic pair disabled, winter active, summer prepared inactive |
-| Shift, Balık Ekmek | `daily` "Tek vardiya" 14:00–00:00, cutoff 00:00 next day, active | confirmed / approved | owner statement 2026-09-26 | none | yes |
+| Shift, İskele Dondurma | `daily` "Tek vardiya" 16:00–00:00, cutoff 00:00 next day, active year-round | confirmed / approved | owner update 2026-10-01, superseding the seasonal model | generic morning/evening seed | yes; generic and former seasonal definitions inactive, `daily` active |
+| Shift, Balık Ekmek | `daily` "Tek vardiya" 16:00–00:00, cutoff 00:00 next day, active year-round | confirmed / approved | owner update 2026-10-01 | none | yes |
 | Sales categories | Gıda, Kahvaltı, Kahve, Meyve Suyu, Sıcak İçecek, Soğuk İçecek, Salata, Tatlı, Dondurma, Börek & Çörek | legacy_observed / approved | 10 fields in `entry.html`; owner approval 2026-09-26 | seeded (009) | yes |
 | Category → branch (Rumeli: all 10) | | legacy_observed / approved | Rumeli cashier form shows all 10; owner approval 2026-09-26 | 9 seeded (Dondurma not) | yes |
 | Category → branch (İskele Dondurma: Dondurma, Su) | 2 mappings; `su` is a new global category | confirmed / approved | owner correction 2026-09-26; **supersedes** the earlier Dondurma + Sıcak İçecek + Soğuk İçecek approval | 009 seeded dondurma, sicak_icecek, soguk_icecek | dondurma kept; `su` created; sicak_icecek and soguk_icecek mappings removed by explicit, audited removal rows |

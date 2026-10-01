@@ -13,6 +13,8 @@ export interface NavItem {
   icon: IconName
   /** Match only the exact path (for the index route). */
   end?: boolean
+  /** Optional global attention count, such as pending shift requests. */
+  badge?: number
 }
 
 export interface AppShellProps {
@@ -109,6 +111,14 @@ export function AppShell({ navItems, allowBranchSwitch = false }: AppShellProps)
           >
             <Icon name={item.icon} />
             <span className={styles.navLabel}>{item.label}</span>
+            {(item.badge ?? 0) > 0 && (
+              <span
+                className={styles.navBadge}
+                aria-label={`${item.label}: ${item.badge} bekleyen talep`}
+              >
+                {(item.badge ?? 0) > 99 ? '99+' : item.badge}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
