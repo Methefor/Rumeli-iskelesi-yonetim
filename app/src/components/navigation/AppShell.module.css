@@ -398,7 +398,7 @@
   padding: 0 5px;
   border: 2px solid var(--branch-nav);
   border-radius: var(--radius-full);
-  background: var(--color-danger-600);
+  background: var(--color-danger-500);
   color: #fff;
   font-size: 10px;
   font-weight: 800;
