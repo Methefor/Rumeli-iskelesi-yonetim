@@ -606,3 +606,12 @@ A fresh local reset applied all migrations. The real-source/local-target test
 created 836 reports and passed 14 rollback, lineage, kuruş, disclosure,
 idempotency and drift assertions. Disabled invented Preview financial/inventory
 fixtures by default. Hosted V4 schema/data and production remain unchanged.
+
+### 2026-10-02 - Owner-confirmed cashier roster
+
+Recorded the five-person active cashier roster with branch-specific employee
+codes and no credentials. Added a validation test for exact names, branches,
+unique codes and the absence of credential fields. Updated the legacy migration
+gate so the two continuing legacy identities map to active profiles while the
+three former identities retain authorship through inactive archival profiles.
+No Auth user, PIN, hosted schema or production row was created or changed.

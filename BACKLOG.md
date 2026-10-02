@@ -92,8 +92,10 @@ in the original brief. Move items up when a phase actually starts.
       without mixing legacy compatibility logic into new business logic —
       mapping documented (not built) in `docs/LEGACY_RECONCILIATION.md`
       "Legacy adapter strategy".
-- [ ] Production identity step: provision real V4 profiles and privately map
-      the five legacy cashier identifiers to employee codes (never migrate PINs).
+- [ ] Production identity step: provision the owner-confirmed active roster
+      (`identity-data/approved_staff.csv`) and privately map the five legacy
+      cashier identifiers: two to active profiles, three to inactive no-login
+      archival profiles (never migrate PINs or reassign historical authorship).
       `pin_credentials` (hash re-derived or PINs reset — plaintext PINs are
       never carried forward as plaintext). Separate, explicitly-approved
       step per `MIGRATION_PLAN.md`.

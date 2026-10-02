@@ -365,3 +365,13 @@ real-source/local-target suite passed 14 assertions, including exact kuruş Z
 revenue, rollback, idempotency and source-drift rejection. Production is still
 untouched. Preview financial/inventory fixtures are disabled unless explicitly
 enabled for development; demo identities/navigation remain for UI review.
+
+### 2026-10-02 - Active cashier roster confirmed
+
+The owner confirmed five current cashiers: three assigned to Rumeli İskelesi
+(`K001`–`K003`) and two assigned to İskele Dondurma (`D001`–`D002`). The
+versioned manifest is `identity-data/approved_staff.csv` and contains no PINs,
+emails or UUIDs. People outside this list are not current accounts. For legacy
+migration only, the three former identities with historical reports will be
+represented by inactive, no-login archival profiles; their reports will not be
+reassigned to active employees. Production provisioning remains unapplied.

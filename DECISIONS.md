@@ -609,3 +609,14 @@ management totals remain separate references because June/July cannot be
 reconstructed after unversioned legacy edits. No artificial balancing row is
 allowed. Public Preview keeps demo access but ships no invented financial or
 inventory figures by default.
+
+### 2026-10-02 - Current staff and historical report identity are separate
+
+The active V4 cashier roster contains exactly the five owner-confirmed people
+in `identity-data/approved_staff.csv`: three Rumeli İskelesi cashiers and two
+İskele Dondurma cashiers. Everyone else is excluded from the current roster.
+When a former legacy cashier owns historical reports, migration retains that
+authorship through an inactive, no-login archival profile. Historical reports
+must never be reassigned to a current employee merely to avoid provisioning an
+archival identity. PINs remain individual, are set only through the secure
+provisioning/management path, and are never stored in Git or migration files.

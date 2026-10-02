@@ -70,7 +70,10 @@ and source-drift rejection. Production remains untouched.
 
 ## Remaining production gate
 
-Before a hosted apply, provision the five real V4 cashier profiles, map each
-legacy cashier identifier to its employee code, take verified database and
-Storage backups, re-run this audit and confirm the exact fingerprint. A hosted
-apply still requires a separate explicit owner approval.
+Before a hosted apply, provision the five owner-confirmed active V4 cashiers
+from `identity-data/approved_staff.csv`, plus the owner profile. Of the five
+legacy identities, two map to active cashiers and three map to inactive,
+no-login archival profiles so historical authorship is retained without
+creating current accounts. Then take verified database and Storage backups,
+re-run this audit and confirm the exact fingerprint. A hosted apply still
+requires a separate explicit owner approval.

@@ -26,6 +26,14 @@ Safety properties:
 The cashier-map file maps legacy cashier UUIDs to already-provisioned V4
 employee codes. Never put PINs in this file and never commit a real mapping.
 
+The owner-confirmed current roster is in `identity-data/approved_staff.csv`.
+Only the two legacy identities who are still active map to active V4 profiles
+(`K001`/`K002`). The other three legacy identities have historical reports but
+are no longer current staff: create inactive, no-login archival profiles for
+them and map their legacy UUIDs to those profiles. Do not reassign their reports
+to a current cashier and do not add them to the active roster. The three newly
+confirmed cashiers without legacy history require no entry in the legacy map.
+
 ```text
 node legacy-migration/audit.mjs
 node legacy-migration/run.mjs --actor=<owner-code> --cashier-map=<private-json>

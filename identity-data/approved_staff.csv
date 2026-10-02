@@ -1,0 +1,7 @@
+# Owner-confirmed active cashier roster. PINs are deliberately excluded and must never be committed.
+employee_code,full_name,role_key,branch_key,is_active,provenance,approval_status,source
+K001,Tuba Bozaklı,cashier,rumeli_iskelesi,true,confirmed,approved,Owner confirmation 2026-10-02
+K002,Ceren Erdem,cashier,rumeli_iskelesi,true,confirmed,approved,Owner confirmation 2026-10-02
+K003,Rüya Akşar,cashier,rumeli_iskelesi,true,confirmed,approved,Owner confirmation 2026-10-02
+D001,Tuba Öztav,cashier,iskele_dondurma,true,confirmed,approved,Owner confirmation 2026-10-02
+D002,Tuğkan Karademir,cashier,iskele_dondurma,true,confirmed,approved,Owner confirmation 2026-10-02

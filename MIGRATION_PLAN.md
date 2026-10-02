@@ -158,8 +158,12 @@ local; the staging sign-off item above remains unmet.
 The importer is locally validated with the current 538-row hosted source but
 has not been applied to a hosted V4 schema. Before production:
 
-- provision the real owner and five cashier profiles with individual PINs;
-- approve the private legacy-cashier-id to employee-code map;
+- provision the real owner and the five active cashiers listed in
+  `identity-data/approved_staff.csv`, each with an individual PIN;
+- create three inactive, no-login archival profiles for legacy report owners
+  who are no longer current staff;
+- approve the private legacy-cashier-id to employee-code map (two active and
+  three archival targets; never commit UUIDs or PINs);
 - take verified database and Storage backups;
 - re-run `legacy-migration/audit.mjs` and confirm the exact SHA-256 fingerprint;
 - run the importer in dry-run mode and review the 836-report plan;
