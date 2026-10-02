@@ -63,7 +63,7 @@ keys remain inactive historical registers instead of being guessed to be the
 current Ana Kasa / 2. Kasa devices.
 
 A fresh local Supabase reset applied every migration, including the new legacy
-import migration. The real-source/local-target suite passed 14 assertions:
+import migration. The real-source/local-target suite passed 15 assertions, including the inactive archival-profile case:
 dry-run rollback, exact row plan, atomic apply, source lineage for every report,
 Z total equality to the kuruş, missing-category disclosure, idempotent rerun,
 and source-drift rejection. Production remains untouched.

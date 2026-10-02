@@ -615,3 +615,14 @@ unique codes and the absence of credential fields. Updated the legacy migration
 gate so the two continuing legacy identities map to active profiles while the
 three former identities retain authorship through inactive archival profiles.
 No Auth user, PIN, hosted schema or production row was created or changed.
+
+### 2026-10-02 - Archival identity migration rehearsal
+
+Prepared the private five-entry legacy UUID map outside Git and verified the
+gitignore rule. A fresh local reset applied every migration, then the real-
+source/local-target suite passed 15 assertions. Three former cashier fixtures
+were inactive, had no PIN credentials and retained their historical report
+ownership; the two continuing identities used active profiles. The plan remained
+538 Rumeli + 190 Balık Ekmek + 108 İskele Dondurma reports, and exact Z revenue,
+rollback, lineage, idempotency and drift rejection still passed. Local data was
+reset afterward. Production remained untouched.

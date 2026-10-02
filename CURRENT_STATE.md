@@ -361,7 +361,7 @@ The hosted legacy source was audited read-only: 538 reports from 2026-02-01 to
 no invalid/negative money. Morning X plus evening Z was the main historical
 double-count risk. A service-role-only transactional importer now produces 836
 V4 reports with per-row lineage and source hashes. A fresh local reset and the
-real-source/local-target suite passed 14 assertions, including exact kuruş Z
+real-source/local-target suite passed 15 assertions, including inactive archival identities and exact kuruş Z
 revenue, rollback, idempotency and source-drift rejection. Production is still
 untouched. Preview financial/inventory fixtures are disabled unless explicitly
 enabled for development; demo identities/navigation remain for UI review.

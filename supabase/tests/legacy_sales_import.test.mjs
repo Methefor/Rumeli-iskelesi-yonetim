@@ -74,7 +74,7 @@ async function request(path, token, body) {
   }
   return { ok: response.ok, status: response.status, data };
 }
-async function makeUser(role, code) {
+async function makeUser(role, code, { active = true } = {}) {
   const response = await request("/auth/v1/admin/users", service, {
     email: `legacy-${code.toLowerCase()}-${Date.now()}-${randomUUID()}@migration.invalid`,
     password: `Local-${randomUUID()}!`,
@@ -83,7 +83,7 @@ async function makeUser(role, code) {
   if (!response.ok)
     throw new Error(`local auth fixture failed: ${response.status}`);
   sql(
-    `insert into public.profiles(id,full_name,employee_code) values ('${response.data.id}','Legacy Test ${code}','${code}'); insert into public.user_roles(user_id,role_id) select '${response.data.id}',id from public.roles where key='${role}';`,
+    `insert into public.profiles(id,full_name,employee_code,is_active) values ('${response.data.id}','Legacy Test ${code}','${code}',${active}); insert into public.user_roles(user_id,role_id) select '${response.data.id}',id from public.roles where key='${role}';`,
   );
   return response.data.id;
 }
@@ -93,10 +93,18 @@ const { rows, cashierIds } = await readLegacySnapshot();
 const audit = auditLegacyRows(rows, cashierIds);
 const cashierMap = {};
 for (const [index, legacyId] of cashierIds.sort().entries()) {
-  const code = `K9${String(index + 1).padStart(2, "0")}`;
-  await makeUser("cashier", code);
+  const active = index < 2;
+  const code = active
+    ? `K9${String(index + 1).padStart(2, "0")}`
+    : `H9${String(index - 1).padStart(2, "0")}`;
+  await makeUser("cashier", code, { active });
   cashierMap[legacyId] = code;
 }
+check(
+  sql("select count(*) from public.profiles where employee_code like 'H9%' and not is_active") === "3" &&
+    sql("select count(*) from public.pin_credentials pc join public.profiles p on p.id=pc.user_id where p.employee_code like 'H9%'") === "0",
+  "former cashiers are inactive archival profiles with no PIN credentials",
+);
 check(
   audit.sourceRows === 538 && audit.unknownCashierRows === 0,
   "hosted legacy snapshot is complete and every report has a cashier",

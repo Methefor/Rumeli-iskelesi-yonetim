@@ -28,3 +28,6 @@ yarn-error.log*
 Thumbs.db
 .vercel
 .env*.local
+
+# Private one-time migration identity maps
+legacy-migration/private/
