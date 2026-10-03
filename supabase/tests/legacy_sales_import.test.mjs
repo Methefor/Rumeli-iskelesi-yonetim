@@ -106,7 +106,7 @@ check(
   "former cashiers are inactive archival profiles with no PIN credentials",
 );
 check(
-  audit.sourceRows === 538 && audit.unknownCashierRows === 0,
+  audit.sourceRows === 541 && audit.unknownCashierRows === 0,
   "hosted legacy snapshot is complete and every report has a cashier",
 );
 
@@ -148,8 +148,8 @@ const dry = await request(
 check(
   dry.ok &&
     dry.data.applied === false &&
-    dry.data.result.createdReports === 836,
-  "dry run plans exactly 538 Rumeli + 190 Balık + 108 Dondurma reports",
+    dry.data.result.createdReports === 840,
+  "dry run plans exactly 541 Rumeli + 191 Balık + 108 Dondurma reports",
 );
 check(
   sql(
@@ -167,11 +167,11 @@ const applied = await request(
 check(
   applied.ok &&
     applied.data.applied === true &&
-    applied.data.result.createdReports === 836,
+    applied.data.result.createdReports === 840,
   "apply imports the exact plan atomically",
 );
 check(
-  sql("select count(*) from public.legacy_sales_report_links") === "836",
+  sql("select count(*) from public.legacy_sales_report_links") === "840",
   "every imported report has one lineage link",
 );
 check(
@@ -226,7 +226,7 @@ const again = await request(
 check(
   again.ok &&
     again.data.alreadyImported === true &&
-    sql("select count(*) from public.sales_reports") === "836",
+    sql("select count(*) from public.sales_reports") === "840",
   "same fingerprint is idempotent and creates no duplicates",
 );
 

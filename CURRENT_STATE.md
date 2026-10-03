@@ -356,10 +356,10 @@ puanı üretilmez.
 
 ### 2026-10-02 - Legacy sales migration locally proven
 
-The hosted legacy source was audited read-only: 538 reports from 2026-02-01 to
-2026-10-01, five cashier identifiers, no duplicate grain, no orphan cashier and
+The hosted legacy source was audited read-only: 541 reports from 2026-02-01 to
+2026-10-03, five cashier identifiers, no duplicate grain, no orphan cashier and
 no invalid/negative money. Morning X plus evening Z was the main historical
-double-count risk. A service-role-only transactional importer now produces 836
+double-count risk. A service-role-only transactional importer now produces 840
 V4 reports with per-row lineage and source hashes. A fresh local reset and the
 real-source/local-target suite passed 15 assertions, including inactive archival identities and exact kuruş Z
 revenue, rollback, idempotency and source-drift rejection. Production is still

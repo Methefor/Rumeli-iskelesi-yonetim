@@ -1,4 +1,4 @@
-# Production cutover runbook — prepared 2026-10-02
+# Production cutover runbook — prepared 2026-10-02, updated 2026-10-03
 
 ## Status
 
@@ -35,9 +35,9 @@ printed or committed.
 1. Confirm the Supabase project ref exactly matches the approved legacy/V4
    target and record the ref without printing keys.
 2. Confirm the current source fingerprint is
-   `41124dba55c87eaabee72a911d0ab8a1c60fe226fab84754b9bced6922f2e257`.
+   `e83b3fa15fc262bd2fab3f6eb2a415ed726c618e82c45801b30d995bb883a67c`.
    Any change stops the run for a new audit.
-3. Confirm 538 source reports, five source cashier identities, no duplicate
+3. Confirm 541 source reports, five source cashier identities, no duplicate
    date/shift/register grain and no orphan cashier reference.
 4. Inspect migration history and schema name collisions before applying any V4
    migration.
@@ -80,11 +80,11 @@ printed or committed.
 Run the exact migration transaction with `p_commit=false` and the confirmed
 fingerprint. Required result:
 
-- source rows: 538
-- Rumeli reports: 538
-- Balık Ekmek reports: 190
+- source rows: 541
+- Rumeli reports: 541
+- Balık Ekmek reports: 191
 - İskele Dondurma reports: 108
-- total target reports: 836
+- total target reports: 840
 - writes after dry run: zero
 - current Z component total: exact to the kuruş
 - June/July frozen-reference variance: still disclosed, never balanced
@@ -97,7 +97,7 @@ the owner may the final production data-apply approval be requested.
 ## Gate F — controlled apply and verification
 
 After explicit approval, run the same fingerprinted transaction once with
-commit enabled. Verify 836 lineage links, one immutable import-run record,
+commit enabled. Verify 840 lineage links, one immutable import-run record,
 idempotent second execution, per-branch/month totals and current-user access.
 Do not delete or rewrite the legacy source. Keep rollback and legacy read access
 available through the pilot window.
@@ -108,3 +108,19 @@ Switch the V4 deployment from Preview/demo configuration to real login only
 after hosted login, dashboard, reporting, stock receipt and PWA update checks
 pass. Start with the owner and a small cashier pilot. The second-level dashboard
 and performance work resumes after the real-data cutover is stable.
+
+## Execution evidence — 2026-10-03
+
+- CLI target: Rumeli İskelesi Database / `iwikwbjsznjuefvuemdb`.
+- Separate `tatli-imalat-dagitim` project remained untouched.
+- Role, schema and data dumps created outside Git with SHA-256 manifest.
+- Disposable local restore: 541 reports, five cashiers, zero Auth users and one
+  Storage metadata row.
+- Current fingerprint:
+  `e83b3fa15fc262bd2fab3f6eb2a415ed726c618e82c45801b30d995bb883a67c`.
+- Current migration plan: 541 Rumeli + 191 Balık Ekmek + 108 Dondurma = 840.
+- Real-source/local-target migration suite: 15/15 passed.
+- Offline schema comparison: zero table-name and zero function-name collisions.
+- Local migration data reset and local Supabase stopped.
+- Open backup item: download and hash the one legacy Storage object body.
+- Hosted schema, Auth users, functions and V4 business rows remain untouched.

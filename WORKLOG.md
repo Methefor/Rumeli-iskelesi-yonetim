@@ -626,3 +626,22 @@ ownership; the two continuing identities used active profiles. The plan remained
 538 Rumeli + 190 Balık Ekmek + 108 İskele Dondurma reports, and exact Z revenue,
 rollback, lineage, idempotency and drift rejection still passed. Local data was
 reset afterward. Production remained untouched.
+
+### 2026-10-03 - Production backup and source re-audit
+
+Linked the CLI to the verified Rumeli İskelesi project, not the separate
+tatlı-imalat-dağıtım project. Created Git-external role, schema and data dumps
+with SHA-256 manifest. A disposable local restore reconstructed 541 legacy
+reports, five cashiers, zero Auth users and one Storage metadata row. The live
+legacy source had gained three reports since the prior audit, so the previous
+fingerprint and 836-report plan were invalidated. The new read-only audit plans
+840 reports (541 Rumeli, 191 Balık Ekmek, 108 Dondurma) under fingerprint
+e83b3fa15fc262bd2fab3f6eb2a415ed726c618e82c45801b30d995bb883a67c.
+Production remained unmodified.
+
+The updated real-source/local-target suite then passed 15/15 with the exact
+840-report plan. Offline comparison of the restored production schema against
+the V4 migrations found zero table-name and zero function-name collisions.
+The local migration copy was reset and Supabase stopped. The single Storage
+object body remains outside the database dump and awaits explicit backup
+authorization.
