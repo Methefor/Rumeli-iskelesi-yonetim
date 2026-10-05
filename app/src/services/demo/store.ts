@@ -16,7 +16,7 @@ import type { ManagementAuditEntry } from '../supabase/management'
 import { effectiveCostAt, stockDeltaFor } from '../../domain/inventory'
 import { reconcile } from '../../domain/reconciliation'
 import type { MovementType } from '../../domain/inventory'
-import type { ReconciliationStatus } from '../../domain/reconciliation'
+import type { ReconciliationStatus, ReportOrigin } from '../../domain/reconciliation'
 import { addDaysIso, istanbulDate } from '../../utils/dates'
 import type {
   BranchEmployee,
@@ -93,6 +93,8 @@ export interface DemoReport {
   reconciliationStatus: ReconciliationStatus
   submittedAt: string
   notes: string | null
+  /** Set only for reports created by the (synthetic) legacy import; undefined = native. */
+  origin?: ReportOrigin
   items: DemoReportItem[]
 }
 

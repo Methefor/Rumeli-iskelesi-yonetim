@@ -2,6 +2,27 @@
 
 Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA shell is now locally prepared and validated with production icons, a generated service worker, connection/update notices and 360px mobile browser QA. Supabase business responses are never cached. Real iOS/Android device QA and deployment remain open; see docs/LOCAL_PWA_VALIDATION_2026-09-27.md. The Manager Dashboard (`/app/manager`) was rebuilt as a period-aware, multi-branch operational/financial control center — see DASHBOARD_MODEL.md; local typecheck/lint/test/build and demo-mode browser review pass; not committed/pushed).
 
+## CURRENT TRUTH — 2026-10-04 (supersedes any older "OPEN"/"not built" wording below)
+
+Git: branch `v4-2027`, HEAD `1f60acb` (`data: refresh legacy migration snapshot`) equals
+`origin/v4-2027`; the production-readiness work of this date is uncommitted.
+
+- **LOCAL — fully validated:** all 25 migration files (24 V4 + the `20260611233031` history
+  mirror) apply from zero; SQL suites (timezone, timezone RPC 32, inventory security,
+  backdated entry + 24 tz cases, management center, shift change requests); HTTP suites
+  (inventory API 152, storage 48, pin-login 45, management 76, operating-data loader 120);
+  legacy importer (15 + rehearsal 77 + teardown 10); owner bootstrap 30; owner PIN rotation 37; production operating-data runner 30;
+  validators/guards (26 + 1 + 13 + 3); app typecheck/lint/build and 309 tests (2026-10-05). The Stage 4 legacy adapter **is built**
+  (`legacy-migration/`, fail-closed guards, post-apply SQL pack).
+- **PRODUCTION — read-only audited:** schema collision audit (0 collisions), migration
+  history (one legacy entry), legacy source audit (544 rows, plan 845, fingerprint moves daily),
+  Storage object body exported outside Git. See `PRODUCTION_READINESS.md`.
+- **Readiness verdicts:** SCHEMA APPLY REVIEW = READY FOR REVIEW; DATA APPLY = NOT READY; PILOT/CUTOVER = NOT READY. Hardening added 2026-10-05: break-glass owner PIN rotation, one import-level audit event, server-side immutability of imported historical reconciliation findings.
+- **PRODUCTION — WRITE: NOT DONE.** No migration, user, PIN, function, import or Vercel change.
+- **HOSTED STAGING:** intentionally skipped/deferred per the 2026-09-26 decision.
+- **PRODUCTION:** untouched. Legacy remains the live system.
+- Gates and open owner decisions: `PRODUCTION_READINESS.md`; runbooks in `docs/PRODUCTION_*`.
+
 ## Two applications live in this repo right now
 
 ### 1. Legacy production app (repo root) — untouched, still live
@@ -375,3 +396,13 @@ emails or UUIDs. People outside this list are not current accounts. For legacy
 migration only, the three former identities with historical reports will be
 represented by inactive, no-login archival profiles; their reports will not be
 reassigned to active employees. Production provisioning remains unapplied.
+
+### 2026-10-05 - Production-readiness blockers closed (local)
+
+Owner bootstrap tool (`identity-data/bootstrap-owner.mjs` + service-role-only function),
+production operating-data runner (`operating-data/run-production.mjs`; the local loader stays
+localhost-only), historical reconciliation policy (view `sales_reports_with_origin`: imported
+legacy findings keep their ERROR/WARNING but leave the default queue and dashboard tallies),
+restricted pilot-frontend plan (`docs/PRODUCTION_PILOT_FRONTEND.md`, not executed), legacy
+write-freeze runbook. Readiness is now three-level (`PRODUCTION_READINESS.md`): schema apply
+review READY FOR REVIEW; data apply NOT READY; pilot/cutover NOT READY. Production untouched.

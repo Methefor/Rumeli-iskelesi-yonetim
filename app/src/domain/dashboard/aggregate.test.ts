@@ -113,6 +113,18 @@ describe('computeReconciliationCounts', () => {
   })
 })
 
+describe('computeReconciliationCounts: historical imported findings', () => {
+  it('are kept out of the operational tally while native ones stay counted', () => {
+    const reports = [
+      report({ reconciliationStatus: 'ERROR' }),
+      report({ reconciliationStatus: 'ERROR', origin: 'legacy_import' }),
+      report({ reconciliationStatus: 'WARNING', origin: 'legacy_import' }),
+      report({ reconciliationStatus: 'OK', origin: 'native' }),
+    ]
+    expect(computeReconciliationCounts(reports)).toEqual({ OK: 1, WARNING: 0, ERROR: 1 })
+  })
+})
+
 describe('computeGrossProfitCard', () => {
   const line = (over: Partial<GrossProfitLineFact>): GrossProfitLineFact => ({
     inventoryItemId: 'i1',

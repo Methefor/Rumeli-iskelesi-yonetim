@@ -167,3 +167,9 @@ Previous-period comparison, a custom date-range picker in the UI, an
 "efficiency score", waste **value** (only a waste-entry **count** is shown —
 the client cannot read cost for every role, and the movement itself is
 scoped per item/branch), and any historical (pre-V4) reporting.
+
+## Update 2026-10-05 - historical imported findings
+
+Reconciliation tallies and the open-queue count are native V4 work only. Reports imported
+from the legacy system (lineage present) keep their stored ERROR/WARNING and are reachable in
+the queue page's "Tarihsel (aktarım)" scope, but are not counted as today's unresolved work.

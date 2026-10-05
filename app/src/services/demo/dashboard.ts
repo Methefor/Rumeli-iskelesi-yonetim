@@ -9,6 +9,7 @@
  */
 import { canInventory, deriveInventoryAlerts } from '../../domain/inventory'
 import type { BranchRawData, DashboardPeriod } from '../../domain/dashboard'
+import { inReconciliationQueue } from '../../domain/reconciliation'
 import { currentDemoUser } from '../../features/auth/demoSession'
 import type { DemoUser } from '../../features/auth/demoUsers'
 import { computeGrossProfit, theoreticalQuantity } from './store'
@@ -56,7 +57,7 @@ export async function fetchBranchDashboardRaw(
   const reports = state.reports.filter((r) => r.branchId === branchId && shiftIds.has(r.shiftId))
 
   const openReconciliationCount = state.reports.filter(
-    (r) => r.branchId === branchId && r.status !== 'cancelled' && r.reconciliationStatus !== 'OK',
+    (r) => r.branchId === branchId && inReconciliationQueue(r, 'active'),
   ).length
 
   const items = canReadInventory(actor, branchId) ? state.items.filter((i) => i.branchId === branchId) : []
@@ -127,6 +128,7 @@ export async function fetchBranchDashboardRaw(
         grossRevenue: r.grossRevenue,
         status: r.status,
         reconciliationStatus: r.reconciliationStatus,
+        origin: r.origin ?? 'native',
       })),
       shifts: shifts.map((s) => ({ id: s.id, businessDate: s.businessDate, status: s.status })),
     },

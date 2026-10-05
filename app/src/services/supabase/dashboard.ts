@@ -19,6 +19,7 @@ interface ReportFactRow {
   gross_revenue: number
   status: string
   reconciliation_status: 'OK' | 'WARNING' | 'ERROR'
+  origin: 'native' | 'legacy_import'
 }
 
 interface ShiftFactRow {
@@ -48,8 +49,8 @@ async function listShiftFactsInRange(
 async function listReportFactsForShifts(branchId: string, shiftIds: readonly string[]): Promise<ReportFactRow[]> {
   if (shiftIds.length === 0) return []
   const { data, error } = await supabase
-    .from('sales_reports')
-    .select('shift_id, report_type, gross_revenue, status, reconciliation_status')
+    .from('sales_reports_with_origin')
+    .select('shift_id, report_type, gross_revenue, status, reconciliation_status, origin')
     .eq('branch_id', branchId)
     .in('shift_id', [...shiftIds])
     .returns<ReportFactRow[]>()
@@ -139,6 +140,7 @@ export async function fetchBranchDashboardRaw(
         grossRevenue: Number(r.gross_revenue),
         status: r.status,
         reconciliationStatus: r.reconciliation_status,
+        origin: r.origin,
       })),
       shifts: shifts.map((s) => ({ id: s.id, businessDate: s.business_date, status: s.status })),
     },

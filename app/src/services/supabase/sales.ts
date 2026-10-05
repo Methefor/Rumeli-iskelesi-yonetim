@@ -1,5 +1,6 @@
 import { supabase } from './client'
 import { friendlyFromSupabaseError } from '../errors'
+import type { ReconciliationScope, ReportOrigin } from '../../domain/reconciliation'
 
 export interface CategoryOption {
   id: string
@@ -98,6 +99,8 @@ export interface SalesReportSummary {
   reconciliationStatus: 'OK' | 'WARNING' | 'ERROR'
   submittedAt: string
   notes: string | null
+  /** Only set by the queue (view sales_reports_with_origin). */
+  origin?: ReportOrigin
 }
 
 interface SalesReportRow {
@@ -159,21 +162,55 @@ export async function listBranchReports(branchId: string): Promise<SalesReportSu
   return data.map(mapReportRow)
 }
 
-/** Reports flagged WARNING/ERROR that still need a manager's attention. */
+interface QueueRow {
+  id: string
+  shift_id: string
+  branch_id: string
+  report_type: 'X' | 'Z'
+  gross_revenue: number
+  status: string
+  reconciliation_status: 'OK' | 'WARNING' | 'ERROR'
+  submitted_at: string
+  notes: string | null
+  origin: ReportOrigin
+}
+
+/**
+ * Reports flagged WARNING/ERROR that need a manager attention. The DEFAULT
+ * ('active') scope is native V4 work only; findings imported from the legacy system
+ * stay stored with their original status and are reachable through the 'historical'
+ * scope. Status is never altered here (see domain/reconciliation/queue.ts).
+ */
 export async function listReconciliationQueue(
   branchId: string,
+  scope: ReconciliationScope = 'active',
 ): Promise<SalesReportSummary[]> {
   const { data, error } = await supabase
-    .from('sales_reports')
-    .select(REPORT_SELECT)
+    .from('sales_reports_with_origin')
+    .select(
+      'id, shift_id, branch_id, report_type, gross_revenue, status, reconciliation_status, submitted_at, notes, origin',
+    )
     .eq('branch_id', branchId)
     .neq('status', 'cancelled')
     .in('reconciliation_status', ['WARNING', 'ERROR'])
+    .eq('origin', scope === 'historical' ? 'legacy_import' : 'native')
     .order('submitted_at', { ascending: false })
-    .returns<SalesReportRow[]>()
+    .returns<QueueRow[]>()
 
   if (error || !data) return []
-  return data.map(mapReportRow)
+  return data.map((row) => ({
+    id: row.id,
+    shiftId: row.shift_id,
+    branchId: row.branch_id,
+    branchName: '',
+    reportType: row.report_type,
+    grossRevenue: row.gross_revenue,
+    status: row.status,
+    reconciliationStatus: row.reconciliation_status,
+    submittedAt: row.submitted_at,
+    notes: row.notes,
+    origin: row.origin,
+  }))
 }
 
 export async function overrideReconciliation(input: {

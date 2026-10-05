@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "dev:local": "node scripts/assert-local-supabase.mjs development && vite",
-    "build:local": "node scripts/assert-local-supabase.mjs production && tsc -b && vite build"
+    "build:local": "node scripts/assert-local-supabase.mjs production && tsc -b && vite build",
+    "build:pilot": "node scripts/assert-pilot-build.mjs && tsc -b && vite build && node scripts/assert-pilot-build.mjs --dist",
+    "test:scripts": "node --test scripts/assert-pilot-build.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

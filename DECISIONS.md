@@ -620,3 +620,32 @@ authorship through an inactive, no-login archival profile. Historical reports
 must never be reassigned to a current employee merely to avoid provisioning an
 archival identity. PINs remain individual, are set only through the secure
 provisioning/management path, and are never stored in Git or migration files.
+
+### 2026-10-04 - Production preparation: fail-closed importer, history mirror, tested rollback
+
+Importer guards are code, not convention (`legacy-migration/guards.mjs`); no fingerprint
+taken before the legacy freeze may be approved; a mirror migration with the production-only
+version `20260611233031` keeps `db push` honest instead of using `migration repair`; rollback
+is "remove V4", via locked scripts proven against decoy legacy tables. No business rule changed.
+
+### 2026-10-05 - Three-level readiness; historical findings are context, not today's work
+
+Readiness is split into SCHEMA APPLY REVIEW, DATA APPLY and PILOT/CUTOVER; the final legacy
+fingerprint gates only data apply (legacy is still being written, so it may only be taken after
+a verified write freeze). A one-time, service-role-only bootstrap function (closed once any owner
+exists) solves the first-owner problem without a public RPC. The production operating-data runner
+is a separate tool; the local loader's localhost guard is untouched. Imported legacy
+reconciliation findings are never converted to OK: they are identified through existing lineage,
+shown in a separate "historical" scope and excluded from the active queue and dashboard tallies.
+
+### 2026-10-05 - Final hardening: break-glass owner PIN rotation, import audit, immutable history
+
+Owners stay unmodifiable through `admin_reset_pin`; rotation is a separate service-role-only
+function with a script that needs the service key, a hidden/stdin PIN, a run-specific approval
+phrase on hosted targets, and writes one audit row with actor NULL (no `auth.uid()` is pretended;
+the operator label is explicitly unverified). A live legacy import writes exactly one audit event in
+the same transaction (actor = the owner named for the run, `executedVia: service_role`); dry runs,
+failures and repeat no-ops write none. Historical imported reconciliation findings are evidence:
+`override_reconciliation` refuses any report with legacy lineage (status, lineage and reading
+untouched). `internal_bootstrap_owner` stays: service_role only, permanently closed once any owner
+exists, needed for the deterministic migration/rehearsal chain.

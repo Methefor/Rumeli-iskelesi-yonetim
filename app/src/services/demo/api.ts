@@ -12,6 +12,7 @@ import {
   effectiveCostAt,
   type InventoryPermission,
 } from '../../domain/inventory'
+import { inReconciliationQueue } from '../../domain/reconciliation'
 import { evaluateBackdatedEntry } from '../../domain/shifts'
 import { currentDemoUser } from '../../features/auth/demoSession'
 import type { DemoUser } from '../../features/auth/demoUsers'
@@ -524,17 +525,12 @@ export const demoApi: DataApi = {
       .map((r) => toSummary(state, r))
   },
 
-  async listReconciliationQueue(branchId) {
+  async listReconciliationQueue(branchId, scope = 'active') {
     const state = demoState()
     const actor = currentDemoUser()
     if (!actor || !canSee(actor, branchId)) return []
     return state.reports
-      .filter(
-        (r) =>
-          r.branchId === branchId &&
-          r.status !== 'cancelled' &&
-          r.reconciliationStatus !== 'OK',
-      )
+      .filter((r) => r.branchId === branchId && inReconciliationQueue(r, scope))
       .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
       .map((r) => toSummary(state, r))
   },
@@ -991,5 +987,6 @@ function toSummary(
     reconciliationStatus: report.reconciliationStatus,
     submittedAt: report.submittedAt,
     notes: report.notes,
+    origin: report.origin ?? ('native' as const),
   }
 }

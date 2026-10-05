@@ -16,6 +16,8 @@ export interface BranchReportFact {
   grossRevenue: number
   status: 'submitted' | 'edited' | 'cancelled' | string
   reconciliationStatus: ReconciliationStatus
+  /** legacy_import findings are historical context, never today open work. */
+  origin?: 'native' | 'legacy_import'
 }
 
 export interface BranchShiftFact {

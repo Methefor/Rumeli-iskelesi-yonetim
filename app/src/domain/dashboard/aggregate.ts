@@ -68,7 +68,8 @@ export function computeShiftStats(shifts: readonly BranchShiftFact[]): ShiftStat
 
 /** Tallies the server-computed `reconciliationStatus` of non-cancelled reports — never re-derives OK/WARNING/ERROR client-side. */
 export function computeReconciliationCounts(reports: readonly BranchReportFact[]): ReconciliationCounts {
-  const active = reports.filter(notCancelled)
+  // Historical imported findings keep their stored status but are not tallied as operational work.
+  const active = reports.filter((r) => notCancelled(r) && r.origin !== 'legacy_import')
   return {
     OK: active.filter((r) => r.reconciliationStatus === 'OK').length,
     WARNING: active.filter((r) => r.reconciliationStatus === 'WARNING').length,

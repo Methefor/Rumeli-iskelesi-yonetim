@@ -645,3 +645,23 @@ the V4 migrations found zero table-name and zero function-name collisions.
 The local migration copy was reset and Supabase stopped. The single Storage
 object body remains outside the database dump and awaits explicit backup
 authorization.
+
+### 2026-10-04 - Production readiness preparation (local + read-only production)
+
+Read-only collision/source/Storage audits; history mirror migration; importer guards
+(`guards.mjs`, 13 tests) and `run.mjs` rewrite; archival-profile tool; post-apply SQL pack;
+locked teardown/cleanup scripts with tests; rehearsal suite (54) on the live legacy snapshot;
+runbooks and `PRODUCTION_READINESS.md`. The legacy-sales suite no longer pins 541/840.
+Full regression green (302 app tests). No production write, no commit, no push.
+
+### 2026-10-05 - Closing the production-readiness blockers (local)
+
+Built `bootstrap-owner.mjs` (+migration, 30 assertions), `run-production.mjs` (30 assertions),
+`assert-pilot-build.mjs` (3 tests), the reconciliation origin view with domain/demo/dashboard/UI
+changes (queue tests, rehearsal +8 assertions), pilot-frontend and legacy-freeze runbooks, and the
+three-level `PRODUCTION_READINESS.md`. Full revalidation green (309 app tests). No production write,
+no commit, no push.
+
+### 2026-10-05 - Final production-readiness hardening (local)
+
+Migration `20261005000300_final_hardening.sql`: service-role-only `internal_rotate_owner_pin` (+ `rotate-owner-pin.mjs`, 37 assertions incl. ACL/bootstrap-closed proof), one import-level audit event per live legacy import (rehearsal now 77 assertions: dry run / injected failure / repeat write none, metadata matches, no leakage), and a lineage guard in `override_reconciliation` (imported ERROR cannot be overridden, native can). Teardown script gained the new function (74). Full fresh regression green: HTTP 152/48/45/76/120, sales import 15, rehearsal 77, bootstrap 30, rotation 37, runner 30, teardown 10; node 26/1/13/3; app 309 tests, typecheck/lint/build clean. No production write, no commit, no push.

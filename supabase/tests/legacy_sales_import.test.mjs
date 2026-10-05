@@ -105,9 +105,18 @@ check(
     sql("select count(*) from public.pin_credentials pc join public.profiles p on p.id=pc.user_id where p.employee_code like 'H9%'") === "0",
   "former cashiers are inactive archival profiles with no PIN credentials",
 );
+// Expected counts are derived independently from the raw rows (never pinned):
+// the live legacy app keeps adding reports, so any hard-coded total goes stale.
+const expRumeli = rows.length;
+const expBalik = rows.filter((r) => r.shift === "aksam" && toKurus(r.balik_ekmek) > 0).length;
+const expDondurma = rows.filter((r) => r.shift === "aksam" && toKurus(r.dondurma) > 0).length;
+const expTotal = expRumeli + expBalik + expDondurma;
+const expTotalText = String(expTotal);
+console.log(`source rows=${rows.length} plan=${expRumeli}+${expBalik}+${expDondurma}=${expTotal}`);
 check(
-  audit.sourceRows === 541 && audit.unknownCashierRows === 0,
-  "hosted legacy snapshot is complete and every report has a cashier",
+  audit.sourceRows === rows.length && audit.unknownCashierRows === 0 &&
+    audit.rumeliReports === expRumeli && audit.balikReports === expBalik && audit.dondurmaReports === expDondurma,
+  "hosted legacy snapshot is complete, every report has a cashier, and the audit plan matches an independent count",
 );
 
 const loader = await runLoader({
@@ -148,8 +157,8 @@ const dry = await request(
 check(
   dry.ok &&
     dry.data.applied === false &&
-    dry.data.result.createdReports === 840,
-  "dry run plans exactly 541 Rumeli + 191 Balık + 108 Dondurma reports",
+    dry.data.result.createdReports === expTotal,
+  "dry run plans exactly the independently counted Rumeli + Balık + Dondurma reports",
 );
 check(
   sql(
@@ -167,11 +176,11 @@ const applied = await request(
 check(
   applied.ok &&
     applied.data.applied === true &&
-    applied.data.result.createdReports === 840,
+    applied.data.result.createdReports === expTotal,
   "apply imports the exact plan atomically",
 );
 check(
-  sql("select count(*) from public.legacy_sales_report_links") === "840",
+  sql("select count(*) from public.legacy_sales_report_links") === expTotalText,
   "every imported report has one lineage link",
 );
 check(
@@ -226,7 +235,7 @@ const again = await request(
 check(
   again.ok &&
     again.data.alreadyImported === true &&
-    sql("select count(*) from public.sales_reports") === "840",
+    sql("select count(*) from public.sales_reports") === expTotalText,
   "same fingerprint is idempotent and creates no duplicates",
 );
 

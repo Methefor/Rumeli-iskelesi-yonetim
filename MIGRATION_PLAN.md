@@ -171,3 +171,26 @@ has not been applied to a hosted V4 schema. Before production:
 
 The script does not import legacy PINs, never rewrites legacy tables and refuses
 hosted apply. Production execution must follow a reviewed one-time runbook.
+
+| — | `20260611233031_add_kategori_devri.sql` | History mirror of the production-only migration `add_kategori_devri` (no-op locally, `IF NOT EXISTS` on production) so `supabase db push` works without rewriting history; apply with `--include-all` | none |
+
+### Production gate — superseding update (2026-10-04)
+
+The "Legacy sales import production gate" above is superseded: the source is now 544
+rows (plan 845, three fingerprints in 48 h), importer guards are fail-closed
+(`legacy-migration/guards.mjs`: explicit target ref, fingerprint in every mode,
+dry-run acknowledgement, service-key role check, hosted apply only with a per-run
+owner phrase), tested rollback scripts exist in `supabase/rollback/`, and
+`supabase db push --linked --dry-run --include-all` (read-only) lists exactly the 21 V4
+migrations. Execution order and approvals: `docs/PRODUCTION_CUTOVER_RUNBOOK.md`.
+
+| 022 | `20261005000100_bootstrap_owner.sql` | `internal_bootstrap_owner` (service-role only; refuses once any owner exists; atomic profile+owner role+PIN hash+audit) | 001-018 |
+| 023 | `20261005000200_reconciliation_origin.sql` | view `sales_reports_with_origin` (security invoker) + column-limited, report-scoped read of lineage so the app can tell imported from native reports; no stored status changes | legacy import migration |
+
+## Final hardening addendum (2026-10-05)
+
+Migration `20261005000300_final_hardening.sql` (24th V4 migration) adds `internal_rotate_owner_pin`,
+the import-level audit event in `internal_run_legacy_sales_import` and the lineage guard in
+`override_reconciliation`. Break-glass owner PIN rotation: `identity-data/PRODUCTION_IDENTITY_PLAN.md`.
+Readiness: SCHEMA APPLY REVIEW = READY FOR REVIEW; DATA APPLY = NOT READY; PILOT/CUTOVER = NOT READY
+(see `PRODUCTION_READINESS.md`). Nothing has been written to production.

@@ -302,3 +302,27 @@ mutation is authorized by this backlog update.
 - [x] Show the pending shift-request count globally in the manager navigation.
 - [x] Add a direct Stok Girişi shortcut to the employee home for roles with
       own-branch receiving permission.
+
+## Production preparation follow-ups (2026-10-04)
+
+- [x] Bootstrap (`bootstrap-owner.mjs`) and owner PIN rotation (`rotate-owner-pin.mjs`) built and tested locally; production execution still needs approval.
+- [ ] Build a guarded production operating-data loader (current one refuses non-local hosts) or approve another way.
+- [ ] Decide the pilot front-end deployment method (Vercel writes) and the legacy write-freeze procedure.
+- [ ] Decide handling of ~490 historical flagged reconciliation reports (no bulk override exists).
+- [x] Importer now writes ONE `legacy_sales_import_applied` audit row per live import (2026-10-05). Optional: verify fingerprint-to-rows inside SQL.
+- [ ] Cutover-time backup, final fingerprint and owner approvals (see `PRODUCTION_READINESS.md`); all production WRITE steps remain NOT DONE.
+- [x] Superseded: "840-report plan / 541 rows / importer refuses hosted apply" - plan is now rows + Balık + Dondurma (845 on the latest snapshot) and hosted apply is possible only through the multi-key guard.
+
+## Readiness blockers closed (2026-10-05)
+
+- [x] Owner bootstrap tool, production operating-data runner, historical reconciliation policy, pilot frontend plan, legacy freeze runbook.
+- [ ] Still OPEN (owner action): freeze + final fingerprint approval, identity map review, provisioning, verified cutover backup, pilot frontend creation, pilot.
+
+## Final hardening (2026-10-05)
+
+- [x] Owner break-glass PIN rotation (`rotate-owner-pin.mjs`, `internal_rotate_owner_pin`).
+- [x] One import-level audit event per live legacy import; none for dry run / failure / repeat.
+- [x] `override_reconciliation` refuses imported historical reports server-side.
+- [x] `internal_bootstrap_owner` exposure reviewed: service_role only, closed once any owner exists.
+- [ ] Optional: a separate annotation mechanism for historical findings (not needed for cutover).
+- [ ] Still OPEN (owner action): DATA APPLY needs a real production backup, legacy write freeze, final stable fingerprint, approved private identity mapping, real identity provisioning and explicit owner approval; PILOT/CUTOVER needs pilot frontend creation, pilot execution, real mobile/device QA and explicit owner approval.

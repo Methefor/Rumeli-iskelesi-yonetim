@@ -1,5 +1,8 @@
 # Production cutover runbook — prepared 2026-10-02, updated 2026-10-03
 
+> **SUPERSEDED 2026-10-04** by `PRODUCTION_CUTOVER_RUNBOOK.md`. The fingerprint (`e83b3fa1…`), the 541-row source and the 840-report plan below are obsolete (current: 542 rows, fingerprint `8195640b…`, plan 842) and must not be used as approvals. Kept unchanged below as history.
+
+
 ## Status
 
 Prepared only. No hosted schema, Auth user, PIN, Edge Function, Storage object or
