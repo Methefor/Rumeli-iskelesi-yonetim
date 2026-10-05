@@ -4,8 +4,8 @@ Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA sh
 
 ## CURRENT TRUTH — 2026-10-04 (supersedes any older "OPEN"/"not built" wording below)
 
-Git: branch `v4-2027`, HEAD `1f60acb` (`data: refresh legacy migration snapshot`) equals
-`origin/v4-2027`; the production-readiness work of this date is uncommitted.
+Git: branch `v4-2027`, HEAD `36e5f85` (`feat: finalize production migration readiness safeguards`) equals
+`origin/v4-2027`; the production-readiness package is committed and pushed. Production remains untouched.
 
 - **LOCAL — fully validated:** all 25 migration files (24 V4 + the `20260611233031` history
   mirror) apply from zero; SQL suites (timezone, timezone RPC 32, inventory security,

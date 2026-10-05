@@ -1,6 +1,6 @@
 # Production readiness (2026-10-05)
 
-Branch `v4-2027`, base HEAD `1f60acb`; this phase's work is uncommitted.
+Branch `v4-2027`, reviewed HEAD `36e5f85` (`feat: finalize production migration readiness safeguards`); the readiness package is committed and pushed to `origin/v4-2027`. Production remains untouched.
 **Production has never been written to by this work.** Readiness is reported at three
 independent levels; production overall is **not** "READY".
 
