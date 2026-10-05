@@ -649,3 +649,14 @@ failures and repeat no-ops write none. Historical imported reconciliation findin
 `override_reconciliation` refuses any report with legacy lineage (status, lineage and reading
 untouched). `internal_bootstrap_owner` stays: service_role only, permanently closed once any owner
 exists, needed for the deterministic migration/rehearsal chain.
+
+### 2026-10-06 - Schema Apply Review approved (review only, not a write approval)
+
+Schema Apply Review = APPROVED. This approves the review of the 24 V4 migrations and nothing
+else: a production schema apply still requires a separate, explicit owner approval, and the next
+gate is a fresh verified DB + Storage backup. DATA APPLY and PILOT/CUTOVER stay NOT READY.
+
+`20260611233031_add_kategori_devri.sql` is accepted as a production-history mirror and no-op:
+production already contains `daily_reports.kategori_devri`, the migration uses `ADD COLUMN IF
+NOT EXISTS`, the remote migration history already contains `20260611233031`, and
+`db push --dry-run --include-all` does not propose it (it lists exactly the 24 V4 migrations).

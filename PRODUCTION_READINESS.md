@@ -6,7 +6,7 @@ independent levels; production overall is **not** "READY".
 
 | Level | Verdict |
 |---|---|
-| **1. SCHEMA APPLY REVIEW** (migrations, functions, identity bootstrap, operating data) | **READY FOR REVIEW** |
+| **1. SCHEMA APPLY REVIEW** (migrations, functions, identity bootstrap, operating data) | **APPROVED** (review only; schema write NOT approved) |
 | **2. DATA APPLY** (legacy sales import) | **NOT READY** |
 | **3. PILOT / CUTOVER** (restricted frontend, pilot, activation) | **NOT READY** |
 
@@ -15,7 +15,9 @@ the owner may now review the schema-apply step and decide; it does **not** appro
 
 ---
 
-## 1. SCHEMA APPLY REVIEW — READY FOR REVIEW
+## 1. SCHEMA APPLY REVIEW — APPROVED (review only)
+
+**Decision 2026-10-06:** the owner approved the schema apply REVIEW. This is NOT approval of a production write: the production schema apply still needs a separate, explicit owner approval. The history mirror `20260611233031_add_kategori_devri.sql` is accepted as a no-op (production already has `daily_reports.kategori_devri`; `ADD COLUMN IF NOT EXISTS`; remote history already contains the version; `db push --dry-run` does not propose it). DATA APPLY = NOT READY; PILOT/CUTOVER = NOT READY. **Next gate: a fresh verified DB + Storage backup** (schema write remains NOT approved).
 
 The final legacy fingerprint is **not** a precondition here (the schema apply never reads or
 writes legacy rows).

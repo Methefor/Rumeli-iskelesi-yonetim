@@ -17,7 +17,7 @@ Git: branch `v4-2027`, HEAD `36e5f85` (`feat: finalize production migration read
 - **PRODUCTION — read-only audited:** schema collision audit (0 collisions), migration
   history (one legacy entry), legacy source audit (544 rows, plan 845, fingerprint moves daily),
   Storage object body exported outside Git. See `PRODUCTION_READINESS.md`.
-- **Readiness verdicts:** SCHEMA APPLY REVIEW = READY FOR REVIEW; DATA APPLY = NOT READY; PILOT/CUTOVER = NOT READY. Hardening added 2026-10-05: break-glass owner PIN rotation, one import-level audit event, server-side immutability of imported historical reconciliation findings.
+- **Readiness verdicts:** SCHEMA APPLY REVIEW = APPROVED (review only, 2026-10-06; production schema write still NOT approved, next gate = fresh verified DB + Storage backup); DATA APPLY = NOT READY; PILOT/CUTOVER = NOT READY. Hardening added 2026-10-05: break-glass owner PIN rotation, one import-level audit event, server-side immutability of imported historical reconciliation findings.
 - **PRODUCTION — WRITE: NOT DONE.** No migration, user, PIN, function, import or Vercel change.
 - **HOSTED STAGING:** intentionally skipped/deferred per the 2026-09-26 decision.
 - **PRODUCTION:** untouched. Legacy remains the live system.
