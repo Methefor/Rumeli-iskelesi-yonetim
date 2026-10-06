@@ -2,7 +2,7 @@
 -- supabase/rollback/v4_schema_teardown.sql
 -- =============================================================================
 -- EMERGENCY / ROLLBACK ONLY. Removes every V4 object created by the migration
--- chain in supabase/migrations/ (44 tables, 5 views, 136 functions, the avatars_v4
+-- chain in supabase/migrations/ (46 tables, 5 views, 146 functions, the avatars_v4
 -- storage policies and the PostgREST pre-request hook) and NOTHING ELSE.
 -- Legacy objects (daily_reports, cashiers, admins, entry_history, shift_schedule,
 -- targets, achievements, daily_revenue, daily_performance, weekly_performance and
@@ -84,6 +84,8 @@ drop table if exists public.shift_change_requests cascade;
 drop table if exists public.shift_definitions cascade;
 drop table if exists public.shifts cascade;
 drop table if exists public.user_roles cascade;
+drop table if exists public.weather_forecast_snapshots cascade;
+drop table if exists public.weather_settings cascade;
 drop table if exists public.waste_reasons cascade;
 
 drop sequence if exists public.purchase_order_seq;
@@ -137,8 +139,13 @@ drop function if exists public.current_user_shares_branch_with(p_user_id uuid);
 drop function if exists public.decide_shift_change_request(p_request_id uuid, p_decision text, p_decision_note text);
 drop function if exists public.edit_sales_report(p_report_id uuid, p_gross_revenue numeric, p_transaction_count integer, p_average_basket numeric, p_notes text, p_items jsonb, p_reason text);
 drop function if exists public.enforce_active_user();
+drop function if exists public.external_context_provenance_guard();
 drop function if exists public.get_branch_count_overview(p_branch_id uuid, p_limit integer);
+drop function if exists public.get_branch_operations_signals(p_branch_id uuid);
+drop function if exists public.get_branch_weather(p_branch_id uuid);
+drop function if exists public.get_command_center_signals(p_branch_ids uuid[]);
 drop function if exists public.get_daily_analytics(p_branch_id uuid, p_date date);
+drop function if exists public.get_dashboard_inputs(p_branch_ids uuid[], p_from_date date, p_to_date date, p_from_instant timestamp with time zone, p_to_instant timestamp with time zone);
 drop function if exists public.get_inventory_count_review(p_count_id uuid);
 drop function if exists public.get_inventory_gross_profit(p_branch_id uuid, p_from timestamp with time zone, p_to timestamp with time zone);
 drop function if exists public.get_order_suggestions(p_branch_id uuid);
@@ -161,6 +168,9 @@ drop function if exists public.internal_rotate_owner_pin(p_employee_code text, p
 drop function if exists public.internal_run_legacy_sales_import(p_actor_code text, p_rows jsonb, p_cashier_map jsonb, p_source_fingerprint text, p_reason text, p_commit boolean);
 drop function if exists public.internal_run_operating_data(p_actor_code text, p_payload jsonb, p_commit boolean);
 drop function if exists public.internal_save_analytics_report(p_weekly_snapshot_id uuid, p_status text, p_input_facts jsonb, p_output jsonb, p_model text, p_error_code text, p_actor uuid);
+drop function if exists public.internal_store_weather_forecast(p_branch_id uuid, p_provider text, p_fetched_at timestamp with time zone, p_generated_at timestamp with time zone, p_valid_until timestamp with time zone, p_payload jsonb);
+drop function if exists public.internal_upsert_observed_weather(p_branch_id uuid, p_date date, p_values jsonb, p_source text, p_provenance text);
+drop function if exists public.internal_weather_ttl_minutes();
 drop function if exists public.inventory_apply_sales_lines(p_report_id uuid);
 drop function if exists public.inventory_cost_metric(p_total_qty numeric, p_costed_qty numeric, p_costed_value numeric, p_can_see boolean);
 drop function if exists public.inventory_count_classified_lines(p_count_id uuid);
@@ -216,6 +226,7 @@ drop function if exists public.update_analytics_settings(p_values jsonb, p_reaso
 drop function if exists public.update_branch_location(p_branch_id uuid, p_latitude numeric, p_longitude numeric, p_timezone text, p_address text, p_location_label text, p_reason text);
 drop function if exists public.update_purchase_order_header(p_order_id uuid, p_ordered_for date, p_expected_delivery date, p_notes text);
 drop function if exists public.update_shift_assignment_status(p_assignment_id uuid, p_new_status text, p_reason text);
+drop function if exists public.update_weather_settings(p_forecast_ttl_minutes integer, p_reason text);
 drop function if exists public.upsert_external_context_daily(p_context_date date, p_branch_id uuid, p_values jsonb, p_reason text);
 drop function if exists public.upsert_inventory_item(p_item_id uuid, p_branch_id uuid, p_code text, p_name text, p_unit text, p_allows_decimal boolean, p_sales_category_id uuid, p_reason text);
 drop function if exists public.upsert_item_supply_params(p_branch_id uuid, p_item_id uuid, p_supplier_id uuid, p_params jsonb, p_reason text);
@@ -224,6 +235,7 @@ drop function if exists public.upsert_waste_reason(p_reason_id uuid, p_code text
 drop function if exists public.user_rank(p_user_id uuid);
 drop function if exists public.verify_pin(p_user_id uuid, p_pin text);
 drop function if exists public.void_inventory_count(p_count_id uuid, p_reason text);
+drop function if exists public.weather_prevent_mutation();
 drop function if exists public.write_audit_log(p_action text, p_entity_type text, p_entity_id text, p_old_values jsonb, p_new_values jsonb, p_reason text);
 
 -- 3. Post-condition: no V4 object may remain in public.
@@ -233,7 +245,7 @@ begin
   select string_agg(c.relname, ', ') into v_left
   from pg_class c join pg_namespace n on n.oid = c.relnamespace
   where n.nspname = 'public' and c.relkind in ('r','v','m','p')
-    and c.relname in ('analytics_insights', 'analytics_reports', 'analytics_settings', 'daily_analytics_current', 'daily_analytics_snapshots', 'external_context_daily', 'weekly_analytics_current', 'weekly_analytics_snapshots', 'audit_logs', 'branch_locations', 'suppliers', 'item_supply_params', 'purchase_orders', 'purchase_order_lines', 'purchase_order_status_history', 'purchase_order_receipts', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'waste_reasons', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
+    and c.relname in ('analytics_insights', 'analytics_reports', 'analytics_settings', 'daily_analytics_current', 'daily_analytics_snapshots', 'external_context_daily', 'weekly_analytics_current', 'weekly_analytics_snapshots', 'audit_logs', 'branch_locations', 'suppliers', 'item_supply_params', 'purchase_orders', 'purchase_order_lines', 'purchase_order_status_history', 'purchase_order_receipts', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'waste_reasons', 'weather_forecast_snapshots', 'weather_settings', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
   if v_left is not null then raise exception 'teardown incomplete: %', v_left; end if;
 end $$;
 

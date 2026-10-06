@@ -94,7 +94,14 @@ export interface Completeness {
 
 export interface ExternalContext {
   state: 'present' | 'missing'
+  /** daily MEAN temperature of a completed day */
   temperatureC?: number
+  temperatureMinC?: number
+  temperatureMaxC?: number
+  windGustKmh?: number
+  weatherCode?: number
+  /** how the historical row came to exist: manual | observed | reanalysis | provider_historical (reanalysis is modelled, not observed) */
+  provenance?: 'manual' | 'observed' | 'reanalysis' | 'provider_historical'
   apparentTemperatureC?: number
   precipitationMm?: number
   windKmh?: number
