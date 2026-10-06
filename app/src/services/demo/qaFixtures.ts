@@ -13,9 +13,12 @@
  *   - reconciliation WARNING and ERROR reports (Rumeli -3 / Dondurma -4)
  *   - legacy-import-origin history (Rumeli -41..-33): revenue only, no transaction counts
  *   - inventory (Dondurma) with a costed and an uncosted product, receipts, waste (several reasons), closing counts
+ *   - fire/closing-count control scenarios (qaInventoryControl.ts): balanced, explained, partially explained, unexplained,
+ *     surplus, missing-cost waste, a branch without today's count and a branch whose only count is voided
  *   - synthetic weather per day, correlated with Dondurma sales so the analytics relationship has a sample
  */
 import { addDaysIso } from '../../utils/dates'
+import { applyQaInventoryControl } from './qaInventoryControl'
 import type { DemoState, ReportInput } from './store'
 
 const D = 'demo-branch-dondurma'
@@ -26,7 +29,7 @@ export interface QaDeps {
   today: string
   createReport: (state: DemoState, input: ReportInput, actorId: string, at: Date) => unknown
   addMovement: (state: DemoState, input: Record<string, unknown>) => unknown
-  submitCount: (state: DemoState, input: Record<string, unknown>, at: Date) => unknown
+  submitCount: (state: DemoState, input: Record<string, unknown>, at: Date, meta?: { submittedBy?: string | null }) => unknown
   instant: (dateIso: string, hour: number, minute?: number) => Date
 }
 
@@ -192,6 +195,9 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
       const drift = id === 'demo-item-d' ? Math.round((rnd() - 0.6) * 6) : Math.round((rnd() - 0.6) * 20) / 10
       return { inventoryItemId: id, physicalQuantity: Math.max(0, Math.round((theoretical + drift) * 1000) / 1000) }
     })
-    deps.submitCount(state, { branchId: D, shiftId: shiftId(D, 'daily', offset), lines, note: 'Sentetik kapanış sayımı' }, instant(date(offset), 23, 45))
+    deps.submitCount(state, { branchId: D, shiftId: shiftId(D, 'daily', offset), lines, note: 'Sentetik kapanış sayımı' }, instant(date(offset), 23, 45), { submittedBy: 'demo-d001' })
   }
+
+  // ---- fire report / closing-count review scenarios (Phase 1B)
+  applyQaInventoryControl(state, deps, date)
 }

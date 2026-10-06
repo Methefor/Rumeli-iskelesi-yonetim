@@ -16,6 +16,7 @@ import type { ManagementAuditEntry } from '../supabase/management'
 import { effectiveCostAt, stockDeltaFor } from '../../domain/inventory'
 import { reconcile } from '../../domain/reconciliation'
 import type { MovementType } from '../../domain/inventory'
+import type { WasteReasonRow } from '../../domain/inventory/control'
 import type { ReconciliationStatus, ReportOrigin } from '../../domain/reconciliation'
 import { addDaysIso, istanbulDate } from '../../utils/dates'
 import { applyQaFixtures } from './qaFixtures'
@@ -101,6 +102,12 @@ export interface DemoReport {
   items: DemoReportItem[]
 }
 
+/** Count plus the metadata the manager review shows (who submitted, void reason). */
+export interface DemoCount extends InventoryCountSummary {
+  submittedBy?: string | null
+  voidReason?: string | null
+}
+
 export interface DemoMovement extends InventoryMovementRow {
   unitCostSnapshot: number | null
   createdBy: string
@@ -121,7 +128,9 @@ export interface DemoState {
   items: InventoryItem[]
   costs: ItemCostRow[]
   movements: DemoMovement[]
-  counts: InventoryCountSummary[]
+  counts: DemoCount[]
+  /** Fire reason catalogue (synthetic mirror of public.waste_reasons). */
+  wasteReasons: WasteReasonRow[]
   overrides: Array<{
     reportId: string
     reason: string
@@ -453,11 +462,13 @@ export function submitCount(
     note: string | null
   },
   at: Date,
-): InventoryCountSummary {
+  meta: { submittedBy?: string | null } = {},
+): DemoCount {
   const shift = input.shiftId
     ? state.shifts.find((s) => s.id === input.shiftId)
     : undefined
-  const count: InventoryCountSummary = {
+  const count: DemoCount = {
+    submittedBy: meta.submittedBy ?? null,
     id: nextId(state, 'demo-count'),
     branchId: input.branchId,
     shiftId: input.shiftId,
@@ -741,6 +752,14 @@ export function createDemoState(
     costs: [],
     movements: [],
     counts: [],
+    wasteReasons: [
+      { id: 'demo-reason-expired', code: 'expired', name: 'Son kullanma tarihi', description: 'Son kullanma tarihi geçti', isActive: true, sortOrder: 10 },
+      { id: 'demo-reason-damaged', code: 'damaged', name: 'Hasarlı / kırık', description: 'Kırılma, ezilme veya hasar', isActive: true, sortOrder: 20 },
+      { id: 'demo-reason-spilled', code: 'spilled', name: 'Dökülme', description: 'Dökülme veya yanlış üretim', isActive: true, sortOrder: 30 },
+      { id: 'demo-reason-quality', code: 'quality', name: 'Kalite', description: 'Kalite standardını karşılamıyor', isActive: true, sortOrder: 40 },
+      { id: 'demo-reason-sample', code: 'sample', name: 'Numune / ikram', description: 'Numune veya ikram olarak verildi', isActive: true, sortOrder: 50 },
+      { id: 'demo-reason-other', code: 'other', name: 'Diğer', description: 'Başka bir neden; açıklama yazın', isActive: true, sortOrder: 90 },
+    ],
     overrides: [],
     inventoryAudit: [],
     auditLog: [],

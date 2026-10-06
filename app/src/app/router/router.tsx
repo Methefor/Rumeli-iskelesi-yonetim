@@ -28,6 +28,10 @@ import { EmployeeDetailPage } from '../../features/management/routes/EmployeeDet
 import { SettingsPage } from '../../features/management/routes/SettingsPage'
 import { ManagementAuditPage } from '../../features/management/routes/ManagementAuditPage'
 import { DataQualityPage } from '../../features/management/routes/DataQualityPage'
+import { WasteReasonsPage } from '../../features/management/routes/WasteReasonsPage'
+import { WasteReportPage } from '../../features/management/routes/WasteReportPage'
+import { CountOverviewPage } from '../../features/management/routes/CountOverviewPage'
+import { CountReviewPage } from '../../features/management/routes/CountReviewPage'
 import { AnalyticsPage } from '../../features/analytics/AnalyticsPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
@@ -97,6 +101,10 @@ export const router = createBrowserRouter([
       { path: 'management/employees/new', element: <EmployeeCreatePage /> },
       { path: 'management/employees/:id', element: <EmployeeDetailPage /> },
       { path: 'management/settings', element: <SettingsPage /> },
+      { path: 'management/waste-reasons', element: <RoleGuard allow={['owner', 'manager']}><WasteReasonsPage /></RoleGuard> },
+      { path: 'management/waste-report', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><WasteReportPage /></RoleGuard> },
+      { path: 'management/count-review', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountOverviewPage /></RoleGuard> },
+      { path: 'management/count-review/:countId', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountReviewPage /></RoleGuard> },
       {
         path: 'management/audit',
         element: (

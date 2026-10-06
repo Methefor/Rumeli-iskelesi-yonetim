@@ -690,3 +690,14 @@ one definition in `vite.config.ts` (a build output) and verified together with i
 the maskable icon is full-bleed and derived from the existing logo (no new artwork). Phone QA uses an opt-in rich synthetic fixture
 set (`VITE_DEMO_FIXTURES=qa`, clearly labelled, deterministic, no real data); the Vercel env is unchanged. Deployment Protection is
 untouched, so a protected Preview remains non-installable until the owner approves a Vercel setting change.
+
+### 2026-10-07 - Phase 1B part A: fire reasons as data, count explanation rule
+
+Fire reasons moved from a fixed CHECK to the `waste_reasons` catalogue referenced by a foreign key: the six historical codes are
+seeded so history stays valid, codes never change, reasons are deactivated and never deleted, and only owner/manager change them
+through audited RPCs. A closing-count shortage is never labelled "explained by waste": the ledger stores only the insertion instant of a waste entry
+(no effective event time), the expected quantity already deducts earlier waste, and waste recorded after the count may belong to
+the counted state or a later one. Such waste is only a `timing_uncertain` candidate (same item/shift or business date, before the
+next count, not reversed); no tolerance is applied, precision is shift/business-date, and these limits are returned with every
+review. Cost figures use the states available/partial/unavailable and never read an unknown cost as 0. Nothing is applied to production; the open items (final reason catalogue, tolerances, effective event time) are listed
+in `INVENTORY_CONTROL_MODEL.md`.

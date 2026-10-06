@@ -97,8 +97,8 @@ export interface QuantityLine {
   unitCost?: number | null
 }
 
-export type WasteReasonCode =
-  'expired' | 'damaged' | 'spilled' | 'quality' | 'sample' | 'other'
+/** A code from the waste_reasons catalogue (public.waste_reasons); the catalogue is data, no longer a fixed list. */
+export type WasteReasonCode = string
 
 function failRead(error: { message?: string; code?: string }): never {
   throw new Error(friendlyErrorMessage(error.message, error.code))

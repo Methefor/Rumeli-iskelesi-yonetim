@@ -20,6 +20,7 @@ export const MOVEMENT_TONES: Record<MovementType, StatusTone> = {
   REVERSAL: 'neutral',
 }
 
+/** Labels of the six HISTORICAL codes, only a fallback for old rows; the live catalogue comes from listWasteReasons(). */
 export const WASTE_REASONS: ReadonlyArray<{ value: WasteReasonCode; label: string }> = [
   { value: 'expired', label: 'Son kullanma tarihi geçti' },
   { value: 'damaged', label: 'Hasarlı / bozuk' },
@@ -30,5 +31,5 @@ export const WASTE_REASONS: ReadonlyArray<{ value: WasteReasonCode; label: strin
 ]
 
 export function wasteReasonLabel(code: string | null): string {
-  return WASTE_REASONS.find((r) => r.value === code)?.label ?? ''
+  return WASTE_REASONS.find((r) => r.value === code)?.label ?? code ?? ''
 }

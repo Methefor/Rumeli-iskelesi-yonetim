@@ -49,15 +49,15 @@ create trigger trg_decoy before update on public.daily_reports for each row exec
 create policy "Public read access on daily_reports" on public.daily_reports for select using (true);
 `);
 const v4Tables = () => psql("select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','v') and c.relname not in ('daily_reports','cashiers')");
-check(v4Tables() === "41", "fresh database holds the 36 V4 tables + 5 views next to the decoys");
+check(v4Tables() === "42", "fresh database holds the 37 V4 tables + 5 views next to the decoys");
 
 const locked = psql(teardown, true);
-check(locked.startsWith("ERROR:") && /locked/.test(locked) && v4Tables() === "41", "the locked script refuses to run and drops nothing");
+check(locked.startsWith("ERROR:") && /locked/.test(locked) && v4Tables() === "42", "the locked script refuses to run and drops nothing");
 
 const unlocked = teardown.replace(/-- >>> LOCK GUARD[\s\S]*?-- <<< LOCK GUARD <<</, "");
 psql(unlocked);
-check(v4Tables() === "0", "unlocked teardown removes all 41 V4 relations");
-check(psql("select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'") === "2", "only the two decoy functions remain (all 102 V4 functions removed)");
+check(v4Tables() === "0", "unlocked teardown removes all 42 V4 relations");
+check(psql("select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'") === "2", "only the two decoy functions remain (all 110 V4 functions removed)");
 check(psql("select count(*) from public.daily_reports") === "2" && psql("select count(*) from public.cashiers") === "1", "decoy legacy tables keep every row");
 check(psql("select count(*) from pg_trigger where tgname='trg_decoy'") === "1" && psql("select count(*) from pg_policies where tablename='daily_reports'") === "1", "decoy legacy trigger and policy survive");
 check(psql("select count(*) from pg_policies where schemaname='storage' and policyname like 'avatars_v4%'") === "0", "avatars_v4 storage policies are gone");

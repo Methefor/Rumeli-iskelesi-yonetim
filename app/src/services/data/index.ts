@@ -36,6 +36,12 @@ export const {
   regenerateDailyAnalytics,
   regenerateWeeklyAnalytics,
   getAnalyticsReport,
+  listWasteReasons,
+  upsertWasteReason,
+  setWasteReasonActive,
+  getWasteReport,
+  getInventoryCountReview,
+  getBranchCountOverview,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,
@@ -111,3 +117,4 @@ export type {
   ShiftSettings,
 } from '../supabase/management'
 export type { AnalyticsMutationResult, AnalyticsReportView } from '../supabase/analytics'
+export type { ControlResult, UpsertWasteReasonInput } from '../supabase/inventoryControl'

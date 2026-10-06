@@ -16,11 +16,11 @@ import {
 } from '../../../components/ui'
 import { Unauthorized } from '../../../components/navigation/Unauthorized'
 import { useToast } from '../../../hooks/useToast'
-import { recordInventoryWaste, type WasteReasonCode } from '../../../services/data'
+import { listWasteReasons, recordInventoryWaste, type WasteReasonCode } from '../../../services/data'
+import { useAsync } from '../../../hooks/useAsync'
 import { ItemLinesEditor } from '../components/ItemLinesEditor'
 import { isCompleteLine, newLine, type ItemLine } from '../components/itemLines'
 import { SummaryList } from '../components/SummaryList'
-import { WASTE_REASONS } from '../labels'
 import {
   shiftOptionLabel,
   useBranchInventory,
@@ -36,6 +36,7 @@ export function WasteEntryPage() {
   const { showToast } = useToast()
   const state = useBranchInventory()
   const shifts = useRecentShifts()
+  const reasons = useAsync('waste-reasons-active', () => listWasteReasons())
   const today = istanbulDate()
 
   const [lines, setLines] = useState<ItemLine[]>(() => [newLine()])
@@ -124,10 +125,10 @@ export function WasteEntryPage() {
                         onChange={(e) =>
                           setReason(e.target.value as WasteReasonCode | '')
                         }
-                        options={WASTE_REASONS.map((r) => ({
-                          value: r.value,
-                          label: r.label,
-                        }))}
+                        options={(reasons.data ?? [])
+                          .filter((r) => r.isActive)
+                          .map((r) => ({ value: r.code, label: r.name }))}
+                        hint={reasons.loading ? 'Nedenler yükleniyor…' : undefined}
                       />
                       <Select
                         label="Vardiya (opsiyonel)"

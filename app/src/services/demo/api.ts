@@ -21,6 +21,7 @@ import { istanbulDate } from '../../utils/dates'
 import { demoManagement } from './management'
 import { demoDataQuality } from './dataQuality'
 import { demoAnalytics } from './analytics'
+import { demoInventoryControl } from './inventoryControl'
 import { fetchBranchDashboardRaw } from './dashboard'
 import { demoState } from './state'
 import {
@@ -150,6 +151,7 @@ function auditInventory(
 export const demoApi: DataApi = {
   ...demoManagement,
   ...demoAnalytics,
+  ...demoInventoryControl,
   ...demoDataQuality,
   fetchBranchDashboardRaw,
   async listInventoryAudit(branchId, limit = 100) {
@@ -943,6 +945,7 @@ export const demoApi: DataApi = {
           note: input.note ?? null,
         },
         state.now(),
+        { submittedBy: actor.id },
       )
       return { countId: count.id, error: null }
     } catch (error) {
@@ -966,6 +969,7 @@ export const demoApi: DataApi = {
       lines: structuredClone(count.lines),
     }
     count.status = 'voided'
+    count.voidReason = input.reason.trim()
     auditInventory(state, actor, 'inventory_count_void', count.id, input.reason, before, {
       ...before,
       status: count.status,

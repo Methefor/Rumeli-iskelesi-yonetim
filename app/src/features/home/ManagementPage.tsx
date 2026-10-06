@@ -1,4 +1,5 @@
 import { canInventory } from '../../domain/inventory'
+import { canManageWasteReasons, canReviewControl } from '../../domain/inventory/control'
 import { LinkButton, PageHeader, RowCard, Stack, StatusChip } from '../../components/ui'
 import { useAuth } from '../../hooks/useAuth'
 import styles from './Home.module.css'
@@ -12,6 +13,8 @@ export function ManagementPage() {
   const { roles } = useAuth()
   const canCost = canInventory(roles, 'inventory.cost.read')
   const canItems = canInventory(roles, 'inventory.item.manage')
+  const canControl = canReviewControl(roles)
+  const canReasons = canManageWasteReasons(roles)
 
   return (
     <Stack>
@@ -91,6 +94,36 @@ export function ManagementPage() {
                   Brüt Kâr
                 </LinkButton>
               </Stack>
+            </RowCard>
+          )}
+          {canControl && (
+            <RowCard
+              title="Fire raporu"
+              subtitle="Ürün, neden, çalışan ve vardiya bazında fire; maliyeti bilinmeyen kayıtlar açıkça işaretlenir."
+            >
+              <LinkButton to="/app/manager/management/waste-report" variant="secondary">
+                Raporu Aç
+              </LinkButton>
+            </RowCard>
+          )}
+          {canControl && (
+            <RowCard
+              title="Kapanış sayımı"
+              subtitle="Bugünkü sayım durumu, eksik/fazla toplamları ve fire ile açıklanan farklar."
+            >
+              <LinkButton to="/app/manager/management/count-review" variant="secondary">
+                Sayım Özetini Aç
+              </LinkButton>
+            </RowCard>
+          )}
+          {canReasons && (
+            <RowCard
+              title="Fire nedenleri"
+              subtitle="Fire kaydında seçilebilen nedenleri ekleyin, düzenleyin, pasifleştirin."
+            >
+              <LinkButton to="/app/manager/management/waste-reasons" variant="secondary">
+                Nedenleri Yönet
+              </LinkButton>
             </RowCard>
           )}
           <RowCard

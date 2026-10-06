@@ -31,6 +31,7 @@ export {
   type ClosingStatus,
   type ClosingStep,
 } from './closing'
+export * from './control'
 export {
   inventoryPermissionsFor,
   canInventory,
