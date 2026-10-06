@@ -5,11 +5,14 @@
  */
 import {
   COUNT_METHOD,
+  canManageBranchLocation,
   canManageWasteReasons,
   canReviewControl,
   classifyCountLine,
   costMetric,
+  validateCoordinates,
   type BranchCountOverview,
+  type BranchLocation,
   type CountReview,
   type CountReviewLine,
   type CountSummary,
@@ -20,7 +23,7 @@ import { canInventory } from '../../domain/inventory'
 import { currentDemoUser } from '../../features/auth/demoSession'
 import type { DemoUser } from '../../features/auth/demoUsers'
 import { istanbulDate } from '../../utils/dates'
-import type { ControlResult, UpsertWasteReasonInput } from '../supabase/inventoryControl'
+import type { ControlResult, UpdateBranchLocationInput, UpsertWasteReasonInput } from '../supabase/inventoryControl'
 import { demoState } from './state'
 import type { DemoCount, DemoMovement, DemoState } from './store'
 
@@ -334,5 +337,42 @@ export const demoInventoryControl = {
         }
       }),
     }
-  }
+  },
+
+  async listBranchLocations(): Promise<BranchLocation[]> {
+    const state = demoState()
+    const actor = currentDemoUser()
+    if (!actor) return []
+    return state.branches
+      .filter((b) => canManageBranchLocation(actor.roles) || (canReviewControl(actor.roles) && inScope(actor, b.id)))
+      .map((b) => {
+        const loc = state.branchLocations[b.id] ?? { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null }
+        return { id: b.id, key: b.key, name: b.name, isActive: true, ...loc, hasCoordinates: loc.latitude !== null && loc.longitude !== null }
+      })
+  },
+
+  async updateBranchLocation(input: UpdateBranchLocationInput): Promise<ControlResult> {
+    const state = demoState()
+    const actor = currentDemoUser()
+    if (!actor || !canManageBranchLocation(actor.roles)) return { error: DENIED }
+    if (input.reason.trim().length < 5) return { error: 'En az 5 karakterlik bir gerekçe yazın.' }
+    const invalid = validateCoordinates(input.latitude, input.longitude)
+    if (invalid) return { error: invalid }
+    const existing = state.branchLocations[input.branchId]
+    if (!existing) return { error: 'Şube bulunamadı.' }
+    const timezone = input.timezone.trim() || existing.timezone
+    try {
+      new Intl.DateTimeFormat('en', { timeZone: timezone })
+    } catch {
+      return { error: 'Geçersiz saat dilimi.' }
+    }
+    state.branchLocations[input.branchId] = {
+      latitude: input.latitude,
+      longitude: input.longitude,
+      timezone,
+      address: input.address?.trim() || null,
+      locationLabel: input.locationLabel?.trim() || null,
+    }
+    return { error: null }
+  },
 }

@@ -76,13 +76,15 @@ export const realApi = {
   regenerateDailyAnalytics: analytics.regenerateDailyAnalytics,
   regenerateWeeklyAnalytics: analytics.regenerateWeeklyAnalytics,
   getAnalyticsReport: analytics.getAnalyticsReport,
-  // inventory control: fire reasons, fire report, closing-count review
+  // inventory control: fire reasons, fire report, closing-count review, branch location
   listWasteReasons: control.listWasteReasons,
   upsertWasteReason: control.upsertWasteReason,
   setWasteReasonActive: control.setWasteReasonActive,
   getWasteReport: control.getWasteReport,
   getInventoryCountReview: control.getInventoryCountReview,
   getBranchCountOverview: control.getBranchCountOverview,
+  listBranchLocations: control.listBranchLocations,
+  updateBranchLocation: control.updateBranchLocation,
 }
 
 export type DataApi = typeof realApi

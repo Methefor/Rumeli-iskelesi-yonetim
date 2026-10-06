@@ -2,13 +2,14 @@ import { supabase } from './client'
 import { friendlyErrorMessage, friendlyFromSupabaseError } from '../errors'
 import type {
   BranchCountOverview,
+  BranchLocation,
   CountReview,
   WasteReasonRow,
   WasteReport,
 } from '../../domain/inventory/control'
 
 /**
- * Fire reasons, fire report, and closing-count review. Every number is calculated by the
+ * Fire reasons, fire report, closing-count review and branch location. Every number is calculated by the
  * database (supabase/migrations/20261006000200..400); this module only fetches and maps. Authorization
  * (permission + branch scope + cost visibility) is enforced by RLS and the RPCs.
  */
@@ -90,4 +91,59 @@ export async function getBranchCountOverview(branchId: string): Promise<BranchCo
   const { data, error } = await supabase.rpc('get_branch_count_overview', { p_branch_id: branchId, p_limit: 10 })
   if (error) failRead(error)
   return data as BranchCountOverview
+}
+
+interface LocationRow {
+  id: string
+  key: string
+  name: string
+  is_active: boolean
+  latitude: number | string | null
+  longitude: number | string | null
+  timezone: string
+  address: string | null
+  location_label: string | null
+  has_coordinates: boolean
+}
+
+const num = (v: number | string | null): number | null => (v === null ? null : Number(v))
+
+export async function listBranchLocations(): Promise<BranchLocation[]> {
+  const { data, error } = await supabase.rpc('list_branch_locations')
+  if (error) failRead(error)
+  return (data as LocationRow[]).map((r) => ({
+    id: r.id,
+    key: r.key,
+    name: r.name,
+    isActive: r.is_active,
+    latitude: num(r.latitude),
+    longitude: num(r.longitude),
+    timezone: r.timezone,
+    address: r.address,
+    locationLabel: r.location_label,
+    hasCoordinates: r.has_coordinates,
+  }))
+}
+
+export interface UpdateBranchLocationInput {
+  branchId: string
+  latitude: number | null
+  longitude: number | null
+  timezone: string
+  address: string | null
+  locationLabel: string | null
+  reason: string
+}
+
+export async function updateBranchLocation(input: UpdateBranchLocationInput): Promise<ControlResult> {
+  const { error } = await supabase.rpc('update_branch_location', {
+    p_branch_id: input.branchId,
+    p_latitude: input.latitude,
+    p_longitude: input.longitude,
+    p_timezone: input.timezone,
+    p_address: input.address,
+    p_location_label: input.locationLabel,
+    p_reason: input.reason,
+  })
+  return { error: friendlyFromSupabaseError(error) }
 }

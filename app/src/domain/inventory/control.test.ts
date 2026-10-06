@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  canManageBranchLocation,
   canManageWasteReasons,
   canReviewControl,
   classifyCountLine,
   costMetric,
   periodRange,
+  validateCoordinates,
 } from './control'
 
 // The numbers below are the SAME fixtures as supabase/tests/inventory_control.test.sql (I1..I6).
@@ -57,6 +59,21 @@ describe('classifyCountLine (waste timing is never confirmed)', () => {
   })
 })
 
+describe('validateCoordinates', () => {
+  it('accepts both null and valid pairs', () => {
+    expect(validateCoordinates(null, null)).toBeNull()
+    expect(validateCoordinates(41.0123, 28.9786)).toBeNull()
+    expect(validateCoordinates(-90, 180)).toBeNull()
+  })
+  it('rejects half a coordinate and out-of-range values', () => {
+    expect(validateCoordinates(10, null)).not.toBeNull()
+    expect(validateCoordinates(null, 10)).not.toBeNull()
+    expect(validateCoordinates(91, 10)).not.toBeNull()
+    expect(validateCoordinates(10, -181)).not.toBeNull()
+    expect(validateCoordinates(Number.NaN, 10)).not.toBeNull()
+  })
+})
+
 describe('UI-visibility role helpers (the server re-checks)', () => {
   it('waste reasons: owner and manager manage; nobody else', () => {
     expect(canManageWasteReasons(['owner'])).toBe(true)
@@ -67,6 +84,10 @@ describe('UI-visibility role helpers (the server re-checks)', () => {
   it('reports: owner, manager, branch_manager; not cashier/employee/viewer', () => {
     expect(canReviewControl(['branch_manager'])).toBe(true)
     for (const role of ['cashier', 'employee', 'viewer']) expect(canReviewControl([role])).toBe(false)
+  })
+  it('branch location: owner and manager only', () => {
+    expect(canManageBranchLocation(['manager'])).toBe(true)
+    expect(canManageBranchLocation(['branch_manager'])).toBe(false)
   })
 })
 

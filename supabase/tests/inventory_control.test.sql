@@ -1,5 +1,5 @@
 -- =============================================================================
--- inventory_control.test.sql  (Phase 1B: waste reasons, waste report, count classification)
+-- inventory_control.test.sql  (Phase 1B: waste reasons, waste report, count classification, branch location)
 -- =============================================================================
 -- RUN ONLY AGAINST A LOCAL / DISPOSABLE DATABASE with every migration applied
 -- (supabase db reset --local --no-seed). One transaction, ends in ROLLBACK.
@@ -413,13 +413,16 @@ do $$ declare u text; begin
     perform t.expect_denied(format($q$select public.get_waste_report(%L, date '2026-09-26', date '2026-09-26')$q$, t.id('BR')), u || ': waste report denied');
     perform t.expect_denied(format($q$select public.get_inventory_count_review(%L)$q$, t.id('C1')), u || ': count review denied');
     perform t.expect_denied(format($q$select public.get_branch_count_overview(%L)$q$, t.id('BR')), u || ': count overview denied');
+    perform t.expect_denied($q$select public.update_branch_location(null, 1, 1, null, null, null, 'not allowed')$q$, u || ': branch location denied');
     perform t.expect_denied($q$select public.inventory_count_classified_lines(null)$q$, u || ': internal classifier not executable');
+    perform t.assert((select count(*) from public.list_branch_locations()) = 0, u || ': no location list');
   end loop;
   perform t.as_anon();
   perform t.expect_denied(format($q$select public.get_waste_report(%L, date '2026-09-26', date '2026-09-26')$q$, t.id('BR')), 'anon: waste report denied');
   perform t.expect_denied(format($q$select public.get_inventory_count_review(%L)$q$, t.id('C1')), 'anon: count review denied');
   perform t.expect_denied(format($q$select public.get_branch_count_overview(%L)$q$, t.id('BR')), 'anon: count overview denied');
   perform t.expect_denied($q$select public.upsert_waste_reason(null, 'anon_code', 'No', null, 1, 'anonymous')$q$, 'anon: reason management denied');
+  perform t.expect_denied($q$select public.update_branch_location(null, 1, 1, null, null, null, 'anonymous')$q$, 'anon: branch location denied');
   perform t.as_superuser();
 end $$;
 grant usage on schema t to service_role;
@@ -429,6 +432,63 @@ set local role service_role;
 select count(*) as n from public.inventory_count_classified_lines(:'c1'::uuid) \gset service_
 reset role;
 do $$ begin perform t.assert(true, 'service_role ran the internal classifier'); end $$;
+
+-- ---------------------------------------------------------------------------
+-- F. branch location: branches stays untouched, detail lives in branch_locations
+-- ---------------------------------------------------------------------------
+select t.as_superuser();
+do $$ begin
+  perform t.assert((select count(*) from public.branches where timezone = 'Europe/Istanbul') = (select count(*) from public.branches), 'every branch defaults to Europe/Istanbul');
+  perform t.assert((select count(*) from public.branch_locations) = 0, 'no location row (and so no coordinate) is invented');
+  perform t.assert(not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'branches' and column_name in ('latitude','longitude','address','location_label')),
+    'sensitive location fields are not on branches');
+  perform t.expect_denied($q$update public.branches set timezone = 'Mars/Olympus'$q$, 'timezone is validated on every write path', '22023');
+end $$;
+select t.as_user('O');
+do $$ begin
+  perform public.update_branch_location(t.id('BR'), 41.0123, 28.9786, 'Europe/Istanbul', 'Test Sokak 1', 'Test Konum', 'sentetik test konumu');
+  perform t.assert((select latitude = 41.0123 and longitude = 28.9786 and location_label = 'Test Konum' from public.list_branch_locations() where id = t.id('BR')), 'owner sets and reads a location');
+  perform t.assert((select count(*) from public.branch_locations) = 1, 'owner reads branch_locations directly');
+  perform public.update_branch_location(t.id('BR'), null, null, null, null, null, 'konum temizleniyor');
+  perform t.assert((select latitude is null and longitude is null and timezone = 'Europe/Istanbul' from public.list_branch_locations() where id = t.id('BR')), 'null coordinates are valid; empty timezone keeps the existing one');
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, 91, 10, null, null, null, 'bad latitude')$q$, t.id('BR')), 'latitude > 90 rejected', '22023');
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, 10, -181, null, null, null, 'bad longitude')$q$, t.id('BR')), 'longitude < -180 rejected', '22023');
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, 10, null, null, null, null, 'only latitude')$q$, t.id('BR')), 'half a coordinate rejected', '22023');
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, null, null, 'Mars/Olympus', null, null, 'bad timezone')$q$, t.id('BR')), 'unknown timezone rejected', '22023');
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, null, null, null, null, null, 'abc')$q$, t.id('BR')), 'short reason rejected', '22023');
+  perform t.expect_denied(format($q$insert into public.branch_locations (branch_id, latitude, longitude) values (%L, 1, 1)$q$, t.id('BB')), 'no direct insert into branch_locations');
+  perform t.expect_denied($q$update public.branch_locations set latitude = 1, longitude = 1$q$, 'no direct update of branch_locations');
+  perform t.assert((select count(*) from public.audit_logs where action = 'branch_location_update') = 2, 'location changes are audited');
+end $$;
+select t.as_user('M');
+do $$ begin
+  perform t.expect_ok(format($q$select public.update_branch_location(%L, 40.5, 29.5, null, null, 'Manager Konum', 'manager has branch.manage')$q$, t.id('BD')), 'manager (branch.manage) may set a location');
+  perform t.assert((select count(*) from public.list_branch_locations()) = 3, 'manager lists every branch location');
+  perform t.assert((select count(*) from public.branch_locations) = 2, 'manager reads the detail rows directly');
+end $$;
+select t.as_user('BMR');
+do $$ begin
+  perform t.expect_denied(format($q$select public.update_branch_location(%L, 10, 10, null, null, null, 'branch manager has no branch.manage')$q$, t.id('BR')), 'branch_manager cannot write a location');
+  perform t.assert((select count(*) from public.list_branch_locations()) = 1, 'branch_manager lists only the own branch location');
+  perform t.assert((select count(*) from public.branch_locations where branch_id = t.id('BD')) = 0, 'branch_manager cannot read another branch location row');
+  perform t.assert((select count(*) from public.branches) = 3 and (select count(*) from (select * from public.branches) b) = 3, 'ordinary branch list and select * still work');
+end $$;
+-- operational roles: the basic branch identity still works (select *, embeds), the location detail is invisible
+do $$ declare u text; begin
+  foreach u in array array['K','E','V'] loop
+    perform t.as_user(u);
+    perform t.assert((select count(*) from (select * from public.branches) b) = 3, u || ': select * from branches still works');
+    perform t.assert((select count(*) from public.branches where key is not null and name is not null and is_active is not null) = 3, u || ': key, name, is_active still readable');
+    perform t.assert((select count(*) from public.branch_locations) = 0, u || ': location detail rows are invisible');
+    perform t.assert((select count(*) from public.list_branch_locations()) = 0, u || ': location list is empty');
+  end loop;
+  perform t.as_anon();
+  perform t.assert((select count(*) from public.branches) = 0, 'anon: branches exposure is unchanged (none)');
+  perform t.expect_denied($q$select count(*) from public.branch_locations$q$, 'anon: no access to branch_locations');
+  perform t.expect_denied($q$select * from public.list_branch_locations()$q$, 'anon: location list denied');
+  perform t.as_superuser();
+end $$;
+select t.as_superuser();
 
 do $$ declare n integer; begin
   select c.n into n from t.counter c;

@@ -172,6 +172,19 @@ export interface BranchCountOverview {
   }>
 }
 
+export interface BranchLocation {
+  id: string
+  key: string
+  name: string
+  isActive: boolean
+  latitude: number | null
+  longitude: number | null
+  timezone: string
+  address: string | null
+  locationLabel: string | null
+  hasCoordinates: boolean
+}
+
 export const COUNT_METHOD: CountReview['method'] = {
   expected: 'server-side theoretical stock snapshot taken when the count was submitted (already net of waste recorded before it)',
   explanation:
@@ -180,13 +193,23 @@ export const COUNT_METHOD: CountReview['method'] = {
   precision: 'shift or business date, never finer',
 }
 
+/** Mirror of the SQL range rule: latitude -90..90, longitude -180..180, both or neither. */
+export function validateCoordinates(latitude: number | null, longitude: number | null): string | null {
+  if (latitude === null && longitude === null) return null
+  if (latitude === null || longitude === null) return 'Enlem ve boylam birlikte girilmelidir.'
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return 'Enlem -90 ile 90 arasında olmalıdır.'
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return 'Boylam -180 ile 180 arasında olmalıdır.'
+  return null
+}
+
 /**
  * UI-VISIBILITY ONLY (the server re-checks): mirrors the role -> permission seeds of
- * inventory.waste_reason.manage / inventory.waste_report.read / inventory.count_review.read.
+ * inventory.waste_reason.manage / inventory.waste_report.read / inventory.count_review.read / branch.manage.
  */
 export const canManageWasteReasons = (roles: readonly string[]): boolean => roles.includes('owner') || roles.includes('manager')
 export const canReviewControl = (roles: readonly string[]): boolean =>
   roles.includes('owner') || roles.includes('manager') || roles.includes('branch_manager')
+export const canManageBranchLocation = (roles: readonly string[]): boolean => roles.includes('owner') || roles.includes('manager')
 
 export type ReportPeriod = 'today' | 'week' | 'month' | 'custom'
 

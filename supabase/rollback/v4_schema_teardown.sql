@@ -2,7 +2,7 @@
 -- supabase/rollback/v4_schema_teardown.sql
 -- =============================================================================
 -- EMERGENCY / ROLLBACK ONLY. Removes every V4 object created by the migration
--- chain in supabase/migrations/ (37 tables, 5 views, 110 functions, the avatars_v4
+-- chain in supabase/migrations/ (38 tables, 5 views, 113 functions, the avatars_v4
 -- storage policies and the PostgREST pre-request hook) and NOTHING ELSE.
 -- Legacy objects (daily_reports, cashiers, admins, entry_history, shift_schedule,
 -- targets, achievements, daily_revenue, daily_performance, weekly_performance and
@@ -49,6 +49,7 @@ drop table if exists public.external_context_daily cascade;
 drop table if exists public.weekly_analytics_snapshots cascade;
 drop table if exists public.audit_logs cascade;
 drop table if exists public.branch_memberships cascade;
+drop table if exists public.branch_locations cascade;
 drop table if exists public.branches cascade;
 drop table if exists public.inventory_count_items cascade;
 drop table if exists public.inventory_counts cascade;
@@ -109,6 +110,7 @@ drop function if exists public.analytics_write_weekly_insights(p_snapshot_id uui
 drop function if exists public.assign_branch_membership(p_user_id uuid, p_branch_id uuid, p_is_primary boolean, p_reason text);
 drop function if exists public.assign_role(p_user_id uuid, p_role_key text, p_reason text);
 drop function if exists public.assign_shift(p_shift_id uuid, p_user_id uuid, p_reason text);
+drop function if exists public.branches_validate_timezone();
 drop function if exists public.cancel_sales_report(p_report_id uuid, p_reason text);
 drop function if exists public.cancel_shift(p_shift_id uuid, p_reason text);
 drop function if exists public.compute_reconciliation_status(p_expected numeric, p_actual numeric, p_branch_id uuid);
@@ -161,6 +163,7 @@ drop function if exists public.inventory_resolve_shift_context(p_shift_id uuid, 
 drop function if exists public.inventory_reverse_sales_lines(p_report_id uuid, p_reason text);
 drop function if exists public.inventory_set_cost_internal(p_item_id uuid, p_unit_cost numeric, p_effective_from timestamp with time zone, p_reason text);
 drop function if exists public.inventory_stock_quantity(p_item_id uuid);
+drop function if exists public.list_branch_locations();
 drop function if exists public.override_reconciliation(p_report_id uuid, p_new_status text, p_reason text);
 drop function if exists public.override_shift_lateness(p_assignment_id uuid, p_is_on_time boolean, p_reason text);
 drop function if exists public.reassign_shift_branch(p_shift_id uuid, p_new_branch_id uuid, p_reason text);
@@ -182,6 +185,7 @@ drop function if exists public.set_waste_reason_active(p_reason_id uuid, p_activ
 drop function if exists public.shift_branch_id(p_shift_id uuid);
 drop function if exists public.submit_inventory_count(p_branch_id uuid, p_shift_id uuid, p_items jsonb, p_note text);
 drop function if exists public.update_analytics_settings(p_values jsonb, p_reason text);
+drop function if exists public.update_branch_location(p_branch_id uuid, p_latitude numeric, p_longitude numeric, p_timezone text, p_address text, p_location_label text, p_reason text);
 drop function if exists public.update_shift_assignment_status(p_assignment_id uuid, p_new_status text, p_reason text);
 drop function if exists public.upsert_external_context_daily(p_context_date date, p_branch_id uuid, p_values jsonb, p_reason text);
 drop function if exists public.upsert_inventory_item(p_item_id uuid, p_branch_id uuid, p_code text, p_name text, p_unit text, p_allows_decimal boolean, p_sales_category_id uuid, p_reason text);
@@ -198,7 +202,7 @@ begin
   select string_agg(c.relname, ', ') into v_left
   from pg_class c join pg_namespace n on n.oid = c.relnamespace
   where n.nspname = 'public' and c.relkind in ('r','v','m','p')
-    and c.relname in ('analytics_insights', 'analytics_reports', 'analytics_settings', 'daily_analytics_current', 'daily_analytics_snapshots', 'external_context_daily', 'weekly_analytics_current', 'weekly_analytics_snapshots', 'audit_logs', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'waste_reasons', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
+    and c.relname in ('analytics_insights', 'analytics_reports', 'analytics_settings', 'daily_analytics_current', 'daily_analytics_snapshots', 'external_context_daily', 'weekly_analytics_current', 'weekly_analytics_snapshots', 'audit_logs', 'branch_locations', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'waste_reasons', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
   if v_left is not null then raise exception 'teardown incomplete: %', v_left; end if;
 end $$;
 

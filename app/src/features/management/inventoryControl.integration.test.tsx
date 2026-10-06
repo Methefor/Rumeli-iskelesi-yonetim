@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-/** Drives the fire / closing-count screens in Preview demo mode (zero network). */
+/** Drives the fire / closing-count / branch-location screens in Preview demo mode (zero network). */
 async function bootApp(path: string) {
   vi.resetModules()
   window.history.replaceState({}, '', path)
@@ -34,11 +34,12 @@ afterEach(() => {
 vi.setConfig({ testTimeout: 30000 })
 
 describe('inventory control screens (manager, demo mode)', () => {
-  it('the hub links to the fire report, count overview and reasons', async () => {
+  it('the hub links to the fire report, count overview, reasons and branch location', async () => {
     await bootApp('/')
     await loginAsManager()
     expect(await screen.findByRole('link', { name: 'Raporu Aç' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Nedenleri Yönet' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Konumu Aç' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Sayım Özetini Aç' })).toBeInTheDocument()
   })
 
@@ -59,5 +60,13 @@ describe('inventory control screens (manager, demo mode)', () => {
     expect(await screen.findByRole('heading', { name: 'Fire raporu' })).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Bu dönemde fire kaydı yok.')).toBeInTheDocument())
     expect(screen.getByText('Maliyet etkisi')).toBeInTheDocument()
+  })
+
+  it('the branch location page shows branches without invented coordinates', async () => {
+    await bootApp('/')
+    const user = await loginAsManager()
+    await user.click(await screen.findByRole('link', { name: 'Konumu Aç' }))
+    expect(await screen.findByRole('heading', { name: 'Şube konumu' })).toBeInTheDocument()
+    expect((await screen.findAllByText('Koordinat girilmedi')).length).toBe(3)
   })
 })

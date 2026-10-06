@@ -340,14 +340,15 @@ mutation is authorized by this backlog update.
 - [ ] Apply the migration to production (separate owner-approved write, after review).
 - [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.
 
-## Phase 1B part A — inventory control (2026-10-07, development only, local)
+## Phase 1B — inventory control (2026-10-07, development only, local)
 
 - [x] `waste_reasons` catalogue (FK replaces the fixed CHECK; historical six seeded; code immutable; deactivate only; audited RPCs; RLS: managers all, entry roles active only).
 - [x] Fire report `get_waste_report` (item/reason/employee/shift, cost states, reversed entries excluded) + manager screen.
 - [x] Closing-count classification (balanced/shortage/surplus; timing_uncertain/unexplained; waste recorded after the count is only a candidate, never a confirmed explanation) + review RPCs + manager overview/drill-down screens.
-- [x] Teardown regenerated (37 tables, 5 views, 110 functions), synthetic QA scenarios, SQL/domain/demo/UI tests.
-- [ ] Apply migrations `20261006000200..300` to production (separate owner-approved write, after review; the analytics migration is also still unapplied).
-- [ ] Owner decisions: final fire reason catalogue, count tolerance/approval rules, who may correct counts (see `INVENTORY_CONTROL_MODEL.md`).
+- [x] Branch location: `branches.timezone` + management-only `branch_locations` (optional validated coordinates, address, label; `branches` grants untouched) + audited `update_branch_location` + form.
+- [x] Teardown regenerated (38 tables, 5 views, 113 functions), synthetic QA scenarios, SQL/domain/demo/UI tests.
+- [ ] Apply migrations `20261006000200..400` to production (separate owner-approved write, after review; the analytics migration is also still unapplied).
+- [ ] Owner decisions: final fire reason catalogue, count tolerance/approval rules, real branch coordinates, weather provider, who may correct counts (see `INVENTORY_CONTROL_MODEL.md`).
 - [ ] Decide whether waste entries need a reliable effective event time (prerequisite for any `explained_by_waste`).
 - [ ] Surface "missing closing count" / unexplained variance in the Command Center (building blocks exist, not integrated yet).
-- [ ] Fire-report scheduling/notifications.
+- [ ] Fire-report scheduling/notifications; branch create/edit beyond location fields.

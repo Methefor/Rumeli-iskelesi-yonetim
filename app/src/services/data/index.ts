@@ -42,6 +42,8 @@ export const {
   getWasteReport,
   getInventoryCountReview,
   getBranchCountOverview,
+  listBranchLocations,
+  updateBranchLocation,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,
@@ -117,4 +119,4 @@ export type {
   ShiftSettings,
 } from '../supabase/management'
 export type { AnalyticsMutationResult, AnalyticsReportView } from '../supabase/analytics'
-export type { ControlResult, UpsertWasteReasonInput } from '../supabase/inventoryControl'
+export type { ControlResult, UpsertWasteReasonInput, UpdateBranchLocationInput } from '../supabase/inventoryControl'

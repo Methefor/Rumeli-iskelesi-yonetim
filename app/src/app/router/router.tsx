@@ -32,6 +32,7 @@ import { WasteReasonsPage } from '../../features/management/routes/WasteReasonsP
 import { WasteReportPage } from '../../features/management/routes/WasteReportPage'
 import { CountOverviewPage } from '../../features/management/routes/CountOverviewPage'
 import { CountReviewPage } from '../../features/management/routes/CountReviewPage'
+import { BranchLocationPage } from '../../features/management/routes/BranchLocationPage'
 import { AnalyticsPage } from '../../features/analytics/AnalyticsPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
@@ -105,6 +106,7 @@ export const router = createBrowserRouter([
       { path: 'management/waste-report', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><WasteReportPage /></RoleGuard> },
       { path: 'management/count-review', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountOverviewPage /></RoleGuard> },
       { path: 'management/count-review/:countId', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountReviewPage /></RoleGuard> },
+      { path: 'management/branch-location', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><BranchLocationPage /></RoleGuard> },
       {
         path: 'management/audit',
         element: (

@@ -85,4 +85,18 @@ describe('demo service permissions (mirrors RLS)', () => {
     expect((await demoApi.listWasteReasons()).some((r) => r.code === 'sample')).toBe(false)
     expect(demoState().movements.length).toBeGreaterThan(0) // existing ledger rows untouched
   })
+
+  it('branch location: nullable coordinates, validated ranges, management only', async () => {
+    signInAs('M001')
+    const base = { branchId: DEMO_BRANCH_RUMELI, timezone: '', address: null, locationLabel: null, reason: 'sentetik test' }
+    expect((await demoApi.listBranchLocations()).every((b) => b.latitude === null && b.timezone === 'Europe/Istanbul')).toBe(true)
+    expect((await demoApi.updateBranchLocation({ ...base, latitude: 91, longitude: 10 })).error).not.toBeNull()
+    expect((await demoApi.updateBranchLocation({ ...base, latitude: 10, longitude: null })).error).not.toBeNull()
+    expect((await demoApi.updateBranchLocation({ ...base, latitude: 40.5, longitude: 29.5 })).error).toBeNull()
+    expect((await demoApi.listBranchLocations()).find((b) => b.id === DEMO_BRANCH_RUMELI)?.hasCoordinates).toBe(true)
+    expect((await demoApi.updateBranchLocation({ ...base, latitude: null, longitude: null })).error).toBeNull()
+    signInAs('K001')
+    expect((await demoApi.updateBranchLocation({ ...base, latitude: 1, longitude: 1 })).error).not.toBeNull()
+    expect(await demoApi.listBranchLocations()).toEqual([])
+  })
 })

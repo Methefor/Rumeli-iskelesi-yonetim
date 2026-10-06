@@ -126,6 +126,16 @@ export function ManagementPage() {
               </LinkButton>
             </RowCard>
           )}
+          {canControl && (
+            <RowCard
+              title="Şube konumu"
+              subtitle="İsteğe bağlı koordinat, saat dilimi ve adres."
+            >
+              <LinkButton to="/app/manager/management/branch-location" variant="secondary">
+                Konumu Aç
+              </LinkButton>
+            </RowCard>
+          )}
           <RowCard
             title="Mutabakat kuyruğu"
             subtitle="Kasa ve kategori toplamı uyuşmayan raporlar."
@@ -151,7 +161,7 @@ export function ManagementPage() {
         </h2>
         <Stack gap="sm">
           {[
-            ['Şubeler', 'Şube bilgileri ve çalışma düzeni.'],
+            ['Şubeler', 'Şube ekleme ve çalışma düzeni. (Konum alanları yukarıda Şube konumu sayfasında.)'],
             ['Puanlama ve rozetler', 'Yapılandırılabilir performans kuralları.'],
             ['Genel operasyon ayarları', 'Gecikme toleransı ve genel/şube operasyon parametreleri. Vardiya rapor saatleri ve mutabakat eşikleri yukarıdaki Ayarlar sayfasında.'],
           ].map(([title, subtitle]) => (

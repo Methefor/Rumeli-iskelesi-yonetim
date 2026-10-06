@@ -108,6 +108,14 @@ export interface DemoCount extends InventoryCountSummary {
   voidReason?: string | null
 }
 
+export interface DemoBranchLocation {
+  latitude: number | null
+  longitude: number | null
+  timezone: string
+  address: string | null
+  locationLabel: string | null
+}
+
 export interface DemoMovement extends InventoryMovementRow {
   unitCostSnapshot: number | null
   createdBy: string
@@ -131,6 +139,8 @@ export interface DemoState {
   counts: DemoCount[]
   /** Fire reason catalogue (synthetic mirror of public.waste_reasons). */
   wasteReasons: WasteReasonRow[]
+  /** Optional per-branch location (nothing is invented: every branch starts without coordinates). */
+  branchLocations: Record<string, DemoBranchLocation>
   overrides: Array<{
     reportId: string
     reason: string
@@ -760,6 +770,11 @@ export function createDemoState(
       { id: 'demo-reason-sample', code: 'sample', name: 'Numune / ikram', description: 'Numune veya ikram olarak verildi', isActive: true, sortOrder: 50 },
       { id: 'demo-reason-other', code: 'other', name: 'Diğer', description: 'Başka bir neden; açıklama yazın', isActive: true, sortOrder: 90 },
     ],
+    branchLocations: {
+      [DEMO_BRANCH_RUMELI]: { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null },
+      [DEMO_BRANCH_DONDURMA]: { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null },
+      [DEMO_BRANCH_BALIK]: { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null },
+    },
     overrides: [],
     inventoryAudit: [],
     auditLog: [],
