@@ -28,6 +28,7 @@ import { EmployeeDetailPage } from '../../features/management/routes/EmployeeDet
 import { SettingsPage } from '../../features/management/routes/SettingsPage'
 import { ManagementAuditPage } from '../../features/management/routes/ManagementAuditPage'
 import { DataQualityPage } from '../../features/management/routes/DataQualityPage'
+import { AnalyticsPage } from '../../features/analytics/AnalyticsPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
 
@@ -90,6 +91,7 @@ export const router = createBrowserRouter([
           </RoleGuard>
         ),
       },
+      { path: 'analytics', element: <AnalyticsPage /> },
       { path: 'management', element: <ManagementPage /> },
       { path: 'management/employees', element: <EmployeesPage /> },
       { path: 'management/employees/new', element: <EmployeeCreatePage /> },

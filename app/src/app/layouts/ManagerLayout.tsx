@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 import { AppShell, type NavItem } from '../../components/navigation/AppShell'
 import { useAsync } from '../../hooks/useAsync'
 import { useAuth } from '../../hooks/useAuth'
+import { canAnalytics } from '../../domain/analytics'
 import { listBranches, listBranchShiftChangeRequests } from '../../services/data'
 import { SelectedBranchProvider } from '../providers/SelectedBranchProvider'
 
 /** Manager shell: branch switcher + identity + logout header, one responsive nav, routed page. */
 export function ManagerLayout() {
-  const { user } = useAuth()
+  const { user, roles } = useAuth()
   const pending = useAsync(
     user ? `manager-pending-shifts:${user.id}` : null,
     async () => {
@@ -41,6 +42,9 @@ export function ManagerLayout() {
     },
     { to: '/app/manager/reports', label: 'Satış', icon: 'receipt' },
     { to: '/app/manager/inventory', label: 'Stok', icon: 'box' },
+    ...(canAnalytics(roles, 'analytics.read')
+      ? ([{ to: '/app/manager/analytics', label: 'Analiz', icon: 'chart' }] as const)
+      : []),
     { to: '/app/manager/management', label: 'Yönetim', icon: 'sliders' },
   ]
 

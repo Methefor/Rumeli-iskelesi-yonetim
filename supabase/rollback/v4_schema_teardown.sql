@@ -2,7 +2,7 @@
 -- supabase/rollback/v4_schema_teardown.sql
 -- =============================================================================
 -- EMERGENCY / ROLLBACK ONLY. Removes every V4 object created by the migration
--- chain in supabase/migrations/ (30 tables, 3 views, 74 functions, the avatars_v4
+-- chain in supabase/migrations/ (36 tables, 5 views, 102 functions, the avatars_v4
 -- storage policies and the PostgREST pre-request hook) and NOTHING ELSE.
 -- Legacy objects (daily_reports, cashiers, admins, entry_history, shift_schedule,
 -- targets, achievements, daily_revenue, daily_performance, weekly_performance and
@@ -36,9 +36,17 @@ drop policy if exists "avatars_v4_select" on storage.objects;
 drop policy if exists "avatars_v4_update" on storage.objects;
 
 -- 1. Views, then tables (CASCADE removes their triggers, policies, indexes and FKs).
+drop view if exists public.daily_analytics_current cascade;
+drop view if exists public.weekly_analytics_current cascade;
 drop view if exists public.inventory_last_counts cascade;
 drop view if exists public.inventory_stock_balances cascade;
 drop view if exists public.sales_reports_with_origin cascade;
+drop table if exists public.analytics_insights cascade;
+drop table if exists public.analytics_reports cascade;
+drop table if exists public.analytics_settings cascade;
+drop table if exists public.daily_analytics_snapshots cascade;
+drop table if exists public.external_context_daily cascade;
+drop table if exists public.weekly_analytics_snapshots cascade;
 drop table if exists public.audit_logs cascade;
 drop table if exists public.branch_memberships cascade;
 drop table if exists public.branches cascade;
@@ -145,6 +153,34 @@ drop function if exists public.user_rank(p_user_id uuid);
 drop function if exists public.verify_pin(p_user_id uuid, p_pin text);
 drop function if exists public.void_inventory_count(p_count_id uuid, p_reason text);
 drop function if exists public.write_audit_log(p_action text, p_entity_type text, p_entity_id text, p_old_values jsonb, p_new_values jsonb, p_reason text);
+drop function if exists public.analytics_block_mutation();
+drop function if exists public.analytics_build_daily(p_branch_id uuid, p_date date);
+drop function if exists public.analytics_build_weekly(p_branch_id uuid, p_week_start date);
+drop function if exists public.analytics_can(p_permission_key text, p_branch_id uuid);
+drop function if exists public.analytics_cap(p_status text, p_reasons text[]);
+drop function if exists public.analytics_compare(p_current numeric, p_baseline numeric, p_baseline_has_data boolean, p_low_base numeric, p_samples integer, p_min_samples integer, p_current_final boolean, p_baseline_final boolean, p_mixed boolean, p_block_mixed boolean);
+drop function if exists public.analytics_completeness(p_caps jsonb, p_has_data boolean);
+drop function if exists public.analytics_compute_day(p_branch_id uuid, p_date date);
+drop function if exists public.analytics_context_for(p_branch_id uuid, p_date date);
+drop function if exists public.analytics_internal_source_latest_at(p_branch_id uuid, p_from date, p_to date);
+drop function if exists public.analytics_metric(p_state text, p_value numeric, p_reason text);
+drop function if exists public.analytics_origin_mixed(p_a text, p_b text);
+drop function if exists public.analytics_params();
+drop function if exists public.analytics_redact(p_payload jsonb, p_financial boolean);
+drop function if exists public.analytics_source_latest_at(p_branch_id uuid, p_from date, p_to date);
+drop function if exists public.analytics_weather_effect(p_branch_id uuid, p_from date, p_to date);
+drop function if exists public.analytics_week_totals(p_days jsonb, p_week_complete boolean);
+drop function if exists public.analytics_write_daily_insights(p_snapshot_id uuid, p_branch_id uuid, p_date date, p_payload jsonb);
+drop function if exists public.analytics_write_weekly_insights(p_snapshot_id uuid, p_branch_id uuid, p_week date, p_payload jsonb);
+drop function if exists public.get_daily_analytics(p_branch_id uuid, p_date date);
+drop function if exists public.get_weekly_analytics(p_branch_id uuid, p_week_start date);
+drop function if exists public.internal_generate_daily_analytics(p_branch_id uuid, p_date date, p_kind text, p_actor uuid, p_reason text);
+drop function if exists public.internal_generate_weekly_analytics(p_branch_id uuid, p_week_start date, p_kind text, p_actor uuid, p_reason text);
+drop function if exists public.internal_save_analytics_report(p_weekly_snapshot_id uuid, p_status text, p_input_facts jsonb, p_output jsonb, p_model text, p_error_code text, p_actor uuid);
+drop function if exists public.regenerate_daily_analytics(p_branch_id uuid, p_date date, p_reason text);
+drop function if exists public.regenerate_weekly_analytics(p_branch_id uuid, p_week_start date, p_reason text);
+drop function if exists public.update_analytics_settings(p_values jsonb, p_reason text);
+drop function if exists public.upsert_external_context_daily(p_context_date date, p_branch_id uuid, p_values jsonb, p_reason text);
 
 -- 3. Post-condition: no V4 object may remain in public.
 do $$
@@ -153,7 +189,7 @@ begin
   select string_agg(c.relname, ', ') into v_left
   from pg_class c join pg_namespace n on n.oid = c.relnamespace
   where n.nspname = 'public' and c.relkind in ('r','v','m','p')
-    and c.relname in ('audit_logs', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
+    and c.relname in ('analytics_insights', 'analytics_reports', 'analytics_settings', 'daily_analytics_current', 'daily_analytics_snapshots', 'external_context_daily', 'weekly_analytics_current', 'weekly_analytics_snapshots', 'audit_logs', 'branch_memberships', 'branches', 'inventory_count_items', 'inventory_counts', 'inventory_item_costs', 'inventory_items', 'inventory_movements', 'legacy_cashier_profile_map', 'legacy_reference_totals', 'legacy_sales_import_runs', 'legacy_sales_report_links', 'operating_data_provenance', 'permissions', 'pin_credentials', 'profiles', 'reconciliation_thresholds', 'registers', 'role_permissions', 'roles', 'sales_categories', 'sales_category_branches', 'sales_report_items', 'sales_report_overrides', 'sales_reports', 'shift_assignments', 'shift_change_requests', 'shift_definitions', 'shifts', 'user_roles', 'inventory_last_counts', 'inventory_stock_balances', 'sales_reports_with_origin');
   if v_left is not null then raise exception 'teardown incomplete: %', v_left; end if;
 end $$;
 

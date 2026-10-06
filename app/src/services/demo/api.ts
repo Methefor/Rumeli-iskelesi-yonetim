@@ -20,6 +20,7 @@ import type { DataApi } from '../data/real'
 import { istanbulDate } from '../../utils/dates'
 import { demoManagement } from './management'
 import { demoDataQuality } from './dataQuality'
+import { demoAnalytics } from './analytics'
 import { fetchBranchDashboardRaw } from './dashboard'
 import { demoState } from './state'
 import {
@@ -148,6 +149,7 @@ function auditInventory(
 }
 export const demoApi: DataApi = {
   ...demoManagement,
+  ...demoAnalytics,
   ...demoDataQuality,
   fetchBranchDashboardRaw,
   async listInventoryAudit(branchId, limit = 100) {

@@ -7,6 +7,9 @@ Last updated: 2026-09-27 (Stage 3 operating data remains as below; the V4 PWA sh
 Git: branch `v4-2027`, HEAD `36e5f85` (`feat: finalize production migration readiness safeguards`) equals
 `origin/v4-2027`; the production-readiness package is committed and pushed. Production remains untouched.
 
+- **Production schema (2026-10-06):** the 24 V4 migrations (`001`..`20261005000300`) were applied to production by the owner and verified read-only; no data import, Auth user, owner bootstrap or Edge Function exists in production (`docs/PRODUCTION_SCHEMA_APPLY_EVIDENCE_2026-10-06.md`). The line above about production being untouched predates that apply.
+- **Analytics Engine V1 (development only, uncommitted):** `ANALYTICS_MODEL.md`. Migration `20261006000100_analytics_engine_v1.sql` (5 tables, 2 views, 24 functions, 4 `analytics.*` permissions) is validated locally and is **not applied to production**; SQL calculates every metric, AI only interprets validated facts. UI: `/app/manager/analytics`.
+
 - **LOCAL — fully validated:** all 25 migration files (24 V4 + the `20260611233031` history
   mirror) apply from zero; SQL suites (timezone, timezone RPC 32, inventory security,
   backdated entry + 24 tz cases, management center, shift change requests); HTTP suites

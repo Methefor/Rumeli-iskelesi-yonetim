@@ -660,3 +660,22 @@ gate is a fresh verified DB + Storage backup. DATA APPLY and PILOT/CUTOVER stay 
 production already contains `daily_reports.kategori_devri`, the migration uses `ADD COLUMN IF
 NOT EXISTS`, the remote migration history already contains `20260611233031`, and
 `db push --dry-run --include-all` does not propose it (it lists exactly the 24 V4 migrations).
+
+### 2026-10-06 - Analytics Engine V1 (development only)
+
+Metrics are calculated only by deterministic code (SQL authoritative, a tested TypeScript twin for demo mode); AI interprets
+supplied facts and never calculates. Project X/Z rule at BUSINESS-DAY level: morning = X, evening = Z, Z already includes X, so
+they are never two revenues. A day with a Z is FINALIZED (revenue = Z exactly, never normalized by X; Z < X keeps Z and warns
+`z_below_x`); a day with only an X is PROVISIONAL (no finalized revenue, `missing_z`, X exposed as provisionalRevenue, never a baseline, no percentage); a week is final only when it has ended and has no provisional
+day. Whether Z item lines are cumulative of X is NOT known and is not inferred: the X/Z rule is not applied to category/product
+lines (single reading = partial, both = unsupported, gross profit never complete). Legacy-imported reports support total revenue
+only where the source does (no product detail, no gross profit, transactions only where present) and mixed native + legacy
+transaction/basket comparisons are refused. Thresholds are technical defaults held in one central settings row, not business
+decisions. The inherited latest-reading-wins behaviour for several registers is kept, warned about and regression-tested. Every
+snapshot exposes an explicit completeness model (complete / partial / unsupported with reason codes). Snapshots, insights and AI
+reports are immutable and versioned; regeneration is audited with a reason. A percentage is never produced from a missing, zero,
+low-volume, provisional or incomparable base, a correlation never from a small sample. Only a validated AI report may emit a
+hypothesis, and a fact claim may rest only on complete-support evidence. Peak hour is unsupported (no hourly data). Revenue-bearing
+data (including the X/Z readings) needs `analytics.financial.read`; `analytics.read` alone gets a redacted payload. owner/manager
+may regenerate; branch_manager is read-only; cashier/employee/viewer are denied by default. The migration is not applied to
+production; the open items in `ANALYTICS_MODEL.md` await owner review.

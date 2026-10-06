@@ -5,6 +5,7 @@ import * as inventory from '../supabase/inventory'
 import * as management from '../supabase/management'
 import { getDataQuality } from '../supabase/dataQuality'
 import { fetchBranchDashboardRaw } from '../supabase/dashboard'
+import * as analytics from '../supabase/analytics'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -67,6 +68,13 @@ export const realApi = {
   listManagementAudit: management.listManagementAudit,
   getDataQuality,
   fetchBranchDashboardRaw,
+  // analytics (read-only snapshots + audited regeneration)
+  getDailyAnalytics: analytics.getDailyAnalytics,
+  getWeeklyAnalytics: analytics.getWeeklyAnalytics,
+  listAnalyticsInsights: analytics.listAnalyticsInsights,
+  regenerateDailyAnalytics: analytics.regenerateDailyAnalytics,
+  regenerateWeeklyAnalytics: analytics.regenerateWeeklyAnalytics,
+  getAnalyticsReport: analytics.getAnalyticsReport,
 }
 
 export type DataApi = typeof realApi

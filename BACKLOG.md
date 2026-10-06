@@ -326,3 +326,16 @@ mutation is authorized by this backlog update.
 - [x] `internal_bootstrap_owner` exposure reviewed: service_role only, closed once any owner exists.
 - [ ] Optional: a separate annotation mechanism for historical findings (not needed for cutover).
 - [ ] Still OPEN (owner action): DATA APPLY needs a real production backup, legacy write freeze, final stable fingerprint, approved private identity mapping, real identity provisioning and explicit owner approval; PILOT/CUTOVER needs pilot frontend creation, pilot execution, real mobile/device QA and explicit owner approval.
+
+## Analytics Engine V1 (2026-10-06, development only)
+
+- [x] Migration `20261006000100_analytics_engine_v1.sql`: `external_context_daily`, `daily_analytics_snapshots`, `weekly_analytics_snapshots`, `analytics_insights`, `analytics_reports`; permissions `analytics.read|financial.read|ai.read|regenerate`; RLS and redacted read RPCs.
+- [x] Deterministic metrics (business-day X/Z revenue: FINALIZED by Z, PROVISIONAL with X only; transactions, derived basket, line detail only where its X/Z semantics are not unknown, gross profit only with cost coverage, origin-aware legacy limits, previous day / week / 4-week finalized baseline, weekly changes) in SQL with a tested TypeScript twin.
+- [x] Explicit completeness model (complete / partial / unsupported + reason codes), central analytics settings, multi-register regression test.
+- [x] Fact / relationship / hypothesis confidence model, weather/context model, immutable versioned snapshots, stale detection, audited regeneration.
+- [x] AI report contract with strict validation and failure containment (no provider wired).
+- [x] Mobile-first analytics UI (summary, daily, weekly, products, hourly-unsupported, weather) and tests.
+- [ ] Owner decisions listed in `ANALYTICS_MODEL.md` (X/Z item-line semantics, thresholds, pay period, weather/holiday sources, regenerate rights, scheduling, AI provider).
+- [ ] Review the manager dashboard revenue against the business-day X/Z rule (it groups per shift; a morning X and an evening Z on different shifts would be summed).
+- [ ] Apply the migration to production (separate owner-approved write, after review).
+- [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.

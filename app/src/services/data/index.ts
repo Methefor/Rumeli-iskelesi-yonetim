@@ -30,6 +30,12 @@ export const {
   listManagementAudit,
   getDataQuality,
   fetchBranchDashboardRaw,
+  getDailyAnalytics,
+  getWeeklyAnalytics,
+  listAnalyticsInsights,
+  regenerateDailyAnalytics,
+  regenerateWeeklyAnalytics,
+  getAnalyticsReport,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,
@@ -104,3 +110,4 @@ export type {
   MgmtResult,
   ShiftSettings,
 } from '../supabase/management'
+export type { AnalyticsMutationResult, AnalyticsReportView } from '../supabase/analytics'
