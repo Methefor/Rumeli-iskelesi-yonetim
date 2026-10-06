@@ -61,6 +61,8 @@ calculation) but makes it structural instead of incidental.
 
 ## X/Z revenue logic lives in one function, not duplicated per screen
 
+> **SUPERSEDED 2026-10-07:** `calculateDailyRevenue` and `calculateEveningIncrement` were removed; the binding rule is now Z exactly per business day (X provisional, never X + Z). See the 2026-10-07 Phase 1A entry at the end of this file.
+
 **Decision:** `domain/revenue/calculateShiftRevenue.ts` owns
 `calculateEveningIncrement` (Z − X, floored at 0) and
 `calculateDailyRevenue`. Every future screen must import these, never

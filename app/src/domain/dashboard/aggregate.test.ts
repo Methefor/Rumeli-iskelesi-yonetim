@@ -6,6 +6,7 @@ import {
   buildDashboard,
   buildOperationalSummary,
   buildOrganizationSummary,
+  computeBranchRevenueBreakdown,
   computeBranchRevenueKurus,
   computeGrossProfitCard,
   computeReconciliationCounts,
@@ -38,44 +39,115 @@ function raw(over: Partial<BranchRawData>): BranchRawData {
   }
 }
 
-describe('computeBranchRevenueKurus', () => {
-  it('applies the shared X/Z rule per shift in integer kuruş and sums across shifts exactly', () => {
-    const reports = [
-      report({ shiftId: 'a', reportType: 'X', grossRevenue: 1000.5 }),
-      report({ shiftId: 'a', reportType: 'Z', grossRevenue: 2500.75 }), // a: 1000.50 + (2500.75-1000.50) = 2500.75
-      report({ shiftId: 'b', reportType: 'X', grossRevenue: 300.25 }), // b: 300.25 alone
-    ]
-    const revenue = computeBranchRevenueKurus(reports)
-    expect(revenue).toEqual(available(250075 + 30025))
+const day = (businessDate: string, shiftId: string, reportType: 'X' | 'Z', grossRevenue: number, over: Partial<BranchReportFact> = {}) =>
+  report({ businessDate, shiftId, reportType, grossRevenue, ...over })
+
+describe('computeBranchRevenueKurus: business-day X/Z rule (X provisional, Z final, never X + Z)', () => {
+  it('X morning + Z evening on DIFFERENT shifts: the day is the Z exactly, never X + Z', () => {
+    const reports = [day('2027-06-15', 'morning', 'X', 6000), day('2027-06-15', 'evening', 'Z', 9600)]
+    expect(computeBranchRevenueKurus(reports)).toEqual(available(960000))
+    expect(computeBranchRevenueBreakdown(reports)).toMatchObject({ finalizedKurus: 960000, provisionalKurus: 0, finalizedDays: 1, provisionalDays: 0 })
   })
 
-  it('never double-counts: many 0.1-scale reports across many shifts sum exactly in kuruş', () => {
-    const reports = Array.from({ length: 500 }, (_, i) =>
-      report({ shiftId: `s${i}`, reportType: 'X', grossRevenue: 0.1 }),
-    )
+  it('X and Z on the SAME shift: the Z exactly', () => {
+    const reports = [day('2027-06-15', 'a', 'X', 1000.5), day('2027-06-15', 'a', 'Z', 2500.75)]
+    expect(computeBranchRevenueKurus(reports)).toEqual(available(250075))
+  })
+
+  it('X only: provisional, not final revenue and not added to the total', () => {
+    const reports = [day('2027-06-15', 'morning', 'X', 9600)]
+    const revenue = computeBranchRevenueKurus(reports)
+    expect(revenue.status).toBe('partial')
+    expect(revenue).toMatchObject({ value: 0 })
+    expect(computeBranchRevenueBreakdown(reports)).toMatchObject({ finalizedKurus: 0, provisionalKurus: 960000, provisionalDays: 1 })
+  })
+
+  it('Z only: the Z', () => {
+    expect(computeBranchRevenueKurus([day('2027-06-15', 'evening', 'Z', 9600)])).toEqual(available(960000))
+  })
+
+  it('Z below X: still the Z (no max(X, Z)), and the day is flagged', () => {
+    const reports = [day('2027-06-15', 'morning', 'X', 9600), day('2027-06-15', 'evening', 'Z', 6000)]
+    expect(computeBranchRevenueKurus(reports)).toEqual(available(600000))
+    expect(computeBranchRevenueBreakdown(reports).zBelowXDays).toEqual(['2027-06-15'])
+  })
+
+  it('INHERITED behaviour: several active readings of one type on a day (shifts/registers) -> the LAST one wins, flagged', () => {
+    const reports = [
+      day('2027-06-15', 'm', 'X', 100),
+      day('2027-06-15', 'm2', 'X', 700),
+      day('2027-06-15', 'e', 'Z', 1000),
+      day('2027-06-15', 'e2', 'Z', 1200),
+    ]
+    expect(computeBranchRevenueKurus(reports)).toEqual(available(120000))
+    expect(computeBranchRevenueBreakdown(reports).multipleReadingDays).toEqual(['2027-06-15'])
+  })
+
+  it('several active readings of one type: the latest submittedAt wins, whatever the input order', () => {
+    const early = day('2027-06-15', 'e1', 'Z', 1000, { submittedAt: '2027-06-15T20:00:00Z' })
+    const late = day('2027-06-15', 'e2', 'Z', 1200, { submittedAt: '2027-06-15T21:00:00Z' })
+    expect(computeBranchRevenueKurus([late, early])).toEqual(available(120000))
+    expect(computeBranchRevenueKurus([early, late])).toEqual(available(120000))
+  })
+
+  it('sums finalized days only; a day without Z is partial and its X stays separate', () => {
+    const reports = [
+      day('2027-06-14', 'm', 'X', 6000),
+      day('2027-06-14', 'e', 'Z', 9600), // final 9600
+      day('2027-06-15', 'm', 'X', 3000), // provisional
+      day('2027-06-16', 'e', 'Z', 400.25), // final 400.25
+    ]
+    const revenue = computeBranchRevenueKurus(reports)
+    expect(revenue.status).toBe('partial')
+    expect(revenue).toMatchObject({ value: 960000 + 40025 })
+    expect(computeBranchRevenueBreakdown(reports)).toMatchObject({ finalizedDays: 2, provisionalDays: 1, provisionalKurus: 300000 })
+  })
+
+  it('kuruş exactness across many days', () => {
+    const reports = Array.from({ length: 500 }, (_, i) => day(`d${i}`, `s${i}`, 'Z', 0.1))
     expect(computeBranchRevenueKurus(reports)).toEqual(available(500 * 10))
   })
 
-  it('excludes cancelled reports entirely, including a cancelled report that would otherwise dominate the shift', () => {
+  it('excludes cancelled reports entirely, even one that would dominate the day', () => {
     const reports = [
-      report({ shiftId: 'a', reportType: 'X', grossRevenue: 999999, status: 'cancelled' }),
-      report({ shiftId: 'a', reportType: 'Z', grossRevenue: 500 }),
+      day('2027-06-15', 'a', 'X', 999999, { status: 'cancelled' }),
+      day('2027-06-15', 'a', 'Z', 500),
     ]
     expect(computeBranchRevenueKurus(reports)).toEqual(available(50000))
+    // a cancelled Z leaves the X as the only reading -> provisional
+    expect(computeBranchRevenueKurus([day('2027-06-15', 'a', 'X', 500), day('2027-06-15', 'a', 'Z', 999, { status: 'cancelled' })]).status).toBe('partial')
   })
 
-  it('a Z lower than X never produces a negative shift revenue', () => {
-    const reports = [
-      report({ shiftId: 'a', reportType: 'X', grossRevenue: 900 }),
-      report({ shiftId: 'a', reportType: 'Z', grossRevenue: 800 }),
-    ]
-    expect(computeBranchRevenueKurus(reports)).toEqual(available(90000))
+  it('a report without a business date is its own day (shift-only callers)', () => {
+    const reports = [report({ shiftId: 'a', reportType: 'X', grossRevenue: 300 }), report({ shiftId: 'b', reportType: 'Z', grossRevenue: 500 })]
+    expect(computeBranchRevenueBreakdown(reports)).toMatchObject({ finalizedKurus: 50000, provisionalKurus: 30000 })
   })
 
-  it('zero reports is a real, available zero — not "unavailable"', () => {
-    const revenue = computeBranchRevenueKurus([])
-    expect(revenue.status).toBe('available')
-    expect(revenue).toEqual(available(0))
+  it('zero reports is a real, available zero, not unavailable', () => {
+    expect(computeBranchRevenueKurus([])).toEqual(available(0))
+  })
+})
+
+describe('dashboard aggregates use the business-day revenue (no X + Z, no provisional in totals)', () => {
+  it('the branch row and the organization total follow the Z rule and expose the provisional X separately', () => {
+    const a = raw({
+      branchId: 'a',
+      period: { reports: [day('2027-06-15', 'm', 'X', 6000), day('2027-06-15', 'e', 'Z', 9600)], shifts: [shift({ id: 'm' }), shift({ id: 'e' })] },
+    })
+    const b = raw({ branchId: 'b', period: { reports: [day('2027-06-15', 'm2', 'X', 2000)], shifts: [shift({ id: 'm2' })] } })
+    const { organization, branches } = buildDashboard(PERIOD, [a, b])
+    expect(branches.find((r) => r.branchId === 'a')!.revenue).toEqual(available(960000))
+    expect(branches.find((r) => r.branchId === 'b')!.revenue.status).toBe('partial')
+    expect(organization.totalRevenue).toMatchObject({ status: 'partial', value: 960000 })
+    expect(organization.provisionalRevenueKurus).toBe(200000)
+    expect(organization.provisionalDays).toBe(1)
+  })
+
+  it('flags Z below X on the organization summary', () => {
+    const a = raw({ period: { reports: [day('2027-06-15', 'm', 'X', 9600), day('2027-06-15', 'e', 'Z', 6000)], shifts: [] } })
+    const { organization } = buildDashboard(PERIOD, [a])
+    expect(organization.totalRevenue).toEqual(available(600000))
+    expect(organization.zBelowXDays).toBe(1)
   })
 })
 
@@ -199,7 +271,7 @@ describe('buildBranchComparisonRow / buildDashboard: identical rules across bran
       branchName: 'A',
       period: {
         reports: [
-          report({ shiftId: 's1', reportType: 'X', grossRevenue: 600 }),
+          report({ shiftId: 's1', reportType: 'Z', grossRevenue: 600 }),
           report({ shiftId: 's1', reportType: 'Z', grossRevenue: 999999, status: 'cancelled' }),
         ],
         shifts: [shift({ id: 's1', status: 'submitted' })],
@@ -210,7 +282,7 @@ describe('buildBranchComparisonRow / buildDashboard: identical rules across bran
       branchKey: 'b',
       branchName: 'B',
       period: {
-        reports: [report({ shiftId: 's2', reportType: 'X', grossRevenue: 400 })],
+        reports: [report({ shiftId: 's2', reportType: 'Z', grossRevenue: 400 })],
         shifts: [shift({ id: 's2', status: 'closed' })],
       },
     })
@@ -226,7 +298,7 @@ describe('buildBranchComparisonRow / buildDashboard: identical rules across bran
   })
 
   it('a branch with no data in the period is handled explicitly (available zero), not silently dropped', () => {
-    const a = raw({ branchId: 'a', period: { reports: [report({ shiftId: 's1', grossRevenue: 100 })], shifts: [] } })
+    const a = raw({ branchId: 'a', period: { reports: [report({ shiftId: 's1', reportType: 'Z', grossRevenue: 100 })], shifts: [] } })
     const empty = raw({ branchId: 'empty', branchName: 'Boş Şube', period: { reports: [], shifts: [] } })
     const { branches } = buildDashboard(PERIOD, [a, empty])
     const row = branches.find((r) => r.branchId === 'empty')!

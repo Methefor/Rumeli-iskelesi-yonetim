@@ -1,6 +1,5 @@
 import type { BranchDashboardDetail } from '../../domain/dashboard'
 import { fromKurus } from '../../domain/dashboard'
-import { computeBranchRevenueKurus } from '../../domain/dashboard'
 import {
   Card,
   EmptyState,
@@ -11,7 +10,7 @@ import {
 } from '../../components/ui'
 import { formatDate } from '../../utils/dates'
 import { formatMoney } from '../../utils/format'
-import { metricMoneyText } from './metricDisplay'
+import { revenueText } from './metricDisplay'
 import styles from './Dashboard.module.css'
 
 const SHIFT_LABEL: Record<string, string> = {
@@ -58,7 +57,7 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
           <p className={styles.footnote}>
             Ciro:{' '}
             <strong>
-              {row.reportCount === 0 ? 'Rapor yok' : metricMoneyText(row.revenue)}
+              {row.reportCount === 0 ? 'Rapor yok' : revenueText(row.revenue, row.revenueBreakdown.provisionalKurus)}
             </strong>{' '}
             · Rapor: {row.reportCount} · Bekleyen mutabakat: {row.openReconciliationCount}
           </p>
@@ -85,12 +84,16 @@ export function BranchDetail({ detail }: { detail: BranchDashboardDetail }) {
         <Stack gap="sm">
           {recentShifts.map((s) => {
             const reports = reportsByShift.get(s.id) ?? []
-            const revenue = computeBranchRevenueKurus(reports)
+            // A shift card shows its own readings; the management KPI is the business-day Z, never a shift total.
+            const readings = reports
+              .filter((r) => r.status !== 'cancelled')
+              .map((r) => `${r.reportType}: ${formatMoney(r.grossRevenue)}`)
+              .join(' · ')
             return (
               <RowCard
                 key={s.id}
                 title={formatDate(s.businessDate)}
-                subtitle={reports.length > 0 ? metricMoneyText(revenue) : 'Rapor yok'}
+                subtitle={readings || 'Rapor yok'}
                 trailing={
                   <StatusChip tone={SHIFT_TONE[s.status] ?? 'neutral'}>
                     {SHIFT_LABEL[s.status] ?? s.status}

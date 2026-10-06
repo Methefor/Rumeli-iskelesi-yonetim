@@ -7,7 +7,7 @@ import type { BranchComparisonRow } from '../../domain/dashboard'
 import { fromKurus } from '../../domain/dashboard'
 import { Card, RowCard, StatusChip } from '../../components/ui'
 import { formatMoney, formatRatioPercent } from '../../utils/format'
-import { metricIntText, metricMoneyText, partialSuffix } from './metricDisplay'
+import { metricIntText, partialSuffix, revenueText } from './metricDisplay'
 import styles from './Dashboard.module.css'
 
 function ShareText({ row }: { row: BranchComparisonRow }) {
@@ -79,7 +79,7 @@ export function BranchComparison({
                 <span className={styles.branchDot} aria-hidden="true" />
                 <span className={styles.branchName}>{row.branchName}</span>
                 <span className={styles.branchRevenue}>
-                  {row.reportCount === 0 ? 'Rapor yok' : metricMoneyText(row.revenue)}
+                  {row.reportCount === 0 ? 'Rapor yok' : revenueText(row.revenue, row.revenueBreakdown.provisionalKurus)}
                 </span>
               </button>
               <div className={styles.branchMetaGrid}>

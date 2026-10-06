@@ -3,8 +3,8 @@ export type CategoryAmounts = Record<string, number>
 
 /**
  * A single register reading for one shift.
- * `kind` distinguishes a morning X reading from an evening Z reading —
- * see calculateShiftRevenue for why this matters.
+ * `kind` distinguishes a provisional X reading from the final Z reading —
+ * see the X/Z rule note in calculateShiftRevenue.ts.
  */
 export interface RegisterReading {
   kind: 'X' | 'Z'

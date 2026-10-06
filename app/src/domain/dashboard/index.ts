@@ -22,6 +22,7 @@ export type {
 } from './types'
 
 export {
+  computeBranchRevenueBreakdown,
   computeBranchRevenueKurus,
   computeShiftStats,
   computeReconciliationCounts,

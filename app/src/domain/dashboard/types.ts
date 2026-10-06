@@ -11,6 +11,10 @@ import type { ReconciliationStatus } from '../reconciliation'
 
 export interface BranchReportFact {
   shiftId: string
+  /** Istanbul business date of the report's shift. Revenue is decided per BUSINESS DAY, never per shift. A fact without one is treated as its own day (legacy callers/tests). */
+  businessDate?: string
+  /** Submission instant (ISO). Decides which of several active readings of one type is the latest; absent = input order. */
+  submittedAt?: string
   reportType: 'X' | 'Z'
   /** TL, as returned by the data layer. Converted to kuruş at ingestion. */
   grossRevenue: number
@@ -83,11 +87,28 @@ export interface GrossProfitCard {
   uncoveredRevenueKurus: Kurus
 }
 
+/**
+ * Business-day revenue split. X is provisional, Z is the final management revenue; X + Z is never revenue.
+ *   finalized  = sum over days WITH a Z of that Z exactly
+ *   provisional = sum over X-only days of the X reading (shown separately, never added to finalized)
+ */
+export interface RevenueBreakdown {
+  finalizedKurus: Kurus
+  provisionalKurus: Kurus
+  finalizedDays: number
+  provisionalDays: number
+  /** Days where Z < X: Z is still used. */
+  zBelowXDays: string[]
+  /** Days with several active readings of one type (inherited behaviour: the latest wins). */
+  multipleReadingDays: string[]
+}
+
 export interface BranchComparisonRow {
   branchId: string
   branchKey: string
   branchName: string
   revenue: MetricState<Kurus>
+  revenueBreakdown: RevenueBreakdown
   /** Share of the organization total for the same period; only available when the org total itself is available and > 0. */
   revenueShare: MetricState<number>
   reportCount: number
@@ -105,6 +126,10 @@ export interface OrganizationSummary {
   period: import('./period').DashboardPeriod
   branchCount: number
   totalRevenue: MetricState<Kurus>
+  /** Sum of the X readings of days that have no Z yet. Never part of `totalRevenue`. */
+  provisionalRevenueKurus: Kurus
+  provisionalDays: number
+  zBelowXDays: number
   reportCount: number
   openReconciliationCount: number
   shifts: ShiftStats

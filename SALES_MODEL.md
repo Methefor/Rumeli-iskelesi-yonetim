@@ -14,11 +14,12 @@ register reading for the same shift, exactly the legacy accounting rule
 - **Only one exists:** use that report's own `gross_revenue` directly — no
   guessing which side is "missing."
 
-`domain/revenue/deriveShiftRevenueFromReports.ts` (new, Phase D) bridges the
-`sales_reports` row shape to `calculateDailyRevenue`'s `(morningX, eveningZ)`
-input, filtering out `cancelled` reports so a cancelled X/Z never silently
-counts as "no reading exists" when in fact a real one is just voided. See
-its test file for the frozen fixture note below.
+> **SUPERSEDED (2026-10-07).** The helpers `calculateDailyRevenue` / `calculateEveningIncrement` /
+> `deriveShiftRevenueFromReports` (X + max(0, Z - X), per shift) were removed. Binding rule: X is a provisional
+> reading, Z is the final management revenue; a day with a Z has revenue = Z exactly (Z < X keeps Z and warns), a day with
+> only an X has no final revenue, and X + Z is never revenue. It is decided per BUSINESS DAY, implemented in
+> `domain/dashboard/aggregate.ts` and `domain/analytics/engine.ts` (SQL twin: `analytics_compute_day`). The text above is
+> historical.
 
 **No real 2026 X/Z fixtures exist.** The frozen totals in `BACKLOG.md`
 (June/July/August/3-month) are monthly aggregates, not per-shift X/Z pairs

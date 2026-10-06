@@ -32,3 +32,29 @@ export function metricIntText(state: MetricState<number>): string {
 export function partialSuffix<T>(state: MetricState<T>): string {
   return state.status === 'partial' ? ' · Kısmi' : ''
 }
+
+/**
+ * Revenue text that never lets an X-only (provisional) reading pass as final revenue:
+ *   finalized value        -> "₺9.600,00"
+ *   some days without Z    -> "₺9.600,00 · Kısmi (+ geçici X ₺…)"
+ *   only X so far          -> "Geçici (X): ₺…" (no finalized revenue yet)
+ */
+export function revenueText(state: MetricState<Kurus>, provisionalKurus: Kurus): string {
+  const money = (k: Kurus) => formatMoney(fromKurus(k))
+  if (state.status !== 'partial') return metricMoneyText(state)
+  if (state.value === 0 && provisionalKurus > 0) return `Geçici (X): ${money(provisionalKurus)}`
+  return `${money(state.value)} · Kısmi` + (provisionalKurus > 0 ? ` (+ geçici X ${money(provisionalKurus)})` : '')
+}
+
+/**
+ * The big number and a small note for a revenue hero: the big number is only ever FINALIZED (Z) revenue.
+ *   finalized                 -> "₺9.600,00"
+ *   some days without Z       -> "₺9.600,00" + note "Kısmi · geçici X ₺… toplama dahil değil"
+ *   nothing finalized yet     -> "Z bekleniyor" + note "Geçici (X): ₺…"
+ */
+export function revenueHero(state: MetricState<Kurus>, provisionalKurus: Kurus): { main: string; note: string | null } {
+  const money = (k: Kurus) => formatMoney(fromKurus(k))
+  if (state.status !== 'partial') return { main: metricMoneyText(state), note: null }
+  if (state.value === 0 && provisionalKurus > 0) return { main: 'Z bekleniyor', note: `Geçici (X): ${money(provisionalKurus)}` }
+  return { main: money(state.value), note: provisionalKurus > 0 ? `Kısmi · geçici X ${money(provisionalKurus)} toplama dahil değil` : 'Kısmi' }
+}

@@ -124,6 +124,8 @@ export async function fetchBranchDashboardRaw(
     period: {
       reports: reports.map((r) => ({
         shiftId: r.shiftId,
+        businessDate: shifts.find((s) => s.id === r.shiftId)?.businessDate,
+        submittedAt: r.submittedAt,
         reportType: r.reportType,
         grossRevenue: r.grossRevenue,
         status: r.status,

@@ -1,7 +1,7 @@
 import type { OrganizationSummary } from '../../domain/dashboard'
 import { fromKurus } from '../../domain/dashboard'
 import { formatMoney } from '../../utils/format'
-import { metricMoneyText, partialSuffix } from './metricDisplay'
+import { partialSuffix, revenueHero } from './metricDisplay'
 import styles from './Dashboard.module.css'
 
 /**
@@ -47,8 +47,15 @@ export function OrganizationOverview({ summary }: { summary: OrganizationSummary
           <strong>
             {summary.reportCount === 0
               ? 'Rapor yok'
-              : metricMoneyText(summary.totalRevenue)}
+              : revenueHero(summary.totalRevenue, summary.provisionalRevenueKurus).main}
           </strong>
+          {summary.reportCount > 0 && revenueHero(summary.totalRevenue, summary.provisionalRevenueKurus).note && (
+            <span>{revenueHero(summary.totalRevenue, summary.provisionalRevenueKurus).note}</span>
+          )}
+          {summary.provisionalDays > 0 && (
+            <span>{summary.provisionalDays} günün Z raporu yok: ciro kesinleşmedi</span>
+          )}
+          {summary.zBelowXDays > 0 && <span>Uyarı: {summary.zBelowXDays} günde Z, X değerinden küçük</span>}
           <span>{summary.reportCount} Gönderilen Rapor</span>
         </div>
 

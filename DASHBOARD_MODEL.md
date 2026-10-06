@@ -21,11 +21,21 @@ This avoids float drift when summing many report amounts (see
 `money.test.ts` for the classic `0.1 × 1000 !== 100` float case, and the
 kuruş-exact equivalent).
 
-Per-shift revenue still uses the single existing X/Z rule
-(`domain/revenue/deriveShiftRevenueFromReports`) — fed kuruş integers instead
-of TL floats, since the rule (`max(0, Z-X)`, `X + increment`) is unit-agnostic.
-This means the dashboard reuses the one shared X/Z implementation rather than
-re-deriving it, while still summing in kuruş.
+Revenue is decided per BUSINESS DAY (the shift's `business_date`), never per shift (corrected 2026-10-07).
+Project rule: **X = provisional reading, Z = final management revenue; X + Z is never revenue.**
+`computeBranchRevenueBreakdown` (kuruş integers):
+
+- a day with a Z -> that Z exactly (never normalized or increased by X);
+- Z below X -> still the Z, and the day is listed in `zBelowXDays` (the UI warns);
+- a day with only an X -> NOT final: its X is reported as `provisionalKurus` and is never added to the revenue;
+- inherited behaviour kept: with several active readings of one type on a day (several shifts or registers) the
+  LAST one wins (`multipleReadingDays`).
+
+`computeBranchRevenueKurus` is `available` when every day with reports has a Z, `partial` (finalized part only)
+when some day has only an X. Shift cards in the branch detail show the individual readings (`X: ... · Z: ...`),
+never a shift total. The legacy import and the demo data put the morning X on the morning shift and the evening Z
+on the evening shift, which the former per-shift grouping would have added (X + Z). This matches
+Analytics Engine V1 (`ANALYTICS_MODEL.md`).
 
 ## Missing / partial / not-applicable data
 

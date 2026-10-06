@@ -1,6 +1,5 @@
-import { deriveShiftRevenueFromReports } from '../revenue'
 import { summarizeGrossProfit } from '../inventory'
-import { available, notApplicable, partial, unavailable, type MetricState } from './metricState'
+import { available, metricValue, notApplicable, partial, unavailable, type MetricState } from './metricState'
 import { sumKurus, toKurus, type Kurus } from './money'
 import type { DashboardPeriod } from './period'
 import type {
@@ -12,6 +11,7 @@ import type {
   GrossProfitCard,
   OperationalSummary,
   OrganizationSummary,
+  RevenueBreakdown,
   ReconciliationCounts,
   ShiftStats,
 } from './types'
@@ -19,37 +19,71 @@ import type {
 const notCancelled = (r: BranchReportFact) => r.status !== 'cancelled'
 
 /**
- * Revenue for a set of reports, in kuruş. Groups reports by shift and
- * applies the single shared X/Z rule (`deriveShiftRevenueFromReports`) per
- * shift, in integer kuruş, before summing across shifts — so the "evening Z
- * already includes the morning X" rule is applied exactly once per shift,
- * the same way every other screen in the app applies it, and the
- * cross-shift sum is exact integer arithmetic.
+ * Revenue breakdown for a set of reports, in kuruş, decided per BUSINESS DAY (project X/Z rule):
  *
- * Always `available`, never `unavailable`: a period with zero submitted
- * reports genuinely has zero measured revenue — that is a real fact, not a
- * missing one. "Missing data" applies to metrics this module cannot derive
- * from what exists (gross profit without a cost mapping), not to an empty,
- * correctly-queried period.
+ *   X = provisional reading, Z = final management revenue. X + Z is NEVER revenue.
+ *   - a day with a Z  -> that Z exactly (never normalized or increased by X)
+ *   - Z below X       -> still Z; the day is listed in `zBelowXDays`
+ *   - a day with only an X -> NOT final: its X goes to `provisionalKurus`, not to `finalizedKurus`
+ *
+ * The unit is the business day (the shift's business_date), not the shift: the legacy import, the demo
+ * data and the report form put the morning X and the evening Z on different shifts, so per-shift totals
+ * would add them. Inherited behaviour kept on purpose: with several active readings of one type on a
+ * day (several shifts or registers) the LATEST by `submittedAt` wins, input order when absent (listed in `multipleReadingDays`).
+ * A report without a `businessDate` is its own day (callers that only know the shift).
  */
-export function computeBranchRevenueKurus(reports: readonly BranchReportFact[]): MetricState<Kurus> {
-  const byShift = new Map<string, BranchReportFact[]>()
+export function computeBranchRevenueBreakdown(reports: readonly BranchReportFact[]): RevenueBreakdown {
+  const byDay = new Map<string, BranchReportFact[]>()
   for (const r of reports) {
     if (!notCancelled(r)) continue
-    const list = byShift.get(r.shiftId)
+    const key = r.businessDate ?? `shift:${r.shiftId}`
+    const list = byDay.get(key)
     if (list) list.push(r)
-    else byShift.set(r.shiftId, [r])
+    else byDay.set(key, [r])
   }
-  const perShiftKurus = [...byShift.values()].map((shiftReports) =>
-    deriveShiftRevenueFromReports(
-      shiftReports.map((r) => ({
-        reportType: r.reportType,
-        grossRevenue: toKurus(r.grossRevenue),
-        status: r.status as 'submitted' | 'edited' | 'cancelled',
-      })),
-    ),
-  )
-  return available(sumKurus(perShiftKurus))
+  let finalized = 0
+  let provisional = 0
+  let finalizedDays = 0
+  let provisionalDays = 0
+  const zBelowXDays: string[] = []
+  const multipleReadingDays: string[] = []
+  for (const [day, unordered] of byDay) {
+    // the latest reading by submission time wins (stable: ties and missing times keep input order)
+    const list = [...unordered].sort((a, b) => (a.submittedAt ?? '').localeCompare(b.submittedAt ?? ''))
+    const xs = list.filter((r) => r.reportType === 'X')
+    const zs = list.filter((r) => r.reportType === 'Z')
+    if (xs.length > 1 || zs.length > 1) multipleReadingDays.push(day)
+    const x = xs.at(-1)
+    const z = zs.at(-1)
+    if (z) {
+      finalized += toKurus(z.grossRevenue)
+      finalizedDays += 1
+      if (x && toKurus(z.grossRevenue) < toKurus(x.grossRevenue)) zBelowXDays.push(day)
+    } else if (x) {
+      provisional += toKurus(x.grossRevenue)
+      provisionalDays += 1
+    }
+  }
+  return {
+    finalizedKurus: finalized,
+    provisionalKurus: provisional,
+    finalizedDays,
+    provisionalDays,
+    zBelowXDays,
+    multipleReadingDays,
+  }
+}
+
+/**
+ * Finalized revenue as a MetricState: `available` when every day with reports has a Z (an empty period
+ * is a real zero), `partial` when some day has only an X (the value is the finalized part only; the
+ * provisional X is exposed by `computeBranchRevenueBreakdown`, never added).
+ */
+export function computeBranchRevenueKurus(reports: readonly BranchReportFact[]): MetricState<Kurus> {
+  const b = computeBranchRevenueBreakdown(reports)
+  return b.provisionalDays > 0
+    ? partial(b.finalizedKurus, 'Z raporu olmayan günler var; geçici X ciroya eklenmez.')
+    : available(b.finalizedKurus)
 }
 
 export function computeShiftStats(shifts: readonly BranchShiftFact[]): ShiftStats {
@@ -136,8 +170,9 @@ export function buildBranchComparisonRow(
   raw: BranchRawData,
   orgTotalRevenue: MetricState<Kurus>,
 ): BranchComparisonRow {
+  const revenueBreakdown = computeBranchRevenueBreakdown(raw.period.reports)
   const revenue = computeBranchRevenueKurus(raw.period.reports)
-  const revenueValue = revenue.status === 'available' ? revenue.value : 0
+  const revenueValue = metricValue(revenue) ?? 0
   const inventoryTracked = raw.inventoryTracked
 
   return {
@@ -145,6 +180,7 @@ export function buildBranchComparisonRow(
     branchKey: raw.branchKey,
     branchName: raw.branchName,
     revenue,
+    revenueBreakdown,
     revenueShare: revenueShareOf(revenueValue, orgTotalRevenue),
     reportCount: raw.period.reports.filter(notCancelled).length,
     reconciliation: computeReconciliationCounts(raw.period.reports),
@@ -208,7 +244,9 @@ export function buildOrganizationSummary(
   const totalRevenue: MetricState<Kurus> =
     rows.length === 0
       ? unavailable('Görüntülenecek şube yok.')
-      : available(sumKurus(rows.map((r) => (r.revenue.status === 'available' ? r.revenue.value : 0))))
+      : rows.some((r) => r.revenue.status === 'partial')
+        ? partial(sumKurus(rows.map((r) => metricValue(r.revenue) ?? 0)), 'Z raporu olmayan günler var; geçici X ciroya eklenmez.')
+        : available(sumKurus(rows.map((r) => metricValue(r.revenue) ?? 0)))
 
   const trackedCount = rows.filter((r) => r.inventoryTracked).length
 
@@ -216,6 +254,9 @@ export function buildOrganizationSummary(
     period,
     branchCount: rows.length,
     totalRevenue,
+    provisionalRevenueKurus: sumKurus(rows.map((r) => r.revenueBreakdown.provisionalKurus)),
+    provisionalDays: rows.reduce((sum, r) => sum + r.revenueBreakdown.provisionalDays, 0),
+    zBelowXDays: rows.reduce((sum, r) => sum + r.revenueBreakdown.zBelowXDays.length, 0),
     reportCount: rows.reduce((sum, r) => sum + r.reportCount, 0),
     openReconciliationCount: rows.reduce((sum, r) => sum + r.openReconciliationCount, 0),
     shifts: rows.reduce((acc, r) => combineShiftStats(acc, r.shifts), EMPTY_SHIFT_STATS),
@@ -273,8 +314,7 @@ export function buildDashboard(
   const provisionalTotal = available(
     sumKurus(
       raws.map((raw) => {
-        const rev = computeBranchRevenueKurus(raw.period.reports)
-        return rev.status === 'available' ? rev.value : 0
+        return metricValue(computeBranchRevenueKurus(raw.period.reports)) ?? 0
       }),
     ),
   )

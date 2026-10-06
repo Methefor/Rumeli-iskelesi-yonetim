@@ -153,7 +153,7 @@ do $$
 declare x uuid; z uuid; mx uuid;
 begin
   -- 2026-09-30 (Wed), BOTH readings: morning X 1000/20, evening Z 2200/44 (cumulative), plus a CANCELLED Z 9999.
-  -- X and Z are NOT two independent revenues: day revenue = 1000 + max(0, 2200 - 1000) = 2200, never 3200.
+  -- X and Z are NOT two independent revenues: finalized day revenue = Z exactly = 2200, never 3200.
   x := t.rep('BR', t.shift('BR', date '2026-09-30', 'morning'), 'X', 1000, 20);
   perform t.line(x, 'gida', 600, 12); perform t.line(x, 'kahve', 400, 8);
   z := t.rep('BR', t.shift('BR', date '2026-09-30', 'evening'), 'Z', 2200, 44);
