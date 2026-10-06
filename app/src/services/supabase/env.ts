@@ -46,4 +46,10 @@ export const isDemoModeEnabled: boolean = import.meta.env.VITE_DEMO_MODE === 'tr
  * figures. Tests opt in automatically so the full write flows stay covered.
  */
 export const isDemoFixtureDataEnabled: boolean =
-  import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_FIXTURES === 'true'
+  import.meta.env.MODE === 'test' ||
+  import.meta.env.VITE_DEMO_FIXTURES === 'true' ||
+  import.meta.env.VITE_DEMO_FIXTURES === 'qa'
+
+/** The rich synthetic QA history (phone QA). Opt-in only; the notice says so. */
+export const isDemoQaFixtureSetEnabled: boolean =
+  import.meta.env.VITE_DEMO_FIXTURES === 'qa' && import.meta.env.VITE_DEMO_MODE === 'true'

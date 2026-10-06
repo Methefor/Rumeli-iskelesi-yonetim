@@ -17,6 +17,11 @@ test('a correct pilot environment passes', () => {
   assert.deepEqual(pilotEnvProblems(good()), [])
 })
 
+test('the synthetic QA fixture flag is refused in a pilot build', () => {
+  assert.match(pilotEnvProblems({ ...good(), VITE_DEMO_FIXTURES: 'qa' }).join(), /VITE_DEMO_FIXTURES/)
+  assert.match(pilotEnvProblems({ ...good(), VITE_DEMO_FIXTURES: 'true' }).join(), /VITE_DEMO_FIXTURES/)
+})
+
 test('demo mode, a wrong project, a missing or service key and secret-named variables are all refused', () => {
   assert.match(pilotEnvProblems({ ...good(), VITE_DEMO_MODE: 'true' }).join(), /DEMO_MODE/)
   assert.match(pilotEnvProblems({ ...good(), VITE_DEMO_MODE: undefined }).join(), /DEMO_MODE/)

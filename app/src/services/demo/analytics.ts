@@ -19,6 +19,8 @@ import {
   type AnalyticsReportFact,
   type DailyAnalyticsPayload,
   type DayFacts,
+  type ExternalContext,
+  type WeatherDay,
   type SnapshotEnvelope,
   type WeeklyAnalyticsPayload,
 } from '../../domain/analytics'
@@ -66,7 +68,7 @@ function factsFor(branchId: string, date: string): DayFacts {
       reportType: r.reportType,
       status: r.status,
       grossRevenue: r.grossRevenue,
-      transactionCount: null,
+      transactionCount: r.transactionCount ?? null,
       reconciliationStatus: r.reconciliationStatus,
       submittedAt: r.submittedAt,
       updatedAt: r.submittedAt,
@@ -102,12 +104,38 @@ function dayCore(branchId: string, date: string) {
   return computeDay(factsFor(branchId, date))
 }
 
+/** Synthetic weather from the QA fixture set; without it the context is honestly missing. */
+function contextFor(date: string): ExternalContext {
+  const w = demoState().externalContext?.[date]
+  const weekend = [6, 7].includes(new Date(`${date}T00:00:00Z`).getUTCDay() || 7)
+  return w
+    ? { state: 'present', temperatureC: w.temperatureC, apparentTemperatureC: w.apparentTemperatureC, precipitationMm: w.precipitationMm, windKmh: w.windKmh, isWeekend: weekend, source: 'synthetic_qa' }
+    : { state: 'missing', isWeekend: weekend }
+}
+
+/** Finalized days of the trailing weather window that have a (synthetic) context row. */
+function weatherDaysFor(branchId: string, weekStart: string): WeatherDay[] {
+  const ctx = demoState().externalContext
+  if (!ctx) return []
+  const end = addDaysIso(weekStart, 6) < istanbulDate() ? addDaysIso(weekStart, 6) : istanbulDate()
+  const out: WeatherDay[] = []
+  for (let i = 0; i < ANALYTICS_PARAMS.weatherWindowDays; i += 1) {
+    const d = addDaysIso(end, -i)
+    const w = ctx[d]
+    if (!w) continue
+    const core = dayCore(branchId, d)
+    if (core.finalization !== 'finalized' || core.financial.grossRevenue.value === undefined) continue
+    out.push({ date: d, revenue: core.financial.grossRevenue.value, temperatureC: w.temperatureC, precipitationMm: w.precipitationMm })
+  }
+  return out
+}
+
 function buildDaily(branchId: string, date: string): DailyAnalyticsPayload {
   return buildDailyAnalytics({
     branchId,
     date,
     dayFor: (d) => dayCore(branchId, d),
-    context: { state: 'missing', isWeekend: [6, 7].includes(new Date(`${date}T00:00:00Z`).getUTCDay() || 7) },
+    context: contextFor(date),
   })
 }
 
@@ -119,7 +147,7 @@ function buildWeekly(branchId: string, weekStart: string): WeeklyAnalyticsPayloa
     weekStart,
     today: istanbulDate(),
     dayFor: (d) => dayCore(branchId, d),
-    weatherDays: [],
+    weatherDays: weatherDaysFor(branchId, weekStart),
     sourceLatestAt: latest,
   })
 }

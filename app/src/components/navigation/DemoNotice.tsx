@@ -1,5 +1,5 @@
 import { useAuth } from '../../hooks/useAuth'
-import { isDemoFixtureDataEnabled } from '../../services/supabase/env'
+import { isDemoFixtureDataEnabled, isDemoQaFixtureSetEnabled } from '../../services/supabase/env'
 import styles from './DemoNotice.module.css'
 
 /**
@@ -14,7 +14,9 @@ export function DemoNotice() {
   return (
     <div className={styles.notice} role="note">
       <strong>Demo / Önizleme.</strong>{' '}
-      {isDemoFixtureDataEnabled
+      {isDemoQaFixtureSetEnabled
+        ? 'SENTETİK QA VERİSİ: ürünler, kişiler, satışlar ve hava durumu uydurmadır; gerçek işletme verisi değildir. Yalnızca arayüz testi içindir.'
+        : isDemoFixtureDataEnabled
         ? 'Bu ekrandaki veriler sentetik örnek verilerdir; gerçek işletme verisi değildir.'
         : 'Finansal deneme verileri kaldırıldı. Gerçek işletme verileri yalnızca güvenli bağlantı tamamlandığında gösterilecek.'}
     </div>

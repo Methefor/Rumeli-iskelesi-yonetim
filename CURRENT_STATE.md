@@ -8,6 +8,7 @@ Git: branch `v4-2027`, HEAD `36e5f85` (`feat: finalize production migration read
 `origin/v4-2027`; the production-readiness package is committed and pushed. Production remains untouched.
 
 - **Production schema (2026-10-06):** the 24 V4 migrations (`001`..`20261005000300`) were applied to production by the owner and verified read-only; no data import, Auth user, owner bootstrap or Edge Function exists in production (`docs/PRODUCTION_SCHEMA_APPLY_EVIDENCE_2026-10-06.md`). The line above about production being untouched predates that apply.
+- **2026-10-07 Phase 1A (local, uncommitted):** dashboard revenue is decided per business day (Z final, X provisional, never X + Z); PWA manifest is a build output with a full-bleed maskable icon, 180 px apple icon and Rumeli theme colors (`app/scripts/assert-pwa-build.mjs`); stale "Çalışanlar ve roller / Yakında" copy removed; opt-in synthetic QA fixture set (`VITE_DEMO_FIXTURES=qa`). A login-protected Vercel Preview still cannot be installed as a PWA (Deployment Protection answers every asset with a 302): that needs a later owner-approved Vercel setting change.
 - **Analytics Engine V1 (development only, uncommitted):** `ANALYTICS_MODEL.md`. Migration `20261006000100_analytics_engine_v1.sql` (5 tables, 2 views, 24 functions, 4 `analytics.*` permissions) is validated locally and is **not applied to production**; SQL calculates every metric, AI only interprets validated facts. UI: `/app/manager/analytics`.
 
 - **LOCAL — fully validated:** all 25 migration files (24 V4 + the `20260611233031` history

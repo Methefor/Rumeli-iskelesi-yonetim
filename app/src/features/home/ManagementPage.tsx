@@ -118,10 +118,9 @@ export function ManagementPage() {
         </h2>
         <Stack gap="sm">
           {[
-            ['Çalışanlar ve roller', 'Çalışan ekleme, rol ve şube atama, PIN sıfırlama.'],
             ['Şubeler', 'Şube bilgileri ve çalışma düzeni.'],
             ['Puanlama ve rozetler', 'Yapılandırılabilir performans kuralları.'],
-            ['Ayarlar', 'Vardiya saatleri, gecikme toleransı, eşik değerleri.'],
+            ['Genel operasyon ayarları', 'Gecikme toleransı ve genel/şube operasyon parametreleri. Vardiya rapor saatleri ve mutabakat eşikleri yukarıdaki Ayarlar sayfasında.'],
           ].map(([title, subtitle]) => (
             <RowCard
               key={title}

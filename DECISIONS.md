@@ -681,3 +681,12 @@ hypothesis, and a fact claim may rest only on complete-support evidence. Peak ho
 data (including the X/Z readings) needs `analytics.financial.read`; `analytics.read` alone gets a redacted payload. owner/manager
 may regenerate; branch_manager is read-only; cashier/employee/viewer are denied by default. The migration is not applied to
 production; the open items in `ANALYTICS_MODEL.md` await owner review.
+
+### 2026-10-07 - Phase 1A: dashboard X/Z at business-day level, PWA build output, synthetic QA set
+
+The manager dashboard now follows the project X/Z rule at business-day level, like Analytics Engine V1: Z exactly when it exists
+(Z < X keeps Z and warns), an X-only day is provisional and is shown separately, never added. The PWA manifest is generated from
+one definition in `vite.config.ts` (a build output) and verified together with icons, the service worker precache and registration;
+the maskable icon is full-bleed and derived from the existing logo (no new artwork). Phone QA uses an opt-in rich synthetic fixture
+set (`VITE_DEMO_FIXTURES=qa`, clearly labelled, deterministic, no real data); the Vercel env is unchanged. Deployment Protection is
+untouched, so a protected Preview remains non-installable until the owner approves a Vercel setting change.

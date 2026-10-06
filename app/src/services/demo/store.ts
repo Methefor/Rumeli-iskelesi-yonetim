@@ -18,6 +18,7 @@ import { reconcile } from '../../domain/reconciliation'
 import type { MovementType } from '../../domain/inventory'
 import type { ReconciliationStatus, ReportOrigin } from '../../domain/reconciliation'
 import { addDaysIso, istanbulDate } from '../../utils/dates'
+import { applyQaFixtures } from './qaFixtures'
 import type {
   BranchEmployee,
   BranchOption,
@@ -93,6 +94,8 @@ export interface DemoReport {
   reconciliationStatus: ReconciliationStatus
   submittedAt: string
   notes: string | null
+  /** Transactions on the register reading; null/undefined = not entered. */
+  transactionCount?: number | null
   /** Set only for reports created by the (synthetic) legacy import; undefined = native. */
   origin?: ReportOrigin
   items: DemoReportItem[]
@@ -127,6 +130,8 @@ export interface DemoState {
   }>
   inventoryAudit: InventoryAuditEntry[]
   auditLog: Array<{ action: string; entityId: string; reason: string | null; at: string }>
+  /** Synthetic weather per business date (QA fixture set only). */
+  externalContext?: Record<string, { temperatureC: number; apparentTemperatureC: number; precipitationMm: number; windKmh: number }>
   now: () => Date
   seq: number
 }
@@ -251,6 +256,7 @@ export interface ReportInput {
   shiftId: string
   reportType: 'X' | 'Z'
   grossRevenue: number
+  transactionCount?: number | null
   notes?: string | null
   items: Array<{
     categoryId?: string | null
@@ -388,6 +394,7 @@ export function createReport(
     reconciliationStatus: statusFor(state, input.grossRevenue, items),
     submittedAt: at.toISOString(),
     notes: input.notes ?? null,
+    transactionCount: input.transactionCount ?? null,
     items,
   }
   state.reports.push(report)
@@ -614,9 +621,18 @@ const CATEGORY_DEFS: Array<[string, string]> = [
   ['borek_corek', 'Börek & Çörek'],
 ]
 
+/** none = identities only; basic = the small review set (tests); qa = rich synthetic QA history (VITE_DEMO_FIXTURES=qa). */
+export type FixtureSet = 'none' | 'basic' | 'qa'
+
+function envFixtureSet(): FixtureSet {
+  // the rich QA set is only ever reachable in demo mode (the demo API makes zero network calls)
+  if (import.meta.env.VITE_DEMO_FIXTURES === 'qa' && import.meta.env.VITE_DEMO_MODE === 'true') return 'qa'
+  return import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_FIXTURES === 'true' ? 'basic' : 'none'
+}
+
 export function createDemoState(
   now: Date = new Date(),
-  options: { includeSyntheticOperations?: boolean } = {},
+  options: { includeSyntheticOperations?: boolean; fixtureSet?: FixtureSet } = {},
 ): DemoState {
   const state: DemoState = {
     branches: [
@@ -841,10 +857,19 @@ export function createDemoState(
     decidedAt: null,
   })
 
-  const includeSyntheticOperations =
-    options.includeSyntheticOperations ??
-    (import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_FIXTURES === 'true')
-  if (!includeSyntheticOperations) return state
+  const fixtureSet: FixtureSet =
+    options.fixtureSet ??
+    (options.includeSyntheticOperations === false
+      ? 'none'
+      : options.includeSyntheticOperations === true
+        ? 'basic'
+        : envFixtureSet())
+  if (fixtureSet === 'none') return state
+  if (fixtureSet === 'qa') {
+    applyQaFixtures(state, { today, createReport, addMovement, submitCount, instant: istanbulInstant } as never)
+    state.now = () => new Date()
+    return state
+  }
 
   // Inventory catalogue for İskele Dondurma — clearly synthetic placeholders.
   const item = (
