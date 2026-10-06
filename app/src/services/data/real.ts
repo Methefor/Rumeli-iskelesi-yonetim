@@ -7,6 +7,7 @@ import { getDataQuality } from '../supabase/dataQuality'
 import { fetchBranchDashboardRaw } from '../supabase/dashboard'
 import * as analytics from '../supabase/analytics'
 import * as control from '../supabase/inventoryControl'
+import * as procurement from '../supabase/procurement'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -85,6 +86,21 @@ export const realApi = {
   getBranchCountOverview: control.getBranchCountOverview,
   listBranchLocations: control.listBranchLocations,
   updateBranchLocation: control.updateBranchLocation,
+  // procurement: suppliers, supply parameters, purchase orders, receiving, suggestions
+  listSuppliers: procurement.listSuppliers,
+  upsertSupplier: procurement.upsertSupplier,
+  setSupplierActive: procurement.setSupplierActive,
+  listSupplyParams: procurement.listSupplyParams,
+  upsertSupplyParams: procurement.upsertSupplyParams,
+  listPurchaseOrders: procurement.listPurchaseOrders,
+  getPurchaseOrder: procurement.getPurchaseOrder,
+  createPurchaseOrder: procurement.createPurchaseOrder,
+  replacePurchaseOrderLines: procurement.replacePurchaseOrderLines,
+  updatePurchaseOrderHeader: procurement.updatePurchaseOrderHeader,
+  transitionPurchaseOrder: procurement.transitionPurchaseOrder,
+  receivePurchaseOrder: procurement.receivePurchaseOrder,
+  getOrderSuggestions: procurement.getOrderSuggestions,
+  getProcurementAttention: procurement.getProcurementAttention,
 }
 
 export type DataApi = typeof realApi

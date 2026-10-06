@@ -19,6 +19,7 @@
  */
 import { addDaysIso } from '../../utils/dates'
 import { applyQaInventoryControl } from './qaInventoryControl'
+import { applyQaProcurement } from './qaProcurement'
 import type { DemoState, ReportInput } from './store'
 
 const D = 'demo-branch-dondurma'
@@ -200,4 +201,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
 
   // ---- fire report / closing-count review scenarios (Phase 1B)
   applyQaInventoryControl(state, deps, date)
+
+  // ---- procurement scenarios (Phase 1C)
+  applyQaProcurement(state, deps, date)
 }

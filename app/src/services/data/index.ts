@@ -44,6 +44,20 @@ export const {
   getBranchCountOverview,
   listBranchLocations,
   updateBranchLocation,
+  listSuppliers,
+  upsertSupplier,
+  setSupplierActive,
+  listSupplyParams,
+  upsertSupplyParams,
+  listPurchaseOrders,
+  getPurchaseOrder,
+  createPurchaseOrder,
+  replacePurchaseOrderLines,
+  updatePurchaseOrderHeader,
+  transitionPurchaseOrder,
+  receivePurchaseOrder,
+  getOrderSuggestions,
+  getProcurementAttention,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,
@@ -119,4 +133,13 @@ export type {
   ShiftSettings,
 } from '../supabase/management'
 export type { AnalyticsMutationResult, AnalyticsReportView } from '../supabase/analytics'
+export type {
+  ProcResult,
+  ProcIdResult,
+  UpsertSupplierInput,
+  UpsertSupplyParamsInput,
+  CreatePurchaseOrderInput,
+  OrderLineInput,
+  ReceiveLineInput,
+} from '../supabase/procurement'
 export type { ControlResult, UpsertWasteReasonInput, UpdateBranchLocationInput } from '../supabase/inventoryControl'

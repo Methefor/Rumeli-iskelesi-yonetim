@@ -9,7 +9,7 @@ export function demoState(): DemoState {
 }
 
 /** Test/support hook: rebuild the store, optionally anchored to a fixed "now". */
-export function resetDemoState(now?: Date): DemoState {
-  state = createDemoState(now)
+export function resetDemoState(now?: Date, options?: Parameters<typeof createDemoState>[1]): DemoState {
+  state = createDemoState(now, options)
   return state
 }

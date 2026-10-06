@@ -17,6 +17,7 @@ import { effectiveCostAt, stockDeltaFor } from '../../domain/inventory'
 import { reconcile } from '../../domain/reconciliation'
 import type { MovementType } from '../../domain/inventory'
 import type { WasteReasonRow } from '../../domain/inventory/control'
+import type { PurchaseOrderStatus, Supplier, SupplyParams } from '../../domain/procurement'
 import type { ReconciliationStatus, ReportOrigin } from '../../domain/reconciliation'
 import { addDaysIso, istanbulDate } from '../../utils/dates'
 import { applyQaFixtures } from './qaFixtures'
@@ -116,6 +117,36 @@ export interface DemoBranchLocation {
   locationLabel: string | null
 }
 
+/** Synthetic purchase order (mirror of purchase_orders + lines + status history + receipt links). */
+export interface DemoPurchaseOrder {
+  id: string
+  branchId: string
+  supplierId: string
+  orderNumber: string
+  status: PurchaseOrderStatus
+  orderedForDate: string | null
+  expectedDeliveryDate: string | null
+  submittedAt: string | null
+  approvedAt: string | null
+  receivedAt: string | null
+  cancelledAt: string | null
+  createdBy: string
+  createdAt: string
+  notes: string | null
+  lines: Array<{
+    id: string
+    inventoryItemId: string
+    orderedQuantity: number
+    receivedQuantity: number
+    orderUnit: string | null
+    unitsPerPack: number | null
+    unitCostEstimateKurus: number | null
+  }>
+  history: Array<{ fromStatus: PurchaseOrderStatus | null; toStatus: PurchaseOrderStatus; changedBy: string; reason: string | null; changedAt: string }>
+  /** quantity = ORDER unit; baseQuantity = the RECEIPT movement quantity in BASE (stock) units */
+  receipts: Array<{ lineId: string; movementId: string; quantity: number; baseQuantity: number; receivedBy: string; receivedAt: string }>
+}
+
 export interface DemoMovement extends InventoryMovementRow {
   unitCostSnapshot: number | null
   createdBy: string
@@ -139,6 +170,10 @@ export interface DemoState {
   counts: DemoCount[]
   /** Fire reason catalogue (synthetic mirror of public.waste_reasons). */
   wasteReasons: WasteReasonRow[]
+  /** Synthetic procurement data (empty unless a fixture set adds it). */
+  suppliers: Supplier[]
+  supplyParams: SupplyParams[]
+  purchaseOrders: DemoPurchaseOrder[]
   /** Optional per-branch location (nothing is invented: every branch starts without coordinates). */
   branchLocations: Record<string, DemoBranchLocation>
   overrides: Array<{
@@ -155,7 +190,7 @@ export interface DemoState {
   seq: number
 }
 
-function nextId(state: DemoState, prefix: string): string {
+export function nextId(state: DemoState, prefix: string): string {
   state.seq += 1
   return `${prefix}-${String(state.seq).padStart(4, '0')}`
 }
@@ -762,6 +797,9 @@ export function createDemoState(
     costs: [],
     movements: [],
     counts: [],
+    suppliers: [],
+    supplyParams: [],
+    purchaseOrders: [],
     wasteReasons: [
       { id: 'demo-reason-expired', code: 'expired', name: 'Son kullanma tarihi', description: 'Son kullanma tarihi geçti', isActive: true, sortOrder: 10 },
       { id: 'demo-reason-damaged', code: 'damaged', name: 'Hasarlı / kırık', description: 'Kırılma, ezilme veya hasar', isActive: true, sortOrder: 20 },

@@ -704,3 +704,18 @@ optional, validated, never invented, kept in a management-only `branch_locations
 consumer stay untouched) and written only through an audited `branch.manage` RPC.
 Nothing is applied to production; the open items (final reason catalogue, tolerances, real coordinates, weather source) are listed
 in `INVENTORY_CONTROL_MODEL.md`.
+
+### 2026-10-06 - Phase 1C: procurement on the existing ledger
+
+Procurement adds suppliers, per-item supply parameters and purchase orders on top of the existing inventory, not beside it: receiving calls
+the existing ledger writer for RECEIPT movements and only links them (`purchase_order_receipts`), so there is one stock truth and the ledger
+table is unchanged. All order quantities are in the item stock unit (pack data is metadata). The order state machine is explicit and audited,
+RECEIVED/CANCELLED are terminal, approved quantities are frozen, `received_quantity` only grows and can never exceed the ordered quantity.
+Approval is a separate permission that branch_manager does not hold; nothing is auto-approved. Suggestions are deterministic primitives
+(target - (on hand + open orders), minimum order / multiple applied, null instead of 0) with delivery dates always estimates; no supplier,
+schedule, threshold or price is invented and nothing is applied to production. Unit contract: the ledger, stock, thresholds and pending
+inbound are in the item base unit; order lines are in the order unit with a pack factor frozen on the line, converted deterministically when
+receiving (a half-known conversion is refused, never guessed). Receiving locks the order row and is one transaction. A reversed receipt
+movement does not silently reopen an order: it is shown as a reconciliation warning. Receiving against a purchase order is a separate
+permission from the generic inventory receipt (current default: owner/manager/branch_manager only); whether cashier/employee should also
+receive purchase orders, and self-approval, remain open owner decisions.

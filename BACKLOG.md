@@ -340,6 +340,16 @@ mutation is authorized by this backlog update.
 - [ ] Apply the migration to production (separate owner-approved write, after review).
 - [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.
 
+## Phase 1C - procurement core (2026-10-06, development only, local)
+
+- [x] Suppliers, item supply parameters, purchase orders + lines + status history + receipt links (migrations 500/600), RLS, audited RPCs.
+- [x] State machine (DRAFT..RECEIVED, CANCELLED terminal), receiving via the existing RECEIPT ledger path (partial/full, no double receive), close short.
+- [x] Order calendar (branch time zone, estimated delivery), suggestion primitives, Command Center read models, manager screens, synthetic QA data, tests, teardown.
+- [ ] Apply migrations `20261006000500..600` to production (separate owner-approved write; Phase 1B and analytics migrations are also still unapplied).
+- [x] Hardening: unit contract (base vs order unit, frozen pack snapshot), receiving concurrency/atomicity, fulfillment reconciliation, supplier/item deactivation behaviour.
+- [ ] Owner decisions: real suppliers/rules/thresholds, multiple suppliers per item, PO receiving option A or B, self-approval, reopen of reversed/cancelled orders (see `PROCUREMENT_MODEL.md`).
+- [ ] Surface procurement attention in the Command Center; sales-velocity/weather-aware suggestions; central-warehouse stock visibility; invoices/payments (out of scope).
+
 ## Phase 1B — inventory control (2026-10-07, development only, local)
 
 - [x] `waste_reasons` catalogue (FK replaces the fixed CHECK; historical six seeded; code immutable; deactivate only; audited RPCs; RLS: managers all, entry roles active only).

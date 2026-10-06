@@ -33,6 +33,11 @@ import { WasteReportPage } from '../../features/management/routes/WasteReportPag
 import { CountOverviewPage } from '../../features/management/routes/CountOverviewPage'
 import { CountReviewPage } from '../../features/management/routes/CountReviewPage'
 import { BranchLocationPage } from '../../features/management/routes/BranchLocationPage'
+import { SuppliersPage } from '../../features/procurement/routes/SuppliersPage'
+import { SupplySettingsPage } from '../../features/procurement/routes/SupplySettingsPage'
+import { PurchaseOrdersPage } from '../../features/procurement/routes/PurchaseOrdersPage'
+import { PurchaseOrderNewPage } from '../../features/procurement/routes/PurchaseOrderNewPage'
+import { PurchaseOrderDetailPage } from '../../features/procurement/routes/PurchaseOrderDetailPage'
 import { AnalyticsPage } from '../../features/analytics/AnalyticsPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
@@ -106,6 +111,11 @@ export const router = createBrowserRouter([
       { path: 'management/waste-report', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><WasteReportPage /></RoleGuard> },
       { path: 'management/count-review', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountOverviewPage /></RoleGuard> },
       { path: 'management/count-review/:countId', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><CountReviewPage /></RoleGuard> },
+      { path: 'procurement', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><PurchaseOrdersPage /></RoleGuard> },
+      { path: 'procurement/suppliers', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><SuppliersPage /></RoleGuard> },
+      { path: 'procurement/supply', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><SupplySettingsPage /></RoleGuard> },
+      { path: 'procurement/orders/new', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><PurchaseOrderNewPage /></RoleGuard> },
+      { path: 'procurement/orders/:orderId', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><PurchaseOrderDetailPage /></RoleGuard> },
       { path: 'management/branch-location', element: <RoleGuard allow={['owner', 'manager', 'branch_manager']}><BranchLocationPage /></RoleGuard> },
       {
         path: 'management/audit',

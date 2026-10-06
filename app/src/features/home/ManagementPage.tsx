@@ -1,5 +1,6 @@
 import { canInventory } from '../../domain/inventory'
 import { canManageWasteReasons, canReviewControl } from '../../domain/inventory/control'
+import { canProcurement } from '../../domain/procurement'
 import { LinkButton, PageHeader, RowCard, Stack, StatusChip } from '../../components/ui'
 import { useAuth } from '../../hooks/useAuth'
 import styles from './Home.module.css'
@@ -15,6 +16,7 @@ export function ManagementPage() {
   const canItems = canInventory(roles, 'inventory.item.manage')
   const canControl = canReviewControl(roles)
   const canReasons = canManageWasteReasons(roles)
+  const canOrders = canProcurement(roles, 'procurement.order.read')
 
   return (
     <Stack>
@@ -94,6 +96,16 @@ export function ManagementPage() {
                   Brüt Kâr
                 </LinkButton>
               </Stack>
+            </RowCard>
+          )}
+          {canOrders && (
+            <RowCard
+              title="Tedarik ve siparişler"
+              subtitle="Tedarikçiler, ürün tedarik ayarları, satın alma siparişleri, teslim alma ve sipariş önerileri."
+            >
+              <LinkButton to="/app/manager/procurement" variant="secondary">
+                Tedariki Aç
+              </LinkButton>
             </RowCard>
           )}
           {canControl && (
