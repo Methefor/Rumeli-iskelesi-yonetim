@@ -8,6 +8,7 @@ import { fetchBranchDashboardRaw } from '../supabase/dashboard'
 import * as analytics from '../supabase/analytics'
 import * as control from '../supabase/inventoryControl'
 import * as procurement from '../supabase/procurement'
+import { fetchDashboardRaws, getBranchOperationsSignals, getCommandCenterSignals } from '../supabase/commandCenter'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -101,6 +102,11 @@ export const realApi = {
   receivePurchaseOrder: procurement.receivePurchaseOrder,
   getOrderSuggestions: procurement.getOrderSuggestions,
   getProcurementAttention: procurement.getProcurementAttention,
+  // command center read model (one call per branch)
+  getBranchOperationsSignals,
+  // batch read models: constant request count regardless of the number of branches
+  fetchDashboardRaws,
+  getCommandCenterSignals,
 }
 
 export type DataApi = typeof realApi

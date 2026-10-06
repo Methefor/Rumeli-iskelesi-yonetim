@@ -18,6 +18,7 @@ import { reconcile } from '../../domain/reconciliation'
 import type { MovementType } from '../../domain/inventory'
 import type { WasteReasonRow } from '../../domain/inventory/control'
 import type { PurchaseOrderStatus, Supplier, SupplyParams } from '../../domain/procurement'
+import type { WeatherCurrent, WeatherDay, WeatherHour } from '../../domain/weather'
 import type { ReconciliationStatus, ReportOrigin } from '../../domain/reconciliation'
 import { addDaysIso, istanbulDate } from '../../utils/dates'
 import { applyQaFixtures } from './qaFixtures'
@@ -117,6 +118,17 @@ export interface DemoBranchLocation {
   locationLabel: string | null
 }
 
+/** Synthetic forecast cache entry (mirror of weather_forecast_snapshots: the location used is snapshotted, validity is explicit). */
+export interface DemoWeatherSnapshot {
+  provider: string
+  fetchedAt: string
+  generatedAt: string | null
+  validUntil: string
+  latitude: number
+  longitude: number
+  payload: { current: WeatherCurrent; hourly: WeatherHour[]; daily: WeatherDay[] }
+}
+
 /** Synthetic purchase order (mirror of purchase_orders + lines + status history + receipt links). */
 export interface DemoPurchaseOrder {
   id: string
@@ -176,6 +188,8 @@ export interface DemoState {
   purchaseOrders: DemoPurchaseOrder[]
   /** Optional per-branch location (nothing is invented: every branch starts without coordinates). */
   branchLocations: Record<string, DemoBranchLocation>
+  /** Synthetic weather forecast cache per branch (QA fixture set only; no provider is ever called). */
+  weatherSnapshots: Record<string, DemoWeatherSnapshot>
   overrides: Array<{
     reportId: string
     reason: string
@@ -808,6 +822,7 @@ export function createDemoState(
       { id: 'demo-reason-sample', code: 'sample', name: 'Numune / ikram', description: 'Numune veya ikram olarak verildi', isActive: true, sortOrder: 50 },
       { id: 'demo-reason-other', code: 'other', name: 'Diğer', description: 'Başka bir neden; açıklama yazın', isActive: true, sortOrder: 90 },
     ],
+    weatherSnapshots: {},
     branchLocations: {
       [DEMO_BRANCH_RUMELI]: { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null },
       [DEMO_BRANCH_DONDURMA]: { latitude: null, longitude: null, timezone: 'Europe/Istanbul', address: null, locationLabel: null },

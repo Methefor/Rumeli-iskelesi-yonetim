@@ -716,6 +716,28 @@ Approval is a separate permission that branch_manager does not hold; nothing is 
 schedule, threshold or price is invented and nothing is applied to production. Unit contract: the ledger, stock, thresholds and pending
 inbound are in the item base unit; order lines are in the order unit with a pack factor frozen on the line, converted deterministically when
 receiving (a half-known conversion is refused, never guessed). Receiving locks the order row and is one transaction. A reversed receipt
-movement does not silently reopen an order: it is shown as a reconciliation warning. Receiving against a purchase order is a separate
-permission from the generic inventory receipt (current default: owner/manager/branch_manager only); whether cashier/employee should also
-receive purchase orders, and self-approval, remain open owner decisions.
+movement does not silently reopen an order: it is shown as a reconciliation warning.
+
+Owner decisions for V1 (consistent with `PROCUREMENT_MODEL.md`): (1) receiving against a purchase order is the separate permission
+`procurement.order.receive`, default OPTION A = owner / manager / branch_manager only, while the generic `inventory.receive` stays as it
+was (cashier/employee keep own-branch stock receipts); the permission remains configurable and any future grant still applies the branch
+restriction; (2) an owner/manager holding the approval permission may approve an order they created themselves (no four-eyes approval in V1);
+(3) reversing a linked inventory RECEIPT never reopens the purchase order automatically: the reconciliation warning (`receipt_reversed`)
+stays visible and the manager resolves the stock through the explicit inventory workflow.
+
+### 2026-10-07 - Phase 1D: Command Center as a composition, weather as a cached forecast
+
+The Command Center re-uses the dashboard domain (revenue/finalization stays in TypeScript; no second revenue engine), the inventory-control,
+procurement and analytics read models, and adds only a bundled per-branch read model, a deterministic attention feed and a weather cache.
+Attention uses existing definitions and configured thresholds only; weather is always informational (no weather threshold exists) and never
+claims an effect on sales; a part a role cannot see is reported as unavailable, never as an all-clear. Weather is branch-specific (branch
+coordinates, never guessed or taken from the device), comes through a provider abstraction (Open-Meteo adapter, no key), is stored as
+append-only forecast snapshots with explicit validity (fresh / stale / unavailable) and is kept strictly apart from the historical daily
+context that feeds Analytics Engine V1 (historical rows only for completed days, from a historical-capable endpoint, with provenance; Open-Meteo
+Archive is reanalysis/modelled history and is never labelled observed; manual rows are preserved). The loader is local-only; nothing is
+deployed and production is unchanged.
+
+Hardening (same day): history is stored with provenance and only from a historical-capable endpoint (Open-Meteo archive = reanalysis, never
+labelled observed; forecasts/current never become history; manual rows never overwritten); the forecast TTL is one central technical default
+(`weather_settings`, 60 minutes, owner/manager-configurable, not a risk threshold); and the Command Center loads through two batch read
+models (raw dashboard inputs + signals) so the request count is constant in the number of branches while the X/Z logic stays in TypeScript.

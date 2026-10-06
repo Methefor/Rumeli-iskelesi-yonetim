@@ -340,6 +340,15 @@ mutation is authorized by this backlog update.
 - [ ] Apply the migration to production (separate owner-approved write, after review).
 - [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.
 
+## Phase 1D - Command Center + weather (2026-10-07, development only, local)
+
+- [x] Migrations 700/800: forecast snapshots (append-only, `weather.read`), historical context columns with provenance (Open-Meteo archive = reanalysis, never observed) + loaders, central technical TTL (`weather_settings`), `get_branch_weather`, `get_branch_operations_signals`, batch `get_dashboard_inputs` / `get_command_center_signals`.
+- [x] Weather provider abstraction + Open-Meteo adapter + local-only loader (tests with injected fetch); weather domain (conditions, facts-only context, freshness).
+- [x] Command Center page: today summary, attention engine, operations, weather, analytics summary; synthetic QA scenarios; tests; teardown (46 tables, 5 views, 146 functions; the teardown test expects 51 relations).
+- [ ] Apply migrations `20261006000700..800` to production (separate owner-approved write; earlier unapplied migrations too).
+- [ ] Owner decisions: real branch coordinates, loader scheduling/hosting/retention, thresholds that may justify critical stock/count/weather alerts, notifications (see the two model docs).
+- [ ] Weekly manager summary narrative (facts already available), deeper weather relationships (product/category, wind), detailed weather page.
+
 ## Phase 1C - procurement core (2026-10-06, development only, local)
 
 - [x] Suppliers, item supply parameters, purchase orders + lines + status history + receipt links (migrations 500/600), RLS, audited RPCs.
@@ -347,7 +356,8 @@ mutation is authorized by this backlog update.
 - [x] Order calendar (branch time zone, estimated delivery), suggestion primitives, Command Center read models, manager screens, synthetic QA data, tests, teardown.
 - [ ] Apply migrations `20261006000500..600` to production (separate owner-approved write; Phase 1B and analytics migrations are also still unapplied).
 - [x] Hardening: unit contract (base vs order unit, frozen pack snapshot), receiving concurrency/atomicity, fulfillment reconciliation, supplier/item deactivation behaviour.
-- [ ] Owner decisions: real suppliers/rules/thresholds, multiple suppliers per item, PO receiving option A or B, self-approval, reopen of reversed/cancelled orders (see `PROCUREMENT_MODEL.md`).
+- [x] Owner decisions for V1 (recorded in `DECISIONS.md` / `PROCUREMENT_MODEL.md`): PO receiving = option A (owner/manager/branch_manager; generic `inventory.receive` unchanged), self-approval allowed, a reversed receipt never reopens the PO (reconciliation warning).
+- [ ] Still open: real suppliers/rules/thresholds, multiple suppliers per item, reopening a cancelled order, over-receipt tolerance (see `PROCUREMENT_MODEL.md`).
 - [ ] Surface procurement attention in the Command Center; sales-velocity/weather-aware suggestions; central-warehouse stock visibility; invoices/payments (out of scope).
 
 ## Phase 1B — inventory control (2026-10-07, development only, local)

@@ -1,0 +1,75 @@
+.hero {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: 18px;
+  color: #f8fafc;
+  background: linear-gradient(145deg, #071522 0%, #0a2230 58%, #07131e 100%);
+}
+.heroLabel {
+  font-size: var(--text-xs);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+.heroValue {
+  font-size: clamp(1.7rem, 8vw, 2.4rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+.heroNote {
+  margin: 0;
+  font-size: var(--text-sm);
+  opacity: 0.9;
+}
+.heroRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+.sectionHead h2 {
+  margin: 0;
+  font-size: var(--text-md);
+}
+.sectionHead small {
+  color: var(--color-text-muted);
+}
+.hours {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+  font-size: var(--text-xs);
+}
+.hours div {
+  padding: 6px 2px;
+  border-radius: 8px;
+  background: var(--color-surface-muted, rgba(127, 127, 127, 0.1));
+}
+.weatherMain {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.weatherTemp {
+  font-size: 2rem;
+  font-weight: 800;
+}
+.muted {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.disclosure {
+  display: grid;
+  gap: var(--space-2);
+}

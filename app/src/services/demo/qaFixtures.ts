@@ -20,6 +20,7 @@
 import { addDaysIso } from '../../utils/dates'
 import { applyQaInventoryControl } from './qaInventoryControl'
 import { applyQaProcurement } from './qaProcurement'
+import { applyQaCommandCenter } from './qaCommandCenter'
 import type { DemoState, ReportInput } from './store'
 
 const D = 'demo-branch-dondurma'
@@ -128,7 +129,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
       const legacy = spec.id === R && offset <= -33
 
       // scenarios
-      const xOnly = (spec.id === R && offset === -9) || (spec.id === D && offset === -6) || offset === 0 // today: only the morning X exists yet
+      const xOnly = (spec.id === R && offset === -9) || (spec.id === D && offset === -6) || (offset === 0 && spec.id !== B) // today: only the morning X exists yet (Balık Ekmek is the clean, finalized day)
       const zBelowX = spec.id === R && offset === -5
       if (zBelowX) x = round(z * 1.2)
       // today is in progress: only the morning X exists
@@ -136,7 +137,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
       const inventoryDay = spec.id === D && offset >= -41 && !xOnly
 
       // category / product lines. reconciliation: items sum = gross, except the planned WARNING / ERROR days
-      const drift = (spec.id === R && offset === -3) ? 0.035 : (spec.id === D && offset === -4) ? 0.09 : 0
+      const drift = (spec.id === R && offset === -3) ? 0.035 : (spec.id === D && (offset === -4 || offset === 0)) ? 0.09 : 0 // Dondurma today: a reconciliation ERROR (critical attention)
       const lines = (gross: number, withProducts: boolean): ReportInput['items'] => {
         const total = gross * (1 - drift)
         if (spec.id === R) {
@@ -204,4 +205,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
 
   // ---- procurement scenarios (Phase 1C)
   applyQaProcurement(state, deps, date)
+
+  // ---- command center scenarios (Phase 1D): synthetic locations + weather cache
+  applyQaCommandCenter(state, deps)
 }

@@ -58,6 +58,9 @@ export const {
   receivePurchaseOrder,
   getOrderSuggestions,
   getProcurementAttention,
+  getBranchOperationsSignals,
+  fetchDashboardRaws,
+  getCommandCenterSignals,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,
