@@ -1457,6 +1457,9 @@ select distinct on (branch_id, week_start)
   id, branch_id, week_start, version, source_latest_at, week_complete, generation_kind, generated_at
 from public.weekly_analytics_snapshots
 order by branch_id, week_start, version desc;
+-- least privilege: Supabase default privileges give anon ALL on a new view; the views are security_invoker (anon is stopped by the table privileges and RLS) but the
+-- grant itself is removed so the views follow the same pattern as every other V4 view
+revoke all on public.daily_analytics_current, public.weekly_analytics_current from public, anon, authenticated;
 grant select on public.daily_analytics_current, public.weekly_analytics_current to authenticated;
 
 -- -----------------------------------------------------------------------------
