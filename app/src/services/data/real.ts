@@ -9,6 +9,7 @@ import * as analytics from '../supabase/analytics'
 import * as control from '../supabase/inventoryControl'
 import * as procurement from '../supabase/procurement'
 import { fetchDashboardRaws, getBranchOperationsSignals, getCommandCenterSignals } from '../supabase/commandCenter'
+import { getManagerReportInputs } from '../supabase/managerReport'
 
 /**
  * The real, Supabase-backed data API. This object's TYPE is the contract
@@ -107,6 +108,8 @@ export const realApi = {
   // batch read models: constant request count regardless of the number of branches
   fetchDashboardRaws,
   getCommandCenterSignals,
+  // manager report: ONE batch read model (analytics snapshots + waste + counts) for all branches
+  getManagerReportInputs,
 }
 
 export type DataApi = typeof realApi

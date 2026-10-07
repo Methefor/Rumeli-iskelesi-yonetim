@@ -61,6 +61,7 @@ export const {
   getBranchOperationsSignals,
   fetchDashboardRaws,
   getCommandCenterSignals,
+  getManagerReportInputs,
 
   listMyShiftAssignments,
   listMyShiftChangeRequests,

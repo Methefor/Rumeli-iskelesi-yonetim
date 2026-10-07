@@ -1,0 +1,94 @@
+.hero {
+  display: grid;
+  gap: var(--space-2);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.headline {
+  margin: 0;
+  font-size: clamp(1.2rem, 5.5vw, 1.6rem);
+  line-height: 1.2;
+}
+.summary {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 1.45;
+}
+.section {
+  padding: var(--space-3) var(--space-4);
+}
+.sectionTitle {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--text-md);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.sectionBody {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+.lines {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: var(--space-2);
+  line-height: 1.4;
+}
+.evidence {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.evidence summary {
+  cursor: pointer;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+}
+.evidence ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.evidence li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+.footnote {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-2);
+}
+.picker > * {
+  min-width: 0;
+}
+.weekLabel {
+  flex: 1 1 160px;
+  text-align: center;
+  font-weight: 700;
+}
+.entry {
+  display: grid;
+  gap: var(--space-2);
+}
+.entryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

@@ -16,6 +16,7 @@ import { formatDateTime } from '../../utils/dates'
 import { AnalyticsPanel } from '../commandCenter/AnalyticsPanel'
 import { AttentionFeedView } from '../commandCenter/AttentionFeedView'
 import { OperationsPanel } from '../commandCenter/OperationsPanel'
+import { ReportEntryPoints } from '../commandCenter/ReportEntryPoints'
 import { TodaySummary } from '../commandCenter/TodaySummary'
 import { WeatherPanel } from '../commandCenter/WeatherPanel'
 import { BranchComparison } from './BranchComparison'
@@ -117,6 +118,7 @@ export function ManagerDashboardPage() {
         {(c) => (
           <Stack>
             <TodaySummary organization={c.organization} rows={c.rows} businessDate={todayPeriod.fromDate} />
+            <ReportEntryPoints />
             <AttentionFeedView feed={c.feed} multiBranch={c.rows.length > 1} />
             <OperationsPanel rows={c.rows} signals={c.signals} />
             <WeatherPanel branches={c.rows.map((r) => ({ id: r.branchId, name: r.branchName }))} signals={c.signals} now={c.now} />

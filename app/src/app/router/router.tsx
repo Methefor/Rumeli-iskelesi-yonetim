@@ -39,6 +39,8 @@ import { PurchaseOrdersPage } from '../../features/procurement/routes/PurchaseOr
 import { PurchaseOrderNewPage } from '../../features/procurement/routes/PurchaseOrderNewPage'
 import { PurchaseOrderDetailPage } from '../../features/procurement/routes/PurchaseOrderDetailPage'
 import { AnalyticsPage } from '../../features/analytics/AnalyticsPage'
+import { DailySummaryPage } from '../../features/managerReports/DailySummaryPage'
+import { WeeklySummaryPage } from '../../features/managerReports/WeeklySummaryPage'
 import { ProtectedRoute } from './guards/ProtectedRoute'
 import { RoleGuard } from './guards/RoleGuard'
 
@@ -85,6 +87,8 @@ export const router = createBrowserRouter([
       { path: 'shifts/assign', element: <AssignShiftPage /> },
       { path: 'reports', element: <SalesOverviewPage /> },
       { path: 'reports/reconciliation', element: <ReconciliationQueuePage /> },
+      { path: 'reports/daily-summary', element: <DailySummaryPage /> },
+      { path: 'reports/weekly-summary', element: <WeeklySummaryPage /> },
       { path: 'inventory', element: <InventoryOverviewPage /> },
       { path: 'inventory/receive', element: <ReceiveStockPage /> },
       { path: 'inventory/waste', element: <WasteEntryPage /> },

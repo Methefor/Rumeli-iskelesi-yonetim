@@ -340,14 +340,24 @@ mutation is authorized by this backlog update.
 - [ ] Apply the migration to production (separate owner-approved write, after review).
 - [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.
 
+## Phase 1E - daily + weekly manager narrative (2026-10-07, development only, local)
+
+- [x] Migration `20261007000100_manager_reports.sql`: read-only batch read model `get_manager_report_inputs` (no table; teardown now 46 tables, 5 views, 147 functions; the teardown test expects 51 relations).
+- [x] Domain `domain/managerReport`: daily + weekly Fact Pack (support states, limitations, evidence registry, provenance), recurrence (frequency only), narrative validator, deterministic Turkish renderers, AI input/output contract + fallback (no provider).
+- [x] Pages `/app/manager/reports/daily-summary`, `/weekly-summary` + Command Center links; synthetic QA scenarios; SQL, domain, demo, request-count and UI tests.
+- [ ] Apply migration `20261007000100` to production (separate owner-approved write; the earlier unapplied migrations too).
+- [ ] Owner decisions: AI provider/model/budget, delivery channel and report time, tone policy, notifications, whether recurrence needs owner-configured thresholds (see `MANAGER_REPORT_MODEL.md`).
+- [ ] When an AI provider exists: server-side generation + append-only `manager_report_snapshots` (the runtime `ReportMetadata` fields are defined; a persisted audit trail does not exist in V1); per-day storage of stock/order state to support low-stock/overdue recurrence.
+
 ## Phase 1D - Command Center + weather (2026-10-07, development only, local)
 
 - [x] Migrations 700/800: forecast snapshots (append-only, `weather.read`), historical context columns with provenance (Open-Meteo archive = reanalysis, never observed) + loaders, central technical TTL (`weather_settings`), `get_branch_weather`, `get_branch_operations_signals`, batch `get_dashboard_inputs` / `get_command_center_signals`.
 - [x] Weather provider abstraction + Open-Meteo adapter + local-only loader (tests with injected fetch); weather domain (conditions, facts-only context, freshness).
-- [x] Command Center page: today summary, attention engine, operations, weather, analytics summary; synthetic QA scenarios; tests; teardown (46 tables, 5 views, 146 functions; the teardown test expects 51 relations).
+- [x] Command Center page: today summary, attention engine, operations, weather, analytics summary; synthetic QA scenarios; tests; teardown (46 tables, 5 views, 146 functions at that time; 147 with Phase 1E; the teardown test expects 51 relations).
 - [ ] Apply migrations `20261006000700..800` to production (separate owner-approved write; earlier unapplied migrations too).
 - [ ] Owner decisions: real branch coordinates, loader scheduling/hosting/retention, thresholds that may justify critical stock/count/weather alerts, notifications (see the two model docs).
-- [ ] Weekly manager summary narrative (facts already available), deeper weather relationships (product/category, wind), detailed weather page.
+- [x] Weekly manager summary narrative: done in Phase 1E (deterministic; AI later).
+- [ ] Deeper weather relationships (product/category, wind), detailed weather page.
 
 ## Phase 1C - procurement core (2026-10-06, development only, local)
 

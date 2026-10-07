@@ -16,7 +16,10 @@
  *   - fire/closing-count control scenarios (qaInventoryControl.ts): balanced, explained, partially explained, unexplained,
  *     surplus, missing-cost waste, a branch without today's count and a branch whose only count is voided
  *   - synthetic weather per day, correlated with Dondurma sales so the analytics relationship has a sample
+ *   - manager-report scenarios (Phase 1E): in the PREVIOUS Monday..Sunday week the Balık Ekmek branch is missing its Z on Mon-Wed (a repeated
+ *     issue) and the Rumeli branch has a reconciliation WARNING on Thu and Fri; the legacy/native boundary makes one week mixed-origin
  */
+import { weekStartOf } from '../../domain/analytics'
 import { addDaysIso } from '../../utils/dates'
 import { applyQaInventoryControl } from './qaInventoryControl'
 import { applyQaProcurement } from './qaProcurement'
@@ -61,6 +64,9 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
   const cat = (key: string) => `demo-cat-${key}`
   const date = (offset: number) => addDaysIso(today, offset)
   const shiftId = (branchId: string, key: string, offset: number) => `demo-shift-${branchId}-${key}-${offset}`
+  // manager-report scenarios: days of the previous complete week (Monday-based) that carry a repeated issue
+  const prevWeekStart = addDaysIso(weekStartOf(today), -7)
+  const inPrevWeek = (d: string, from: number, to: number) => d >= addDaysIso(prevWeekStart, from) && d <= addDaysIso(prevWeekStart, to)
 
   // ---- shifts for the history window (the base seed only covers -2..+2)
   for (const branch of state.branches) {
@@ -129,7 +135,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
       const legacy = spec.id === R && offset <= -33
 
       // scenarios
-      const xOnly = (spec.id === R && offset === -9) || (spec.id === D && offset === -6) || (offset === 0 && spec.id !== B) // today: only the morning X exists yet (Balık Ekmek is the clean, finalized day)
+      const xOnly = (spec.id === R && offset === -9) || (spec.id === D && offset === -6) || (spec.id === B && inPrevWeek(d, 0, 2)) || (offset === 0 && spec.id !== B) // today: only the morning X exists yet (Balık Ekmek is the clean, finalized day)
       const zBelowX = spec.id === R && offset === -5
       if (zBelowX) x = round(z * 1.2)
       // today is in progress: only the morning X exists
@@ -137,7 +143,7 @@ export function applyQaFixtures(state: DemoState, deps: QaDeps): void {
       const inventoryDay = spec.id === D && offset >= -41 && !xOnly
 
       // category / product lines. reconciliation: items sum = gross, except the planned WARNING / ERROR days
-      const drift = (spec.id === R && offset === -3) ? 0.035 : (spec.id === D && (offset === -4 || offset === 0)) ? 0.09 : 0 // Dondurma today: a reconciliation ERROR (critical attention)
+      const drift = (spec.id === R && (offset === -3 || inPrevWeek(d, 3, 4))) ? 0.035 : (spec.id === D && (offset === -4 || offset === 0)) ? 0.09 : 0 // Dondurma today: a reconciliation ERROR (critical attention)
       const lines = (gross: number, withProducts: boolean): ReportInput['items'] => {
         const total = gross * (1 - drift)
         if (spec.id === R) {

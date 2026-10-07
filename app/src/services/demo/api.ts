@@ -24,6 +24,7 @@ import { demoAnalytics } from './analytics'
 import { demoInventoryControl } from './inventoryControl'
 import { demoProcurement } from './procurement'
 import { demoCommandCenter } from './commandCenter'
+import { demoManagerReport } from './managerReport'
 import { fetchBranchDashboardRaw } from './dashboard'
 import { demoState } from './state'
 import {
@@ -156,6 +157,7 @@ export const demoApi: DataApi = {
   ...demoInventoryControl,
   ...demoProcurement,
   ...demoCommandCenter,
+  ...demoManagerReport,
   ...demoDataQuality,
   fetchBranchDashboardRaw,
   async listInventoryAudit(branchId, limit = 100) {

@@ -106,10 +106,10 @@ table; the provider is called only by the loader, never by a render.
 All facts a weekly narrative needs already exist as deterministic payloads: weekly revenue change and quietest/strongest finalized days
 (weekly analytics snapshot), count outcomes (`count_unexplained_shortage`, `timing_uncertain`), stock/minimum states and overdue deliveries
 (`get_procurement_attention`), and the evidence-gated weather relationship (`weather_relationship`, sample size n, "relationship, not
-causation"). A future AI report may only *phrase* them; it must not calculate anything (existing AI contract). Not built here.
+causation"). A future AI report may only *phrase* them; it must not calculate anything (existing AI contract). The deterministic daily/weekly narrative built on these facts exists since Phase 1E (`MANAGER_REPORT_MODEL.md`); the AI provider does not.
 
 ## 8. Open decisions
 
 - thresholds that would justify `critical` for stock/count/procurement/weather items, a waste anomaly rule, "cutoff approaching" lead time;
 - whether the Command Center should become the default landing page for branch managers; push notifications for critical items;
-- weekly summary narrative and AI provider (out of scope).
+- AI provider for the narrative (the deterministic daily/weekly summary is Phase 1E, see `MANAGER_REPORT_MODEL.md`).

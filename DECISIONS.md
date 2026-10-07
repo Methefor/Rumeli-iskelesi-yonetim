@@ -741,3 +741,31 @@ Hardening (same day): history is stored with provenance and only from a historic
 labelled observed; forecasts/current never become history; manual rows never overwritten); the forecast TTL is one central technical default
 (`weather_settings`, 60 minutes, owner/manager-configurable, not a risk threshold); and the Command Center loads through two batch read
 models (raw dashboard inputs + signals) so the request count is constant in the number of branches while the X/Z logic stays in TypeScript.
+
+### 2026-10-07 - Phase 1E: a narrative layer over validated facts, never a second engine
+
+Reports are three layers: (A) a deterministic, versioned Fact Pack composed in TypeScript from the EXISTING read models (the dashboard X/Z model
+stays the only revenue engine; analytics snapshots, attention feed, inventory control, procurement and weather are reused, not recomputed);
+(B) a narrative policy/validator; (C) deterministic Turkish renderers. The renderer is the fallback and the contract an AI would later be held
+to: an AI may only phrase supplied facts, citing evidence ids, and its output is accepted only if every number is a value of the evidence it
+cites, no causal wording or hypothesis appears, unsupported metrics are not claimed and every limitation is propagated; otherwise the
+deterministic narrative is used. No AI provider, model, key, budget, delivery channel, send time or tone policy is decided or invented.
+
+Metric support is explicit (complete / partial / unsupported, never null-as-zero); X-only revenue is provisional and never added to Z; strongest/
+weakest day exist only for a completed week; comparisons across incompatible origins are refused (revenue only, flagged mixed-origin); recurrence is
+reported as a frequency ("bu hafta 3 gün") with no invented threshold, and low stock / overdue orders are unsupported for recurrence because they
+are not stored per day. Weekly weather uses historical (reanalysis) context only; a forecast never appears in a weekly pack.
+
+No report table in V1. Reproducibility is derived per Fact Pack from the origin of every cited fact: `exact` only when every cited source is immutable/versioned
+and reconstructable (snapshot-backed), `partial` when mutable historical sources (report tables, waste, counts) participate, `live` when current operational
+state (or an open period) participates. V1 does not persist the complete Fact Pack, so only the snapshot-backed parts can be rebuilt from their pinned
+versions (ids/versions are recorded in the pack) and the deterministic renderer; storing client-built facts would persist numbers the server did not compute, and
+building the pack in SQL would create a second revenue engine. An append-only server-side `manager_report_snapshots` becomes justified when a non-reproducible generator (AI) exists.
+Persisted narrative audit trail is deferred until that store exists; the pack's provenance and `ReportMetadata` are runtime metadata only.
+
+Hardening (same day): `analytics.read` is only the entry permission; each domain keeps its own permission (financial, reports, stock, waste/count,
+procurement, weather) and the report builder withholds every fact of a domain the caller may not read (`no_permission`, organization totals only sum
+permitted branches). Reproducibility is an explicit, derived report state (`exact` / `partial` / `live`, from evidence origin immutable / mutable / live) and is
+kept distinct from completeness, metric support and evidence confidence; a live or partial report may not claim to be an immutable historical fact.
+The only new database object is the read-only batch read model `get_manager_report_inputs` (SECURITY INVOKER; analytics.read required; branch
+scope enforced by every inner function), which keeps a report at 1-3 requests whatever the number of branches.
