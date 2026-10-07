@@ -340,6 +340,12 @@ mutation is authorized by this backlog update.
 - [ ] Apply the migration to production (separate owner-approved write, after review).
 - [ ] Scheduler for daily/weekly snapshots; weather/holiday loader; AI Edge Function; organization-level rollup.
 
+## Phase 2A - production readiness package (2026-10-07, read-only audit)
+
+- [x] Live read-only production audit, exact baselines, per-migration deltas, collision check, expected post-apply delta + verifier, pending-chain-only rollback script (tested locally), schema-apply runbook.
+- [ ] Gate A: owner approval, fresh T-60 backup + validation, final `db push --dry-run`, owner-run apply, `verify_post_apply.mjs` (see `docs/PRODUCTION_APPLY_RUNBOOK.md`).
+- [ ] Record at T-24h (owner): Auth dashboard settings, PITR/retention, Vercel env.
+
 ## Phase 1E - daily + weekly manager narrative (2026-10-07, development only, local)
 
 - [x] Migration `20261007000100_manager_reports.sql`: read-only batch read model `get_manager_report_inputs` (no table; teardown now 46 tables, 5 views, 147 functions; the teardown test expects 51 relations).

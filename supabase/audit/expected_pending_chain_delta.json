@@ -1,0 +1,241 @@
+{
+  "description": "Expected delta of applying the 9 pending migrations to a database holding exactly the 25 production-applied migrations. Derived by applying the repo chain locally on a reconstruction of production (see docs/PRODUCTION_READINESS_2026-10-07.md); compared by supabase/audit/verify_post_apply.mjs.",
+  "migrations_added": [
+    "20261006000100",
+    "20261006000200",
+    "20261006000300",
+    "20261006000400",
+    "20261006000500",
+    "20261006000600",
+    "20261006000700",
+    "20261006000800",
+    "20261007000100"
+  ],
+  "counts_delta": {
+    "public_views": 2,
+    "public_tables": 16,
+    "public_indexes": 36,
+    "public_matviews": 0,
+    "public_policies": 16,
+    "public_triggers": 17,
+    "public_functions": 73,
+    "public_relations": 18,
+    "public_sequences": 1,
+    "storage_policies": 0,
+    "tables_without_rls": 0,
+    "public_definer_functions": 50
+  },
+  "relations_added": [
+    "S:purchase_order_seq",
+    "r:analytics_insights",
+    "r:analytics_reports",
+    "r:analytics_settings",
+    "r:branch_locations",
+    "r:daily_analytics_snapshots",
+    "r:external_context_daily",
+    "r:item_supply_params",
+    "r:purchase_order_lines",
+    "r:purchase_order_receipts",
+    "r:purchase_order_status_history",
+    "r:purchase_orders",
+    "r:suppliers",
+    "r:waste_reasons",
+    "r:weather_forecast_snapshots",
+    "r:weather_settings",
+    "r:weekly_analytics_snapshots",
+    "v:daily_analytics_current",
+    "v:weekly_analytics_current"
+  ],
+  "functions_added": [
+    "analytics_block_mutation()",
+    "analytics_build_daily(p_branch_id uuid, p_date date)",
+    "analytics_build_weekly(p_branch_id uuid, p_week_start date)",
+    "analytics_can(p_permission_key text, p_branch_id uuid)",
+    "analytics_cap(p_status text, p_reasons text[])",
+    "analytics_compare(p_current numeric, p_baseline numeric, p_baseline_has_data boolean, p_low_base numeric, p_samples integer, p_min_samples integer, p_current_final boolean, p_baseline_final boolean, p_mixed boolean, p_block_mixed boolean)",
+    "analytics_completeness(p_caps jsonb, p_has_data boolean)",
+    "analytics_compute_day(p_branch_id uuid, p_date date)",
+    "analytics_context_for(p_branch_id uuid, p_date date)",
+    "analytics_internal_source_latest_at(p_branch_id uuid, p_from date, p_to date)",
+    "analytics_metric(p_state text, p_value numeric, p_reason text)",
+    "analytics_origin_mixed(p_a text, p_b text)",
+    "analytics_params()",
+    "analytics_redact(p_payload jsonb, p_financial boolean)",
+    "analytics_source_latest_at(p_branch_id uuid, p_from date, p_to date)",
+    "analytics_weather_effect(p_branch_id uuid, p_from date, p_to date)",
+    "analytics_week_totals(p_days jsonb, p_week_complete boolean)",
+    "analytics_write_daily_insights(p_snapshot_id uuid, p_branch_id uuid, p_date date, p_payload jsonb)",
+    "analytics_write_weekly_insights(p_snapshot_id uuid, p_branch_id uuid, p_week date, p_payload jsonb)",
+    "branches_validate_timezone()",
+    "create_purchase_order(p_branch_id uuid, p_supplier_id uuid, p_ordered_for date, p_expected_delivery date, p_notes text, p_lines jsonb)",
+    "external_context_provenance_guard()",
+    "get_branch_count_overview(p_branch_id uuid, p_limit integer)",
+    "get_branch_operations_signals(p_branch_id uuid)",
+    "get_branch_weather(p_branch_id uuid)",
+    "get_command_center_signals(p_branch_ids uuid[])",
+    "get_daily_analytics(p_branch_id uuid, p_date date)",
+    "get_dashboard_inputs(p_branch_ids uuid[], p_from_date date, p_to_date date, p_from_instant timestamp with time zone, p_to_instant timestamp with time zone)",
+    "get_inventory_count_review(p_count_id uuid)",
+    "get_manager_report_inputs(p_branch_ids uuid[], p_scope text, p_date date)",
+    "get_order_suggestions(p_branch_id uuid)",
+    "get_procurement_attention(p_branch_id uuid)",
+    "get_purchase_order(p_order_id uuid)",
+    "get_waste_report(p_branch_id uuid, p_from date, p_to date)",
+    "get_weekly_analytics(p_branch_id uuid, p_week_start date)",
+    "internal_generate_daily_analytics(p_branch_id uuid, p_date date, p_kind text, p_actor uuid, p_reason text)",
+    "internal_generate_weekly_analytics(p_branch_id uuid, p_week_start date, p_kind text, p_actor uuid, p_reason text)",
+    "internal_save_analytics_report(p_weekly_snapshot_id uuid, p_status text, p_input_facts jsonb, p_output jsonb, p_model text, p_error_code text, p_actor uuid)",
+    "internal_store_weather_forecast(p_branch_id uuid, p_provider text, p_fetched_at timestamp with time zone, p_generated_at timestamp with time zone, p_valid_until timestamp with time zone, p_payload jsonb)",
+    "internal_upsert_observed_weather(p_branch_id uuid, p_date date, p_values jsonb, p_source text, p_provenance text)",
+    "internal_weather_ttl_minutes()",
+    "inventory_cost_metric(p_total_qty numeric, p_costed_qty numeric, p_costed_value numeric, p_can_see boolean)",
+    "inventory_count_classified_lines(p_count_id uuid)",
+    "inventory_count_summary(p_count_id uuid, p_can_cost boolean)",
+    "list_branch_locations()",
+    "list_purchase_orders(p_branch_id uuid, p_statuses text[], p_limit integer)",
+    "procurement_calendar(p_now timestamp with time zone, p_tz text, p_allowed smallint[], p_cutoff time without time zone, p_delivery smallint[], p_lead integer)",
+    "procurement_guard_line()",
+    "procurement_guard_order()",
+    "procurement_guard_supplier()",
+    "procurement_json_num(p jsonb, p_key text)",
+    "procurement_json_weekdays(p jsonb, p_key text)",
+    "procurement_order_brief(p_order_id uuid)",
+    "procurement_order_reconciliation(p_order_id uuid)",
+    "procurement_prevent_mutation()",
+    "procurement_transition_allowed(p_from text, p_to text)",
+    "procurement_write_lines(p_order_id uuid, p_branch_id uuid, p_supplier_id uuid, p_lines jsonb)",
+    "receive_purchase_order(p_order_id uuid, p_lines jsonb, p_note text)",
+    "regenerate_daily_analytics(p_branch_id uuid, p_date date, p_reason text)",
+    "regenerate_weekly_analytics(p_branch_id uuid, p_week_start date, p_reason text)",
+    "replace_purchase_order_lines(p_order_id uuid, p_lines jsonb)",
+    "set_supplier_active(p_id uuid, p_active boolean, p_reason text)",
+    "set_waste_reason_active(p_reason_id uuid, p_active boolean, p_reason text)",
+    "transition_purchase_order(p_order_id uuid, p_to text, p_reason text)",
+    "update_analytics_settings(p_values jsonb, p_reason text)",
+    "update_branch_location(p_branch_id uuid, p_latitude numeric, p_longitude numeric, p_timezone text, p_address text, p_location_label text, p_reason text)",
+    "update_purchase_order_header(p_order_id uuid, p_ordered_for date, p_expected_delivery date, p_notes text)",
+    "update_weather_settings(p_forecast_ttl_minutes integer, p_reason text)",
+    "upsert_external_context_daily(p_context_date date, p_branch_id uuid, p_values jsonb, p_reason text)",
+    "upsert_item_supply_params(p_branch_id uuid, p_item_id uuid, p_supplier_id uuid, p_params jsonb, p_reason text)",
+    "upsert_supplier(p_id uuid, p_code text, p_name text, p_type text, p_contact text, p_phone text, p_email text, p_notes text, p_reason text)",
+    "upsert_waste_reason(p_reason_id uuid, p_code text, p_name text, p_description text, p_sort_order integer, p_reason text)",
+    "weather_prevent_mutation()"
+  ],
+  "policies_added": [
+    "public.analytics_insights.analytics_insights_select",
+    "public.analytics_reports.analytics_reports_select",
+    "public.analytics_settings.analytics_settings_select",
+    "public.branch_locations.branch_locations_select",
+    "public.daily_analytics_snapshots.daily_analytics_snapshots_select",
+    "public.external_context_daily.external_context_daily_select",
+    "public.item_supply_params.item_supply_params_select",
+    "public.purchase_order_lines.purchase_order_lines_select",
+    "public.purchase_order_receipts.po_receipts_select",
+    "public.purchase_order_status_history.po_history_select",
+    "public.purchase_orders.purchase_orders_select",
+    "public.suppliers.suppliers_select",
+    "public.waste_reasons.waste_reasons_select",
+    "public.weather_forecast_snapshots.weather_snapshots_select",
+    "public.weather_settings.weather_settings_select",
+    "public.weekly_analytics_snapshots.weekly_analytics_snapshots_select"
+  ],
+  "relations_changed": {
+    "r:branches": [
+      "columns_md5",
+      "triggers_md5",
+      "constraints_md5"
+    ],
+    "r:inventory_movements": [
+      "constraints_md5"
+    ]
+  },
+  "functions_changed": {
+    "record_inventory_waste(p_branch_id uuid, p_lines jsonb, p_reason_code text, p_note text, p_shift_id uuid)": [
+      "def_md5"
+    ]
+  },
+  "dropped": {
+    "relations": 0,
+    "functions": 0,
+    "policies": 0
+  },
+  "row_counts_delta": {
+    "permissions": {
+      "from": 21,
+      "to": 38
+    },
+    "role_permissions": {
+      "from": 68,
+      "to": 113
+    },
+    "suppliers": {
+      "from": null,
+      "to": 0
+    },
+    "waste_reasons": {
+      "from": null,
+      "to": 6
+    },
+    "purchase_orders": {
+      "from": null,
+      "to": 0
+    },
+    "branch_locations": {
+      "from": null,
+      "to": 0
+    },
+    "weather_settings": {
+      "from": null,
+      "to": 1
+    },
+    "analytics_settings": {
+      "from": null,
+      "to": 1
+    },
+    "item_supply_params": {
+      "from": null,
+      "to": 0
+    },
+    "external_context_daily": {
+      "from": null,
+      "to": 0
+    },
+    "daily_analytics_snapshots": {
+      "from": null,
+      "to": 0
+    },
+    "weather_forecast_snapshots": {
+      "from": null,
+      "to": 0
+    },
+    "weekly_analytics_snapshots": {
+      "from": null,
+      "to": 0
+    }
+  },
+  "anon_executable_functions_added": [
+    "analytics_block_mutation()",
+    "branches_validate_timezone()",
+    "external_context_provenance_guard()",
+    "procurement_guard_line()",
+    "procurement_guard_order()",
+    "procurement_guard_supplier()",
+    "procurement_prevent_mutation()",
+    "procurement_transition_allowed(p_from text, p_to text)",
+    "weather_prevent_mutation()"
+  ],
+  "expected_final_counts_local_v4_only": {
+    "public_views": 5,
+    "public_tables": 46,
+    "public_indexes": 119,
+    "public_matviews": 0,
+    "public_policies": 52,
+    "public_triggers": 34,
+    "public_functions": 147,
+    "public_relations": 51,
+    "public_sequences": 1,
+    "storage_policies": 4,
+    "tables_without_rls": 0,
+    "public_definer_functions": 118
+  }
+}
