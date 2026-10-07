@@ -57,7 +57,7 @@ check(locked.startsWith("ERROR:") && /locked/.test(locked) && v4Tables() === "51
 const unlocked = teardown.replace(/-- >>> LOCK GUARD[\s\S]*?-- <<< LOCK GUARD <<</, "");
 psql(unlocked);
 check(v4Tables() === "0", "unlocked teardown removes all 51 V4 relations");
-check(psql("select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'") === "2", "only the two decoy functions remain (all 146 V4 functions removed)");
+check(psql("select count(*) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public'") === "2", "only the two decoy functions remain (all 147 V4 functions removed)");
 check(psql("select count(*) from public.daily_reports") === "2" && psql("select count(*) from public.cashiers") === "1", "decoy legacy tables keep every row");
 check(psql("select count(*) from pg_trigger where tgname='trg_decoy'") === "1" && psql("select count(*) from pg_policies where tablename='daily_reports'") === "1", "decoy legacy trigger and policy survive");
 check(psql("select count(*) from pg_policies where schemaname='storage' and policyname like 'avatars_v4%'") === "0", "avatars_v4 storage policies are gone");

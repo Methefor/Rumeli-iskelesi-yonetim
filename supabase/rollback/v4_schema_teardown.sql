@@ -2,7 +2,7 @@
 -- supabase/rollback/v4_schema_teardown.sql
 -- =============================================================================
 -- EMERGENCY / ROLLBACK ONLY. Removes every V4 object created by the migration
--- chain in supabase/migrations/ (46 tables, 5 views, 146 functions, the avatars_v4
+-- chain in supabase/migrations/ (46 tables, 5 views, 147 functions, the avatars_v4
 -- storage policies and the PostgREST pre-request hook) and NOTHING ELSE.
 -- Legacy objects (daily_reports, cashiers, admins, entry_history, shift_schedule,
 -- targets, achievements, daily_revenue, daily_performance, weekly_performance and
@@ -144,6 +144,7 @@ drop function if exists public.get_branch_count_overview(p_branch_id uuid, p_lim
 drop function if exists public.get_branch_operations_signals(p_branch_id uuid);
 drop function if exists public.get_branch_weather(p_branch_id uuid);
 drop function if exists public.get_command_center_signals(p_branch_ids uuid[]);
+drop function if exists public.get_manager_report_inputs(p_branch_ids uuid[], p_scope text, p_date date);
 drop function if exists public.get_daily_analytics(p_branch_id uuid, p_date date);
 drop function if exists public.get_dashboard_inputs(p_branch_ids uuid[], p_from_date date, p_to_date date, p_from_instant timestamp with time zone, p_to_instant timestamp with time zone);
 drop function if exists public.get_inventory_count_review(p_count_id uuid);
